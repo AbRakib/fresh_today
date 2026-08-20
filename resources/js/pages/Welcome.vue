@@ -328,14 +328,14 @@ onBeforeUnmount(() => {
                         <List class="h-4 w-4" />
                         All Categories
                     </a>
-                    <a
+                    <Link
                         v-for="link in categoryLinks"
                         :key="link"
-                        href="#categories"
+                        href="/fresh-fish"
                         class="shrink-0 hover:text-[#176536]"
                     >
                         {{ link }}
-                    </a>
+                    </Link>
                 </div>
             </div>
         </header>
@@ -510,10 +510,10 @@ onBeforeUnmount(() => {
                     <div
                         class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
                     >
-                        <a
+                        <Link
                             v-for="category in categories"
                             :key="category.name"
-                            href="#deals"
+                            href="/fresh-fish"
                             class="group rounded-xl border border-slate-200 bg-white p-3 text-center shadow-[0_4px_16px_rgba(0,0,0,.08)] transition hover:-translate-y-1 hover:border-[#97d6a8]"
                         >
                             <div
@@ -538,7 +538,7 @@ onBeforeUnmount(() => {
                             >
                                 {{ category.name }}
                             </div>
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </section>
