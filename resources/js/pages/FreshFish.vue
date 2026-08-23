@@ -6,18 +6,15 @@ import {
     ChevronRight,
     Fish,
     Heart,
-    Home,
     Leaf,
-    Mail,
     PackageCheck,
-    Phone,
-    Search,
     ShieldCheck,
     ShoppingCart,
     SlidersHorizontal,
     Truck,
-    UserRound,
 } from '@lucide/vue';
+import SiteFooter from '@/components/site/SiteFooter.vue';
+import SiteHeader from '@/components/site/SiteHeader.vue';
 
 type Product = {
     name: string;
@@ -26,17 +23,6 @@ type Product = {
     price: string;
     badge?: string;
 };
-
-const navItems = [
-    'Fresh Fish',
-    'Prawn & Shrimp',
-    'Hilsha Corner',
-    'Crab & Shellfish',
-    'Dry Fish',
-    'Meat & Poultry',
-    'Ready to Cook',
-    'Offers',
-];
 
 const filters = [
     ['All Fish & Seafood', ''],
@@ -193,107 +179,7 @@ const imageUrl = (text: string) =>
     </Head>
 
     <div class="min-h-screen bg-[#f7faf7] text-[#213228]">
-        <div class="bg-[#218a37] text-xs text-white">
-            <div
-                class="mx-auto flex h-9 w-[min(1180px,calc(100%-32px))] items-center justify-between"
-            >
-                <div class="flex gap-7">
-                    <a href="tel:01712345678" class="flex items-center gap-2">
-                        <Phone class="h-3.5 w-3.5" /> 01712 345 678
-                    </a>
-                    <a
-                        href="mailto:hello@freshtoday.com.bd"
-                        class="hidden items-center gap-2 sm:flex"
-                    >
-                        <Mail class="h-3.5 w-3.5" /> hello@freshtoday.com.bd
-                    </a>
-                </div>
-                <div class="flex items-center gap-6">
-                    <a href="#">Track Order</a>
-                    <a href="#">Help Center</a>
-                    <button class="flex items-center gap-1">
-                        English <ChevronDown class="h-3 w-3" />
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <header class="bg-white shadow-sm">
-            <div
-                class="mx-auto flex w-[min(1180px,calc(100%-32px))] items-center gap-8 py-5"
-            >
-                <Link href="/" class="flex shrink-0 items-center gap-2">
-                    <div
-                        class="grid h-16 w-16 place-items-center rounded-full bg-[#eef8ee] text-[#218a37]"
-                    >
-                        <Leaf class="h-8 w-8" />
-                    </div>
-                    <div class="leading-none">
-                        <div class="text-3xl font-black text-[#218a37] italic">
-                            Fresh
-                        </div>
-                        <div
-                            class="-mt-1 text-2xl font-black text-red-500 italic"
-                        >
-                            Today
-                        </div>
-                    </div>
-                </Link>
-
-                <div class="relative flex-1">
-                    <input
-                        placeholder="Search for fish, seafood and more..."
-                        class="h-12 w-full rounded-lg border border-slate-200 bg-white px-5 pr-14 text-sm shadow-sm outline-none focus:border-[#218a37] focus:ring-2 focus:ring-green-100"
-                    />
-                    <button
-                        class="absolute top-0 right-0 grid h-12 w-16 place-items-center rounded-r-lg bg-[#218a37] text-white"
-                    >
-                        <Search class="h-5 w-5" />
-                    </button>
-                </div>
-
-                <div class="hidden items-center gap-8 lg:flex">
-                    <Link href="/login" class="flex items-center gap-3 text-xs">
-                        <UserRound class="h-6 w-6" />
-                        <span
-                            ><span class="block font-semibold">My Account</span
-                            >Sign in / Register</span
-                        >
-                    </Link>
-                    <a
-                        href="#"
-                        class="relative flex items-center gap-2 text-sm font-semibold"
-                    >
-                        <ShoppingCart class="h-7 w-7" />
-                        <span
-                            class="absolute -top-2 left-5 grid h-5 w-5 place-items-center rounded-full bg-[#218a37] text-[10px] text-white"
-                            >0</span
-                        >
-                        Cart
-                    </a>
-                </div>
-            </div>
-
-            <nav class="border-t border-slate-100">
-                <div
-                    class="mx-auto flex w-[min(1180px,calc(100%-32px))] [scrollbar-width:none] gap-8 overflow-x-auto py-3 text-sm [&::-webkit-scrollbar]:hidden"
-                >
-                    <a
-                        v-for="(item, index) in navItems"
-                        :key="item"
-                        href="#"
-                        class="flex shrink-0 items-center gap-2 pb-2"
-                        :class="
-                            index === 0
-                                ? 'border-b-2 border-[#218a37] font-semibold text-[#218a37]'
-                                : 'text-slate-700'
-                        "
-                    >
-                        <Fish class="h-4 w-4" /> {{ item }}
-                    </a>
-                </div>
-            </nav>
-        </header>
+        <SiteHeader />
 
         <main class="mx-auto w-[min(1180px,calc(100%-32px))] py-8">
             <div class="mb-8 flex flex-wrap items-end justify-between gap-6">
@@ -637,94 +523,6 @@ const imageUrl = (text: string) =>
             </div>
         </section>
 
-        <footer class="bg-gradient-to-r from-[#06422d] to-[#056d35] text-white">
-            <div
-                class="mx-auto grid w-[min(1180px,calc(100%-32px))] gap-10 py-10 md:grid-cols-4"
-            >
-                <div>
-                    <div class="flex items-center gap-2">
-                        <Leaf class="h-10 w-10" />
-                        <div class="text-2xl font-black italic">
-                            Fresh<br />Today
-                        </div>
-                    </div>
-                    <p class="mt-4 text-xs leading-6 text-green-50">
-                        Your trusted online fish & seafood store in Bangladesh.
-                        We deliver freshness to your doorstep.
-                    </p>
-                    <ul class="mt-4 space-y-2 text-xs text-green-50">
-                        <li class="flex items-center gap-2">
-                            <Phone class="h-3.5 w-3.5" />01712 345 678
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <Mail class="h-3.5 w-3.5" />hello@freshtoday.com.bd
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <Home class="h-3.5 w-3.5" />House #12, Road #5,
-                            Dhaka
-                        </li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="mb-5 font-bold">Quick Links</h3>
-                    <ul class="space-y-3 text-sm text-green-50">
-                        <li>About Us</li>
-                        <li>How We Work</li>
-                        <li>Delivery Information</li>
-                        <li>Returns & Refunds</li>
-                        <li>Blog</li>
-                        <li>Contact Us</li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="mb-5 font-bold">Categories</h3>
-                    <ul class="space-y-3 text-sm text-green-50">
-                        <li>Fresh Fish</li>
-                        <li>Prawn & Shrimp</li>
-                        <li>Hilsha Corner</li>
-                        <li>Crab & Shellfish</li>
-                        <li>Dry Fish</li>
-                        <li>Ready to Cook</li>
-                        <li>Meat & Poultry</li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="mb-5 font-bold">Subscribe & Save</h3>
-                    <p class="text-sm text-green-50">
-                        Get the best offers and updates straight to your inbox.
-                    </p>
-                    <div class="mt-5 flex overflow-hidden rounded-lg">
-                        <input
-                            placeholder="Enter your email"
-                            class="h-12 flex-1 px-4 text-sm text-slate-900 outline-none"
-                        />
-                        <button class="bg-[#31a846] px-5 text-sm font-bold">
-                            Subscribe
-                        </button>
-                    </div>
-                    <h4 class="mt-8 mb-3 text-sm font-bold">We Accept</h4>
-                    <div class="flex flex-wrap gap-2">
-                        <span
-                            v-for="method in [
-                                'VISA',
-                                'MC',
-                                'bKash',
-                                'Nagad',
-                                'AMEX',
-                            ]"
-                            :key="method"
-                            class="rounded bg-white px-3 py-2 text-xs font-black text-[#056d35]"
-                            >{{ method }}</span
-                        >
-                    </div>
-                </div>
-            </div>
-            <div
-                class="mx-auto flex w-[min(1180px,calc(100%-32px))] justify-between border-t border-white/10 py-5 text-xs text-green-50"
-            >
-                <span>© 2024 Fresh Today. All rights reserved.</span>
-                <span>Terms & Conditions &nbsp; | &nbsp; Privacy Policy</span>
-            </div>
-        </footer>
+        <SiteFooter />
     </div>
 </template>

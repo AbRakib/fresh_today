@@ -10,19 +10,15 @@ import {
     Drumstick,
     Fish,
     Leaf,
-    List,
-    Mail,
     PackageCheck,
-    Phone,
     Salad,
-    Search,
     ShieldCheck,
     ShoppingCart,
     Truck,
-    UserRound,
 } from '@lucide/vue';
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { dashboard, login, register } from '@/routes';
+import SiteFooter from '@/components/site/SiteFooter.vue';
+import SiteHeader from '@/components/site/SiteHeader.vue';
 
 type Product = {
     name: string;
@@ -42,18 +38,6 @@ const categories = [
     { name: 'Combo Pack', label: 'combo', icon: Fish },
     { name: 'Dried Fish', label: 'dried fish', icon: Fish },
     { name: 'Paste Spice', label: 'spices', icon: Salad },
-];
-
-const categoryLinks = [
-    'River & Fresh Water Fish',
-    'Shell Fish',
-    'Seafood',
-    'Steaks & Fillets',
-    'Chicken & Duck',
-    'Beef & Mutton',
-    'Combo Pack',
-    'Dried Fish',
-    'Paste Spice',
 ];
 
 const products: Product[] = [
@@ -210,135 +194,7 @@ onBeforeUnmount(() => {
     </Head>
 
     <div class="min-h-screen bg-white font-sans text-slate-800">
-        <div class="bg-[#15512e] text-xs text-white">
-            <div
-                class="mx-auto flex h-9 w-[min(1180px,calc(100%-32px))] items-center justify-between gap-4"
-            >
-                <div class="flex items-center gap-5">
-                    <a
-                        href="tel:09617551122"
-                        class="flex items-center gap-2 hover:text-[#e0f5e5]"
-                    >
-                        <Phone class="h-3.5 w-3.5" />
-                        <span>09617 551122</span>
-                    </a>
-                    <a
-                        href="mailto:support@freshtodaybd.com"
-                        class="hidden items-center gap-2 hover:text-[#e0f5e5] sm:flex"
-                    >
-                        <Mail class="h-3.5 w-3.5" />
-                        <span>support@freshtodaybd.com</span>
-                    </a>
-                </div>
-
-                <div class="flex items-center gap-4">
-                    <button class="flex items-center gap-1">
-                        EN <ChevronDown class="h-3 w-3" />
-                    </button>
-                    <button class="flex items-center gap-1">
-                        BDT <ChevronDown class="h-3 w-3" />
-                    </button>
-                    <a href="#" class="hidden md:block">Campaigns</a>
-                    <a href="#" class="hidden md:block">Wishlist (0)</a>
-                </div>
-            </div>
-        </div>
-
-        <header class="border-b border-slate-100 bg-white">
-            <div
-                class="mx-auto flex w-[min(1180px,calc(100%-32px))] items-center gap-4 py-4"
-            >
-                <Link href="/" class="shrink-0">
-                    <div class="flex items-center gap-2">
-                        <div
-                            class="grid h-12 w-12 place-items-center rounded-full bg-[#176536] text-2xl font-black text-white"
-                        >
-                            F
-                        </div>
-                        <div class="hidden leading-tight sm:block">
-                            <div class="text-xl font-black text-[#15512e]">
-                                fresh
-                            </div>
-                            <div class="-mt-1 text-lg font-bold text-red-500">
-                                Today
-                            </div>
-                        </div>
-                    </div>
-                </Link>
-
-                <div class="relative mx-auto max-w-2xl flex-1">
-                    <input
-                        type="text"
-                        placeholder="Search for fish, meat & more..."
-                        class="h-12 w-full rounded-md border border-slate-200 bg-white px-4 pr-14 text-sm transition outline-none focus:border-[#319d57] focus:ring-2 focus:ring-[#e0f5e5]"
-                    />
-                    <button
-                        class="absolute top-0 right-0 grid h-12 w-12 place-items-center rounded-r-md bg-[#176536] text-white hover:bg-[#15512e]"
-                        aria-label="Search"
-                    >
-                        <Search class="h-5 w-5" />
-                    </button>
-                </div>
-
-                <nav class="hidden items-center gap-7 lg:flex">
-                    <Link
-                        v-if="$page.props.auth.user"
-                        :href="dashboard()"
-                        class="flex items-center gap-2 text-sm hover:text-[#176536]"
-                    >
-                        <UserRound class="h-6 w-6 text-[#176536]" />
-                        <span>Dashboard</span>
-                    </Link>
-                    <template v-else>
-                        <Link
-                            :href="login()"
-                            class="flex items-center gap-2 text-sm hover:text-[#176536]"
-                        >
-                            <UserRound class="h-6 w-6 text-[#176536]" />
-                            <span>Account</span>
-                        </Link>
-                        <Link
-                            :href="register()"
-                            class="text-sm font-semibold text-[#176536] hover:text-[#15512e]"
-                            >Register</Link
-                        >
-                    </template>
-                    <a
-                        href="#"
-                        class="relative flex items-center gap-2 text-sm hover:text-[#176536]"
-                    >
-                        <ShoppingCart class="h-6 w-6 text-[#176536]" />
-                        <span>Cart</span>
-                        <span
-                            class="absolute -top-3 -right-2 grid h-5 min-w-5 place-items-center rounded-full bg-[#176536] px-1 text-[10px] font-bold text-white"
-                            >0</span
-                        >
-                    </a>
-                </nav>
-            </div>
-
-            <div class="border-t border-slate-100">
-                <div
-                    class="mx-auto flex w-[min(1180px,calc(100%-32px))] [scrollbar-width:none] gap-6 overflow-x-auto py-3 text-xs font-medium text-slate-700 [&::-webkit-scrollbar]:hidden"
-                >
-                    <a
-                        href="#"
-                        class="flex shrink-0 items-center gap-1.5 font-semibold text-[#15512e]"
-                    >
-                        <List class="h-4 w-4" />
-                        All Categories
-                    </a>
-                    <Link
-                        v-for="link in categoryLinks"
-                        :key="link"
-                        href="/fresh-fish"
-                        class="shrink-0 hover:text-[#176536]"
-                    >
-                        {{ link }}
-                    </Link>
-                </div>
-            </div>
-        </header>
+        <SiteHeader />
 
         <main>
             <section class="mx-auto w-[min(1180px,calc(100%-32px))] pt-5">
@@ -696,119 +552,6 @@ onBeforeUnmount(() => {
             </section>
         </main>
 
-        <footer class="mt-2 bg-[#124327] text-white">
-            <div
-                class="mx-auto grid w-[min(1180px,calc(100%-32px))] gap-9 py-10 sm:grid-cols-2 lg:grid-cols-5"
-            >
-                <div>
-                    <div class="flex items-center gap-2">
-                        <div
-                            class="grid h-12 w-12 place-items-center rounded-full bg-white text-2xl font-black text-[#15512e]"
-                        >
-                            F
-                        </div>
-                        <div class="leading-tight">
-                            <div class="text-xl font-black">fresh</div>
-                            <div class="-mt-1 text-lg font-bold text-red-400">
-                                Today
-                            </div>
-                        </div>
-                    </div>
-                    <p class="mt-4 text-xs leading-6 text-[#e0f5e5]">
-                        Your trusted online destination for fresh fish, seafood
-                        & meat. Quality you can taste, service you can trust.
-                    </p>
-                    <div class="mt-4 flex gap-3">
-                        <a
-                            v-for="social in ['f', 'ig', 'yt', 'in']"
-                            :key="social"
-                            href="#"
-                            class="grid h-7 w-7 place-items-center rounded-full border border-white/20 text-[10px] font-black text-[#e0f5e5] uppercase hover:text-white"
-                        >
-                            {{ social }}
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <h4 class="mb-4 text-sm font-bold">Quick Links</h4>
-                    <ul class="space-y-3 text-xs text-[#e0f5e5]">
-                        <li>
-                            <a href="#" class="hover:text-white">About Us</a>
-                        </li>
-                        <li><a href="#" class="hover:text-white">Career</a></li>
-                        <li><a href="#" class="hover:text-white">Blog</a></li>
-                        <li>
-                            <a href="#" class="hover:text-white">Help Center</a>
-                        </li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 class="mb-4 text-sm font-bold">Customer Service</h4>
-                    <ul class="space-y-3 text-xs text-[#e0f5e5]">
-                        <li><a href="#" class="hover:text-white">FAQ</a></li>
-                        <li>
-                            <a href="#" class="hover:text-white"
-                                >Return Policy</a
-                            >
-                        </li>
-                        <li>
-                            <a href="#" class="hover:text-white"
-                                >Shipping Policy</a
-                            >
-                        </li>
-                        <li>
-                            <a href="#" class="hover:text-white"
-                                >Terms & Conditions</a
-                            >
-                        </li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 class="mb-4 text-sm font-bold">Contact Us</h4>
-                    <ul class="space-y-3 text-xs leading-5 text-[#e0f5e5]">
-                        <li>
-                            House: 1/A, Road: 17, South Baridhara<br />R/A,
-                            Dhaka - 1212, Bangladesh
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <Phone class="h-3.5 w-3.5" />09617 551122, 01931
-                            000700
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <Mail class="h-3.5 w-3.5" />support@freshtodaybd.com
-                        </li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 class="mb-4 text-sm font-bold">We Accept</h4>
-                    <div class="grid grid-cols-3 gap-2">
-                        <span
-                            v-for="method in [
-                                'VISA',
-                                'MC',
-                                'AMEX',
-                                'bKash',
-                                'Nagad',
-                                'Rocket',
-                            ]"
-                            :key="method"
-                            class="rounded bg-white px-2 py-2 text-center text-xs font-black text-[#15512e]"
-                        >
-                            {{ method }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <div
-                class="border-t border-white/10 py-4 text-center text-[11px] text-[#e0f5e5]"
-            >
-                © 2026 Fresh Today. All Rights Reserved.
-            </div>
-        </footer>
+        <SiteFooter />
     </div>
 </template>
