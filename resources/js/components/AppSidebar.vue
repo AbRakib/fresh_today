@@ -1,6 +1,17 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid } from '@lucide/vue';
+import {
+    Building2,
+    LayoutGrid,
+    Layers3,
+    Package,
+    Palette,
+    ShieldCheck,
+    ShoppingCart,
+    Tags,
+    UserCog,
+    Users,
+} from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -15,28 +26,86 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import type { NavItem } from '@/types';
+import { edit as appearanceEdit } from '@/routes/appearance';
+import { edit as companyEdit } from '@/routes/company';
+import { edit as profileEdit } from '@/routes/profile';
+import { edit as securityEdit } from '@/routes/security';
+import type { NavGroup, NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
+const mainNavGroups: NavGroup[] = [
     {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
+        title: 'Main',
+        items: [
+            {
+                title: 'Dashboard',
+                href: dashboard(),
+                icon: LayoutGrid,
+            },
+        ],
+    },
+    {
+        title: 'Sale',
+        items: [
+            {
+                title: 'Orders',
+                href: '/orders',
+                icon: ShoppingCart,
+            },
+            {
+                title: 'Customers',
+                href: '/customers',
+                icon: Users,
+            },
+        ],
+    },
+    {
+        title: 'Inventory',
+        items: [
+            {
+                title: 'Products',
+                href: '/products',
+                icon: Package,
+            },
+            {
+                title: 'Categories',
+                href: '/categories',
+                icon: Tags,
+            },
+            {
+                title: 'Subcategories',
+                href: '/subcategories',
+                icon: Layers3,
+            },
+        ],
+    },
+    {
+        title: 'Settings',
+        items: [
+            {
+                title: 'Company Setting',
+                href: companyEdit(),
+                icon: Building2,
+            },
+            {
+                title: 'Profile Setting',
+                href: profileEdit(),
+                icon: UserCog,
+            },
+            {
+                title: 'Security Setting',
+                href: securityEdit(),
+                icon: ShieldCheck,
+            },
+            {
+                title: 'Appearance Setting',
+                href: appearanceEdit(),
+                icon: Palette,
+            },
+        ],
     },
 ];
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
-    },
-];
+const footerNavItems: NavItem[] = [];
 </script>
 
 <template>
@@ -54,7 +123,7 @@ const footerNavItems: NavItem[] = [
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="mainNavItems" />
+            <NavMain :groups="mainNavGroups" />
         </SidebarContent>
 
         <SidebarFooter>

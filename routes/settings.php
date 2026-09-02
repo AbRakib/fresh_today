@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\CompanySettingController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
 use Illuminate\Auth\Middleware\RequirePassword;
@@ -7,6 +8,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', '/settings/profile');
+
+    Route::get('settings/company', [CompanySettingController::class, 'edit'])->name('company.edit');
+    Route::patch('settings/company', [CompanySettingController::class, 'update'])->name('company.update');
 
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
