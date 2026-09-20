@@ -2,13 +2,17 @@
 import { Link } from '@inertiajs/vue3';
 import {
     Building2,
+    ClipboardList,
+    ExternalLink,
     LayoutGrid,
     Layers3,
     Package,
     Palette,
     ShieldCheck,
     ShoppingCart,
+    Ruler,
     Tags,
+    Truck,
     UserCog,
     Users,
 } from '@lucide/vue';
@@ -59,6 +63,21 @@ const mainNavGroups: NavGroup[] = [
         ],
     },
     {
+        title: 'Purchase',
+        items: [
+            {
+                title: 'Purchase Items',
+                href: '/purchase-items',
+                icon: ClipboardList,
+            },
+            {
+                title: 'Suppliers',
+                href: '/suppliers',
+                icon: Truck,
+            },
+        ],
+    },
+    {
         title: 'Inventory',
         items: [
             {
@@ -75,6 +94,11 @@ const mainNavGroups: NavGroup[] = [
                 title: 'Subcategories',
                 href: '/subcategories',
                 icon: Layers3,
+            },
+            {
+                title: 'Units',
+                href: '/units',
+                icon: Ruler,
             },
         ],
     },
@@ -105,7 +129,13 @@ const mainNavGroups: NavGroup[] = [
     },
 ];
 
-const footerNavItems: NavItem[] = [];
+const footerNavItems: NavItem[] = [
+    {
+        title: 'Visit Website',
+        href: '/',
+        icon: ExternalLink,
+    },
+];
 </script>
 
 <template>
