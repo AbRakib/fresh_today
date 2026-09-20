@@ -2,11 +2,17 @@
 import { Head } from '@inertiajs/vue3';
 import Heading from '@/components/Heading.vue';
 import ProductForm from './ProductForm.vue';
-import type { Category, ProductFormData, Subcategory } from './ProductForm.vue';
+import type {
+    Category,
+    ProductFormData,
+    Subcategory,
+    Unit,
+} from './ProductForm.vue';
 
 const props = defineProps<{
     categories: Category[];
     subcategories: Subcategory[];
+    units: Unit[];
     product: ProductFormData;
 }>();
 
@@ -27,6 +33,7 @@ defineOptions({
         <ProductForm
             :categories="categories"
             :subcategories="subcategories"
+            :units="units"
             :product="product"
         />
     </div>

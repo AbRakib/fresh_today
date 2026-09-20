@@ -2,9 +2,13 @@
 import { Head } from '@inertiajs/vue3';
 import Heading from '@/components/Heading.vue';
 import ProductForm from './ProductForm.vue';
-import type { Category, Subcategory } from './ProductForm.vue';
+import type { Category, Subcategory, Unit } from './ProductForm.vue';
 
-defineProps<{ categories: Category[]; subcategories: Subcategory[] }>();
+defineProps<{
+    categories: Category[];
+    subcategories: Subcategory[];
+    units: Unit[];
+}>();
 
 defineOptions({
     layout: {
@@ -23,6 +27,11 @@ defineOptions({
             title="Add product"
             description="Create a catalog item with pricing and stock details."
         />
-        <ProductForm :categories="categories" :subcategories="subcategories" />
+        <ProductForm
+            :categories="categories"
+            :subcategories="subcategories"
+            :units="units"
+            :show-product-state-fields="false"
+        />
     </div>
 </template>

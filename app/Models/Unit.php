@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 #[Fillable([
     'name',
+    'short_name',
     'default',
     'status',
     'created_by',
