@@ -4,6 +4,7 @@ namespace App\Http\Requests\Settings;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CompanySettingUpdateRequest extends FormRequest
 {
@@ -15,6 +16,12 @@ class CompanySettingUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'country_id' => [
+                'nullable',
+                Rule::exists('countries', 'id')
+                    ->where('deleted', 0)
+                    ->where('status', 1),
+            ],
             'company_name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],

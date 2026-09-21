@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { Form, Head, usePage } from '@inertiajs/vue3';
 import { Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { Camera, Upload } from '@lucide/vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useInitials } from '@/composables/useInitials';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 
@@ -24,6 +27,27 @@ defineOptions({
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
+const { getInitials } = useInitials();
+const photoPreview = ref<string | null>(null);
+const photoFileName = ref('');
+
+const displayedPhoto = computed(() => photoPreview.value ?? user.value.avatar);
+
+const previewPhoto = (event: Event) => {
+    if (photoPreview.value) {
+        URL.revokeObjectURL(photoPreview.value);
+    }
+
+    const file = (event.target as HTMLInputElement).files?.[0];
+    photoPreview.value = file ? URL.createObjectURL(file) : null;
+    photoFileName.value = file?.name ?? '';
+};
+
+onBeforeUnmount(() => {
+    if (photoPreview.value) {
+        URL.revokeObjectURL(photoPreview.value);
+    }
+});
 </script>
 
 <template>
@@ -31,11 +55,12 @@ const user = computed(() => page.props.auth.user);
 
     <h1 class="sr-only">Profile settings</h1>
 
-    <div class="flex flex-col space-y-6">
+    <div class="mx-auto flex w-full max-w-2xl flex-col space-y-6">
         <Heading
+            class="text-center"
             variant="small"
             title="Profile"
-            description="Update your name and email address"
+            description="Update your profile picture, name, and email address"
         />
 
         <Form
@@ -43,6 +68,44 @@ const user = computed(() => page.props.auth.user);
             class="space-y-6"
             v-slot="{ errors, processing }"
         >
+            <div class="flex flex-col items-center gap-3 text-center">
+                <Avatar class="size-24 border bg-muted">
+                    <AvatarImage
+                        v-if="displayedPhoto"
+                        :src="displayedPhoto"
+                        :alt="user.name + ' profile picture'"
+                        class="object-cover"
+                    />
+                    <AvatarFallback class="text-xl font-medium">
+                        {{ getInitials(user.name) }}
+                    </AvatarFallback>
+                </Avatar>
+
+                <div class="space-y-1">
+                    <Label
+                        for="photo"
+                        class="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                        <Upload class="size-4" />
+                        Choose picture
+                    </Label>
+                    <input
+                        id="photo"
+                        name="photo"
+                        type="file"
+                        accept="image/*"
+                        class="sr-only"
+                        @change="previewPhoto"
+                    />
+                    <p class="text-xs text-muted-foreground">
+                        {{
+                            photoFileName || 'JPG, PNG, GIF, or WebP up to 2 MB'
+                        }}
+                    </p>
+                    <InputError :message="errors.photo" />
+                </div>
+            </div>
+
             <div class="grid gap-2">
                 <Label for="name">Name</Label>
                 <Input
@@ -93,9 +156,13 @@ const user = computed(() => page.props.auth.user);
             </div>
 
             <div class="flex items-center gap-4">
-                <Button :disabled="processing" data-test="update-profile-button"
-                    >Save</Button
+                <Button
+                    :disabled="processing"
+                    data-test="update-profile-button"
                 >
+                    <Camera class="size-4" />
+                    Save profile
+                </Button>
             </div>
         </Form>
     </div>

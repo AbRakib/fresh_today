@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\CompanySettingUpdateRequest;
+use App\Models\Country;
 use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
@@ -18,6 +19,7 @@ class CompanySettingController extends Controller
 
         return Inertia::render('settings/Company', [
             'setting' => [
+                'country_id' => $setting?->country_id,
                 'company_name' => $setting?->company_name ?? '',
                 'email' => $setting?->email ?? '',
                 'phone' => $setting?->phone ?? '',
@@ -27,6 +29,11 @@ class CompanySettingController extends Controller
                 'logo_url' => $setting?->logo ? Storage::disk('public')->url($setting->logo) : null,
                 'meta_icon_url' => $setting?->meta_icon ? Storage::disk('public')->url($setting->meta_icon) : null,
             ],
+            'countries' => Country::query()
+                ->where('deleted', 0)
+                ->where('status', 1)
+                ->orderBy('name')
+                ->get(['id', 'name', 'phone_code', 'currency']),
         ]);
     }
 

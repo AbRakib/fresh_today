@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
+import { ImageIcon, Upload } from '@lucide/vue';
 import { onBeforeUnmount, ref } from 'vue';
 import CompanySettingController from '@/actions/App/Http/Controllers/Settings/CompanySettingController';
 import Heading from '@/components/Heading.vue';
@@ -10,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { edit } from '@/routes/company';
 
 type CompanySetting = {
+    country_id: number | null;
     company_name: string;
     email: string;
     phone: string;
@@ -20,12 +22,22 @@ type CompanySetting = {
     meta_icon_url: string | null;
 };
 
-const { setting } = defineProps<{
+type Country = {
+    id: number;
+    name: string;
+    phone_code: string;
+    currency: string;
+};
+
+const { countries, setting } = defineProps<{
     setting: CompanySetting;
+    countries: Country[];
 }>();
 
 const logoPreview = ref<string | null>(setting.logo_url);
 const metaIconPreview = ref<string | null>(setting.meta_icon_url);
+const logoFileName = ref<string | null>(null);
+const metaIconFileName = ref<string | null>(null);
 
 const previewUrls: string[] = [];
 
@@ -42,11 +54,13 @@ const previewImage = (event: Event, target: 'logo' | 'meta_icon') => {
 
     if (target === 'logo') {
         logoPreview.value = previewUrl;
+        logoFileName.value = file.name;
 
         return;
     }
 
     metaIconPreview.value = previewUrl;
+    metaIconFileName.value = file.name;
 };
 
 onBeforeUnmount(() => {
@@ -99,6 +113,26 @@ defineOptions({
 
             <div class="grid gap-4 sm:grid-cols-2">
                 <div class="grid gap-2">
+                    <Label for="country_id">Country</Label>
+                    <select
+                        id="country_id"
+                        name="country_id"
+                        :value="setting.country_id ?? ''"
+                        class="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/20"
+                    >
+                        <option value="">Select country</option>
+                        <option
+                            v-for="country in countries"
+                            :key="country.id"
+                            :value="country.id"
+                        >
+                            {{ country.name }} ({{ country.currency }})
+                        </option>
+                    </select>
+                    <InputError class="mt-2" :message="errors.country_id" />
+                </div>
+
+                <div class="grid gap-2">
                     <Label for="email">Email address</Label>
                     <Input
                         id="email"
@@ -138,49 +172,113 @@ defineOptions({
                 <InputError class="mt-2" :message="errors.address" />
             </div>
 
-            <div class="grid gap-4 sm:grid-cols-2">
-                <div class="grid gap-2">
-                    <Label for="logo">Logo</Label>
+            <div class="space-y-5">
+                <div
+                    class="grid gap-3 rounded-md border p-4 sm:grid-cols-[minmax(0,1fr)_12rem] sm:items-center"
+                >
+                    <div class="min-w-0 space-y-3">
+                        <div>
+                            <Label for="logo">Logo</Label>
+                            <p class="mt-1 text-xs text-muted-foreground">
+                                PNG, JPG or WebP, up to 2 MB
+                            </p>
+                        </div>
+                        <p class="truncate text-sm font-medium">
+                            {{
+                                logoFileName ||
+                                (setting.logo
+                                    ? 'Current company logo'
+                                    : 'No logo selected')
+                            }}
+                        </p>
+                        <Label
+                            for="logo"
+                            class="inline-flex h-9 w-fit cursor-pointer items-center gap-2 rounded-md border bg-background px-3 text-sm font-medium shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground"
+                        >
+                            <Upload class="size-4" />
+                            Choose logo
+                        </Label>
+                        <Input
+                            id="logo"
+                            type="file"
+                            name="logo"
+                            accept="image/*"
+                            class="sr-only"
+                            @change="previewImage($event, 'logo')"
+                        />
+                        <InputError :message="errors.logo" />
+                    </div>
                     <div
-                        v-if="logoPreview"
-                        class="flex h-24 items-center rounded-md border bg-muted/30 p-3"
+                        class="flex h-32 w-full items-center justify-center overflow-hidden rounded-md border bg-muted/30 p-3"
                     >
                         <img
+                            v-if="logoPreview"
                             :src="logoPreview"
                             alt="Company logo preview"
                             class="max-h-full max-w-full object-contain"
                         />
+                        <div
+                            v-else
+                            class="flex flex-col items-center gap-2 text-muted-foreground"
+                        >
+                            <ImageIcon class="size-7" />
+                            <span class="text-xs">Logo preview</span>
+                        </div>
                     </div>
-                    <Input
-                        id="logo"
-                        type="file"
-                        name="logo"
-                        accept="image/*"
-                        @change="previewImage($event, 'logo')"
-                    />
-                    <InputError class="mt-2" :message="errors.logo" />
                 </div>
 
-                <div class="grid gap-2">
-                    <Label for="meta_icon">Meta icon</Label>
+                <div
+                    class="grid gap-3 rounded-md border p-4 sm:grid-cols-[minmax(0,1fr)_12rem] sm:items-center"
+                >
+                    <div class="min-w-0 space-y-3">
+                        <div>
+                            <Label for="meta_icon">Meta icon</Label>
+                            <p class="mt-1 text-xs text-muted-foreground">
+                                Square PNG, JPG or WebP, up to 1 MB
+                            </p>
+                        </div>
+                        <p class="truncate text-sm font-medium">
+                            {{
+                                metaIconFileName ||
+                                (setting.meta_icon
+                                    ? 'Current meta icon'
+                                    : 'No icon selected')
+                            }}
+                        </p>
+                        <Label
+                            for="meta_icon"
+                            class="inline-flex h-9 w-fit cursor-pointer items-center gap-2 rounded-md border bg-background px-3 text-sm font-medium shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground"
+                        >
+                            <Upload class="size-4" />
+                            Choose icon
+                        </Label>
+                        <Input
+                            id="meta_icon"
+                            type="file"
+                            name="meta_icon"
+                            accept="image/*"
+                            class="sr-only"
+                            @change="previewImage($event, 'meta_icon')"
+                        />
+                        <InputError :message="errors.meta_icon" />
+                    </div>
                     <div
-                        v-if="metaIconPreview"
-                        class="flex h-24 items-center rounded-md border bg-muted/30 p-3"
+                        class="flex h-32 w-full items-center justify-center overflow-hidden rounded-md border bg-muted/30 p-3"
                     >
                         <img
+                            v-if="metaIconPreview"
                             :src="metaIconPreview"
                             alt="Meta icon preview"
                             class="max-h-full max-w-full object-contain"
                         />
+                        <div
+                            v-else
+                            class="flex flex-col items-center gap-2 text-muted-foreground"
+                        >
+                            <ImageIcon class="size-7" />
+                            <span class="text-xs">Icon preview</span>
+                        </div>
                     </div>
-                    <Input
-                        id="meta_icon"
-                        type="file"
-                        name="meta_icon"
-                        accept="image/*"
-                        @change="previewImage($event, 'meta_icon')"
-                    />
-                    <InputError class="mt-2" :message="errors.meta_icon" />
                 </div>
             </div>
 

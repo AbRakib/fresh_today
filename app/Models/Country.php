@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 #[Fillable([
     'country_id',
-    'company_name',
-    'email',
-    'phone',
-    'address',
-    'logo',
-    'meta_icon',
+    'name',
+    'phone_code',
+    'currency_name',
+    'currency',
+    'currency_symbol',
+    'default_currency_digit',
     'status',
     'created_by',
     'updated_by',
@@ -20,11 +20,14 @@ use Illuminate\Database\Eloquent\Model;
     'deleted_at',
     'deleted_by',
 ])]
-class Setting extends Model
+class Country extends Model
 {
     protected function casts(): array
     {
         return [
+            'default_currency_digit' => 'integer',
+            'status' => 'integer',
+            'deleted' => 'integer',
             'deleted_at' => 'datetime',
         ];
     }

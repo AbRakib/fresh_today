@@ -11,15 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('settings', function (Blueprint $table) {
+        Schema::create('countries', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('country_id')->nullable();
-            $table->string('company_name');
-            $table->string('email')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('logo')->nullable();
-            $table->string('meta_icon')->nullable();
-            $table->text('address')->nullable();
+            $table->string('name');
+            $table->string('phone_code');
+            $table->string('currency_name');
+            $table->string('currency');
+            $table->string('currency_symbol');
+            $table->tinyInteger('default_currency_digit')->default(2);
             $table->tinyInteger('status')->default(1)->comment('0=Inactive, 1=Active');
             $table->timestamp('created_at')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
@@ -36,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('settings');
+        Schema::dropIfExists('countries');
     }
 };
