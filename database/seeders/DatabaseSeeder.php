@@ -17,5 +17,6 @@ class DatabaseSeeder extends Seeder
         $this->call(SuperAdminSeeder::class);
         $this->call(CategorySubcategorySeeder::class);
         $this->call(UnitSeeder::class);
+        $this->call(SupplierSeeder::class);
     }
 }

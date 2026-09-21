@@ -8,6 +8,7 @@ defineProps<{
     categories: Category[];
     subcategories: Subcategory[];
     units: Unit[];
+    nextSku: string;
 }>();
 
 defineOptions({
@@ -31,6 +32,7 @@ defineOptions({
             :categories="categories"
             :subcategories="subcategories"
             :units="units"
+            :default-sku="nextSku"
             :show-product-state-fields="false"
         />
     </div>

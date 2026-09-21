@@ -3,6 +3,7 @@
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Subcategory;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -53,7 +54,8 @@ test('authenticated users can open product create and edit pages', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('products/Create')
             ->has('categories', 1)
-            ->has('subcategories', 1));
+            ->has('subcategories', 1)
+            ->where('nextSku', '1001'));
 
     $this->actingAs($user)
         ->get(route('products.edit', $product))
@@ -66,6 +68,33 @@ test('authenticated users can open product create and edit pages', function () {
             ->has('subcategories', 1));
 });
 
+test('product create page shows the next numeric sku', function () {
+    $user = User::factory()->create();
+    $category = Category::query()->create(['name' => 'Fish']);
+
+    Product::query()->create([
+        'category_id' => $category->id,
+        'name' => 'First Fish',
+        'slug' => 'first-fish',
+        'sku' => '1004',
+        'regular_price' => 100,
+    ]);
+    Product::query()->create([
+        'category_id' => $category->id,
+        'name' => 'Legacy Fish',
+        'slug' => 'legacy-fish',
+        'sku' => 'FISH-99',
+        'regular_price' => 100,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('products.create'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('products/Create')
+            ->where('nextSku', '1005'));
+});
+
 test('products can be created', function () {
     Storage::fake('public');
     $user = User::factory()->create();
@@ -74,20 +103,22 @@ test('products can be created', function () {
         'category_id' => $category->id,
         'name' => 'River Fish',
     ]);
+    $unit = Unit::query()->create(['name' => 'Kilogram', 'short_name' => 'kg']);
 
     $this->actingAs($user)
         ->post(route('products.store'), [
             'category_id' => $category->id,
             'subcategory_id' => $subcategory->id,
             'name' => 'Rui Fish',
-            'sku' => 'RUI-001',
+            'sku' => '1001',
             'thumbnail' => UploadedFile::fake()->image('rui.jpg'),
             'short_description' => 'Fresh river fish',
             'description' => 'Cleaned and packed fresh rui fish.',
-            'unit' => 'kg',
+            'unit_id' => $unit->id,
+            'gross_weight' => '1.1 kg',
             'weight' => '1 kg',
             'regular_price' => '350.00',
-            'sale_price' => '325.00',
+            'sale_price' => '375.00',
             'discount_percentage' => '7.14',
             'badge' => 'Fresh',
             'stock_quantity' => 20,
@@ -98,25 +129,66 @@ test('products can be created', function () {
         ->assertSessionHasNoErrors()
         ->assertRedirect(route('products.index'));
 
-    $product = Product::query()->where('sku', 'RUI-001')->firstOrFail();
+    $product = Product::query()->where('sku', '1001')->firstOrFail();
 
     expect($product->slug)->toBe('rui-fish')
         ->and($product->created_by)->toBe($user->id)
         ->and($product->subcategory_id)->toBe($subcategory->id)
+        ->and($product->unit_id)->toBe($unit->id)
         ->and($product->is_featured)->toBe(1);
     Storage::disk('public')->assertExists($product->thumbnail);
+});
+
+test('products can be created without a subcategory', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+    $category = Category::query()->create(['name' => 'Fish']);
+    $unit = Unit::query()->create(['name' => 'Kilogram', 'short_name' => 'kg']);
+
+    $this->actingAs($user)
+        ->post(route('products.store'), [
+            'category_id' => $category->id,
+            'subcategory_id' => '',
+            'name' => 'Katla Fish',
+            'sku' => '1003',
+            'thumbnail' => UploadedFile::fake()->image('katla.jpg'),
+            'short_description' => 'Fresh katla fish',
+            'description' => '',
+            'unit_id' => $unit->id,
+            'gross_weight' => '1.2 kg',
+            'weight' => '1 kg',
+            'regular_price' => '380.00',
+            'sale_price' => '400.00',
+            'discount_percentage' => '',
+            'badge' => '',
+            'stock_quantity' => 10,
+            'minimum_order_quantity' => 1,
+            'is_featured' => 0,
+            'status' => 1,
+        ])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('products.index'));
+
+    expect(Product::query()->where('sku', '1003')->firstOrFail()->subcategory_id)
+        ->toBeNull();
 });
 
 test('products can be updated with a replacement thumbnail', function () {
     Storage::fake('public');
     $user = User::factory()->create();
     $category = Category::query()->create(['name' => 'Fish']);
+    $subcategory = Subcategory::query()->create([
+        'category_id' => $category->id,
+        'name' => 'River Fish',
+    ]);
+    $unit = Unit::query()->create(['name' => 'Kilogram', 'short_name' => 'kg']);
     $oldThumbnail = UploadedFile::fake()->image('old.jpg')->store('products', 'public');
     $product = Product::query()->create([
         'category_id' => $category->id,
+        'subcategory_id' => $subcategory->id,
         'name' => 'Rui Fish',
         'slug' => 'rui-fish',
-        'sku' => 'RUI-001',
+        'sku' => '1001',
         'thumbnail' => $oldThumbnail,
         'regular_price' => 350,
     ]);
@@ -124,16 +196,17 @@ test('products can be updated with a replacement thumbnail', function () {
     $this->actingAs($user)
         ->post(route('products.update', $product), [
             'category_id' => $category->id,
-            'subcategory_id' => '',
+            'subcategory_id' => $subcategory->id,
             'name' => 'Premium Rui Fish',
-            'sku' => 'RUI-002',
+            'sku' => '1002',
             'thumbnail' => UploadedFile::fake()->image('new.jpg'),
-            'short_description' => '',
+            'short_description' => 'Fresh premium river fish',
             'description' => '',
-            'unit' => 'kg',
+            'unit_id' => $unit->id,
+            'gross_weight' => '1.6 kg',
             'weight' => '1.5 kg',
             'regular_price' => '420.00',
-            'sale_price' => '',
+            'sale_price' => '450.00',
             'discount_percentage' => '',
             'badge' => 'Premium',
             'stock_quantity' => 12,
@@ -148,11 +221,40 @@ test('products can be updated with a replacement thumbnail', function () {
 
     expect($product->name)->toBe('Premium Rui Fish')
         ->and($product->slug)->toBe('premium-rui-fish')
-        ->and($product->sku)->toBe('RUI-002')
+        ->and($product->sku)->toBe('1002')
+        ->and($product->unit_id)->toBe($unit->id)
         ->and($product->minimum_order_quantity)->toBe(2)
         ->and($product->updated_by)->toBe($user->id);
     Storage::disk('public')->assertMissing($oldThumbnail);
     Storage::disk('public')->assertExists($product->thumbnail);
+});
+
+test('sale price cannot be less than regular price', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+    $category = Category::query()->create(['name' => 'Fish']);
+    $unit = Unit::query()->create(['name' => 'Kilogram', 'short_name' => 'kg']);
+
+    $this->actingAs($user)
+        ->post(route('products.store'), [
+            'category_id' => $category->id,
+            'name' => 'Rui Fish',
+            'sku' => '1004',
+            'thumbnail' => UploadedFile::fake()->image('rui.jpg'),
+            'short_description' => 'Fresh river fish',
+            'unit_id' => $unit->id,
+            'gross_weight' => '1.1 kg',
+            'weight' => '1 kg',
+            'regular_price' => '350.00',
+            'sale_price' => '325.00',
+            'stock_quantity' => 20,
+            'minimum_order_quantity' => 1,
+            'is_featured' => 0,
+            'status' => 1,
+        ])
+        ->assertSessionHasErrors('sale_price');
+
+    expect(Product::query()->where('sku', '1004')->exists())->toBeFalse();
 });
 
 test('products are soft deleted using product audit columns', function () {

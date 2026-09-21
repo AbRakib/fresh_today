@@ -28,6 +28,7 @@ type Product = {
     short_description: string | null;
     description: string | null;
     unit: string | null;
+    gross_weight: string | null;
     weight: string | null;
     regular_price: string;
     sale_price: string | null;

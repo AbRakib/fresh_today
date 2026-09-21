@@ -15,8 +15,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'thumbnail',
     'short_description',
     'description',
-    'unit',
     'weight',
+    'gross_weight',
+    'unit_id',
     'regular_price',
     'sale_price',
     'discount_percentage',
@@ -43,11 +44,17 @@ class Product extends Model
         return $this->belongsTo(Subcategory::class);
     }
 
+    public function measurementUnit(): BelongsTo
+    {
+        return $this->belongsTo(Unit::class, 'unit_id');
+    }
+
     protected function casts(): array
     {
         return [
             'category_id' => 'integer',
             'subcategory_id' => 'integer',
+            'unit_id' => 'integer',
             'regular_price' => 'decimal:2',
             'sale_price' => 'decimal:2',
             'discount_percentage' => 'decimal:2',

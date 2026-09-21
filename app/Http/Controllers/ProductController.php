@@ -20,7 +20,7 @@ class ProductController extends Controller
     public function index(): Response
     {
         $products = Product::query()
-            ->with(['category:id,name', 'subcategory:id,name'])
+            ->with(['category:id,name', 'subcategory:id,name', 'measurementUnit:id,short_name'])
             ->where('deleted', 0)
             ->latest('id')
             ->get()
@@ -38,7 +38,8 @@ class ProductController extends Controller
                     : null,
                 'short_description' => $product->short_description,
                 'description' => $product->description,
-                'unit' => $product->unit,
+                'unit' => $product->measurementUnit?->short_name,
+                'gross_weight' => $product->gross_weight,
                 'weight' => $product->weight,
                 'regular_price' => $product->regular_price,
                 'sale_price' => $product->sale_price,
@@ -58,7 +59,10 @@ class ProductController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('products/Create', $this->formOptions());
+        return Inertia::render('products/Create', [
+            ...$this->formOptions(),
+            'nextSku' => $this->nextSku(),
+        ]);
     }
 
     public function edit(Product $product): Response
@@ -166,6 +170,20 @@ class ProductController extends Controller
         ];
     }
 
+    private function nextSku(): string
+    {
+        $highestSku = Product::query()
+            ->whereNotNull('sku')
+            ->pluck('sku')
+            ->filter(fn (string $sku) => ctype_digit($sku))
+            ->reduce(
+                fn (int $highest, string $sku) => max($highest, (int) $sku),
+                1000,
+            );
+
+        return (string) ($highestSku + 1);
+    }
+
     private function productFormData(Product $product): array
     {
         return [
@@ -180,7 +198,8 @@ class ProductController extends Controller
                 : null,
             'short_description' => $product->short_description,
             'description' => $product->description,
-            'unit' => $product->unit,
+            'unit_id' => $product->unit_id,
+            'gross_weight' => $product->gross_weight,
             'weight' => $product->weight,
             'regular_price' => $product->regular_price,
             'sale_price' => $product->sale_price,

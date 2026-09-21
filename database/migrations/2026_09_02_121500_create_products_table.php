@@ -15,14 +15,15 @@ return new class extends Migration
             $table->id();
             $table->foreignId('category_id')->constrained()->cascadeOnDelete();
             $table->foreignId('subcategory_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('unit_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name');
             $table->string('slug')->unique();
             $table->string('sku')->nullable()->unique();
             $table->string('thumbnail')->nullable();
             $table->text('short_description')->nullable();
             $table->longText('description')->nullable();
-            $table->string('unit')->nullable();
             $table->string('weight')->nullable();
+            $table->string('gross_weight')->nullable();
             $table->decimal('regular_price', 10, 2)->default(0);
             $table->decimal('sale_price', 10, 2)->nullable();
             $table->decimal('discount_percentage', 5, 2)->nullable();
