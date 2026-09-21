@@ -29,6 +29,7 @@ class SupplierController extends Controller
                 'phone' => $supplier->phone,
                 'address' => $supplier->address,
                 'note' => $supplier->note,
+                'balance_amount' => $supplier->balance_amount,
                 'opening_balance_amount' => $supplier->opening_balance_amount,
                 'opening_balance_date' => $supplier->opening_balance_date?->format('Y-m-d'),
                 'status' => $supplier->status,

@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { Form, Head, router } from '@inertiajs/vue3';
-import { Camera, Pencil, Plus, Search, Trash2, Truck } from '@lucide/vue';
+import {
+    Camera,
+    MoreVertical,
+    Pencil,
+    Plus,
+    Search,
+    Trash2,
+    Truck,
+} from '@lucide/vue';
 import { computed, onBeforeUnmount, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -14,9 +22,14 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { formatDate } from '@/lib/utils';
 
 type Supplier = {
     id: number;
@@ -26,6 +39,7 @@ type Supplier = {
     phone: string | null;
     address: string | null;
     note: string | null;
+    balance_amount: string;
     opening_balance_amount: string;
     opening_balance_date: string | null;
     status: number;
@@ -163,9 +177,7 @@ defineOptions({
                             <th class="w-16 px-4 py-3 font-medium">SL</th>
                             <th class="px-4 py-3 font-medium">Supplier</th>
                             <th class="px-4 py-3 font-medium">Phone</th>
-                            <th class="px-4 py-3 font-medium">
-                                Opening balance
-                            </th>
+                            <th class="px-4 py-3 font-medium">Balance</th>
                             <th class="px-4 py-3 font-medium">Status</th>
                             <th class="w-24 px-4 py-3 text-right font-medium">
                                 Actions
@@ -208,17 +220,8 @@ defineOptions({
                             <td class="px-4 py-3 text-muted-foreground">
                                 {{ supplier.phone || 'Not provided' }}
                             </td>
-                            <td class="px-4 py-3">
-                                <div class="font-medium">
-                                    {{ supplier.opening_balance_amount }}
-                                </div>
-                                <div class="text-xs text-muted-foreground">
-                                    {{
-                                        formatDate(
-                                            supplier.opening_balance_date,
-                                        ) || 'No date'
-                                    }}
-                                </div>
+                            <td class="px-4 py-3 font-medium">
+                                {{ supplier.balance_amount }}
                             </td>
                             <td class="px-4 py-3">
                                 <span
@@ -235,31 +238,36 @@ defineOptions({
                                 </span>
                             </td>
                             <td class="px-4 py-3">
-                                <div class="flex justify-end gap-1">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        title="Edit supplier"
-                                        @click="openEdit(supplier)"
-                                    >
-                                        <Pencil class="size-4" /><span
-                                            class="sr-only"
-                                            >Edit supplier</span
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger as-child>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            class="ml-auto flex"
+                                            title="Supplier actions"
                                         >
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        class="text-destructive hover:text-destructive"
-                                        title="Delete supplier"
-                                        @click="openDelete(supplier)"
-                                    >
-                                        <Trash2 class="size-4" /><span
-                                            class="sr-only"
-                                            >Delete supplier</span
+                                            <MoreVertical class="size-4" />
+                                            <span class="sr-only"
+                                                >Supplier actions</span
+                                            >
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem
+                                            @click="openEdit(supplier)"
                                         >
-                                    </Button>
-                                </div>
+                                            <Pencil class="size-4" />
+                                            Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            variant="destructive"
+                                            @click="openDelete(supplier)"
+                                        >
+                                            <Trash2 class="size-4" />
+                                            Delete
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </td>
                         </tr>
                         <tr v-if="filteredSuppliers.length === 0">
@@ -323,7 +331,7 @@ defineOptions({
                         ? `/suppliers/${selectedSupplier.id}`
                         : '/suppliers'
                 "
-                class="flex min-h-0 flex-col [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-ring/30 [&_textarea]:focus-visible:ring-1 [&_textarea]:focus-visible:ring-ring/30"
+                class="flex min-h-0 flex-col [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-ring/20 [&_textarea]:focus-visible:ring-1 [&_textarea]:focus-visible:ring-ring/20"
                 :reset-on-success="!selectedSupplier"
                 v-slot="{ errors, processing }"
                 @success="formOpen = false"

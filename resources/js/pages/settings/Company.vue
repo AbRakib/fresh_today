@@ -70,7 +70,9 @@ defineOptions({
 
     <h1 class="sr-only">Company settings</h1>
 
-    <div class="max-w-3xl space-y-6 px-4 py-6">
+    <div
+        class="mx-auto mt-4 w-full max-w-3xl space-y-6 rounded-md border border-dashed px-4 py-6"
+    >
         <Heading
             variant="small"
             title="Company settings"
@@ -128,7 +130,7 @@ defineOptions({
                     id="address"
                     name="address"
                     rows="4"
-                    class="flex min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+                    class="flex min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/25 disabled:cursor-not-allowed disabled:opacity-50"
                     autocomplete="street-address"
                     placeholder="Company address"
                     :default-value="setting.address"

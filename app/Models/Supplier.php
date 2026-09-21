@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
     'phone',
     'address',
     'note',
+    'balance_amount',
     'opening_balance_amount',
     'opening_balance_date',
     'status',
@@ -26,6 +27,7 @@ class Supplier extends Model
     protected function casts(): array
     {
         return [
+            'balance_amount' => 'decimal:2',
             'opening_balance_amount' => 'decimal:2',
             'opening_balance_date' => 'date:Y-m-d',
             'status' => 'integer',

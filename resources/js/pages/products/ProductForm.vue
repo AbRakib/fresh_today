@@ -127,7 +127,7 @@ onBeforeUnmount(() => {
         method="post"
         :action="product ? `/products/${product.id}` : '/products'"
         novalidate
-        class="space-y-6 [&_input:focus]:!ring-1 [&_input:focus]:!ring-ring/25 [&_select:focus]:border-ring [&_select:focus]:ring-1 [&_select:focus]:ring-ring/25 [&_select:focus]:outline-none [&_textarea:focus]:border-ring [&_textarea:focus]:ring-1 [&_textarea:focus]:ring-ring/25 [&_textarea:focus]:outline-none"
+        class="space-y-6 [&_input:focus]:!ring-1 [&_input:focus]:!ring-ring/20 [&_select:focus]:border-ring [&_select:focus]:ring-1 [&_select:focus]:ring-ring/20 [&_select:focus]:outline-none [&_textarea:focus]:border-ring [&_textarea:focus]:ring-1 [&_textarea:focus]:ring-ring/20 [&_textarea:focus]:outline-none"
         :class="{ 'show-required-errors': submitAttempted }"
         v-slot="{ errors, processing }"
         @invalid.capture="submitAttempted = true"
@@ -560,7 +560,7 @@ onBeforeUnmount(() => {
 .show-required-errors :deep(select:required:invalid:focus),
 .show-required-errors :deep(textarea:required:invalid:focus) {
     outline: none;
-    box-shadow: 0 0 0 2px
-        color-mix(in oklab, var(--destructive) 30%, transparent) !important;
+    box-shadow: 0 0 0 1px
+        color-mix(in oklab, var(--destructive) 25%, transparent) !important;
 }
 </style>

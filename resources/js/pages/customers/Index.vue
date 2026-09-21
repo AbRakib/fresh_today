@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { Form, Head, router } from '@inertiajs/vue3';
-import { Camera, Pencil, Plus, Search, Trash2, UserRound } from '@lucide/vue';
+import {
+    Camera,
+    MoreVertical,
+    Pencil,
+    Plus,
+    Search,
+    Trash2,
+    UserRound,
+} from '@lucide/vue';
 import { computed, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -14,6 +22,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -199,31 +213,36 @@ defineOptions({
                                 </span>
                             </td>
                             <td class="px-4 py-3">
-                                <div class="flex justify-end gap-1">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        title="Edit customer"
-                                        @click="openEdit(customer)"
-                                    >
-                                        <Pencil class="size-4" />
-                                        <span class="sr-only"
-                                            >Edit customer</span
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger as-child>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            class="ml-auto flex"
+                                            title="Customer actions"
                                         >
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        class="text-destructive hover:text-destructive"
-                                        title="Delete customer"
-                                        @click="openDelete(customer)"
-                                    >
-                                        <Trash2 class="size-4" />
-                                        <span class="sr-only"
-                                            >Delete customer</span
+                                            <MoreVertical class="size-4" />
+                                            <span class="sr-only"
+                                                >Customer actions</span
+                                            >
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem
+                                            @click="openEdit(customer)"
                                         >
-                                    </Button>
-                                </div>
+                                            <Pencil class="size-4" />
+                                            Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            variant="destructive"
+                                            @click="openDelete(customer)"
+                                        >
+                                            <Trash2 class="size-4" />
+                                            Delete
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </td>
                         </tr>
                         <tr v-if="filteredCustomers.length === 0">
@@ -291,7 +310,7 @@ defineOptions({
                         ? `/customers/${selectedCustomer.id}`
                         : '/customers'
                 "
-                class="flex min-h-0 flex-col [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-ring/30 [&_select]:focus-visible:ring-1 [&_select]:focus-visible:ring-ring/30 [&_textarea]:focus-visible:ring-1 [&_textarea]:focus-visible:ring-ring/30"
+                class="flex min-h-0 flex-col [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-ring/20 [&_select]:focus-visible:ring-1 [&_select]:focus-visible:ring-ring/20 [&_textarea]:focus-visible:ring-1 [&_textarea]:focus-visible:ring-ring/20"
                 :reset-on-success="!selectedCustomer"
                 v-slot="{ errors, processing }"
                 @success="formOpen = false"
@@ -365,7 +384,7 @@ defineOptions({
                                 id="customer_gender"
                                 name="gender"
                                 :value="selectedCustomer?.gender ?? ''"
-                                class="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/30"
+                                class="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/20"
                             >
                                 <option value="">Select gender</option>
                                 <option value="male">Male</option>
@@ -400,7 +419,7 @@ defineOptions({
                             name="address"
                             rows="3"
                             :value="selectedCustomer?.address ?? ''"
-                            class="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/30"
+                            class="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/20"
                         />
                         <InputError :message="errors.address" />
                     </div>

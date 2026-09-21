@@ -2,6 +2,7 @@
 import { Form, Head, router } from '@inertiajs/vue3';
 import {
     ImageIcon,
+    MoreVertical,
     Pencil,
     Plus,
     Search,
@@ -21,6 +22,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatDate } from '@/lib/utils';
@@ -232,31 +239,36 @@ defineOptions({
                                 }}
                             </td>
                             <td class="px-4 py-3">
-                                <div class="flex justify-end gap-1">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        title="Edit category"
-                                        @click="openEdit(category)"
-                                    >
-                                        <Pencil class="size-4" />
-                                        <span class="sr-only"
-                                            >Edit category</span
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger as-child>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            class="ml-auto flex"
+                                            title="Category actions"
                                         >
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        class="text-destructive hover:text-destructive"
-                                        title="Delete category"
-                                        @click="openDelete(category)"
-                                    >
-                                        <Trash2 class="size-4" />
-                                        <span class="sr-only"
-                                            >Delete category</span
+                                            <MoreVertical class="size-4" />
+                                            <span class="sr-only"
+                                                >Category actions</span
+                                            >
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem
+                                            @click="openEdit(category)"
                                         >
-                                    </Button>
-                                </div>
+                                            <Pencil class="size-4" />
+                                            Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            variant="destructive"
+                                            @click="openDelete(category)"
+                                        >
+                                            <Trash2 class="size-4" />
+                                            Delete
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </td>
                         </tr>
                         <tr v-if="filteredCategories.length === 0">
@@ -300,7 +312,7 @@ defineOptions({
                         ? `/categories/${selectedCategory.id}`
                         : '/categories'
                 "
-                class="grid min-w-0 gap-5 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-ring/30"
+                class="grid min-w-0 gap-5 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-ring/20"
                 :reset-on-success="!selectedCategory"
                 v-slot="{ errors, processing }"
                 @success="formOpen = false"

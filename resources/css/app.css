@@ -169,4 +169,33 @@
     body {
         @apply bg-background text-foreground;
     }
+
+    :where(
+        a[href],
+        button,
+        select,
+        option,
+        summary,
+        label[for],
+        input[type='button'],
+        input[type='checkbox'],
+        input[type='file'],
+        input[type='radio'],
+        input[type='reset'],
+        input[type='submit'],
+        [role='button'],
+        [role='link'],
+        [role='menuitem'],
+        [role='option'],
+        [role='tab']
+    ):not(:disabled):not([aria-disabled='true']) {
+        cursor: pointer;
+    }
+
+    :where(button, select, input, [role='button'], [role='option']):is(
+        :disabled,
+        [aria-disabled='true']
+    ) {
+        cursor: not-allowed;
+    }
 }

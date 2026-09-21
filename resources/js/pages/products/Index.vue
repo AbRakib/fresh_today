@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { Package, Pencil, Plus, Search, Star, Trash2 } from '@lucide/vue';
+import {
+    MoreVertical,
+    Package,
+    Pencil,
+    Plus,
+    Search,
+    Star,
+    Trash2,
+} from '@lucide/vue';
 import { computed, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
@@ -12,6 +20,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { formatDate } from '@/lib/utils';
 
@@ -246,35 +260,40 @@ defineOptions({
                                 }}
                             </td>
                             <td class="px-4 py-3">
-                                <div class="flex justify-end gap-1">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        title="Edit product"
-                                        @click="
-                                            router.visit(
-                                                `/products/${product.id}/edit`,
-                                            )
-                                        "
-                                    >
-                                        <Pencil class="size-4" />
-                                        <span class="sr-only"
-                                            >Edit product</span
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger as-child>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            class="ml-auto flex"
+                                            title="Product actions"
                                         >
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        class="text-destructive hover:text-destructive"
-                                        title="Delete product"
-                                        @click="openDelete(product)"
-                                    >
-                                        <Trash2 class="size-4" />
-                                        <span class="sr-only"
-                                            >Delete product</span
+                                            <MoreVertical class="size-4" />
+                                            <span class="sr-only"
+                                                >Product actions</span
+                                            >
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem
+                                            @click="
+                                                router.visit(
+                                                    `/products/${product.id}/edit`,
+                                                )
+                                            "
                                         >
-                                    </Button>
-                                </div>
+                                            <Pencil class="size-4" />
+                                            Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            variant="destructive"
+                                            @click="openDelete(product)"
+                                        >
+                                            <Trash2 class="size-4" />
+                                            Delete
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </td>
                         </tr>
                         <tr v-if="filteredProducts.length === 0">

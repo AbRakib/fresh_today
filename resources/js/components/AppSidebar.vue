@@ -7,8 +7,6 @@ import {
     LayoutGrid,
     Layers3,
     Package,
-    Palette,
-    ShieldCheck,
     ShoppingCart,
     Ruler,
     Tags,
@@ -30,10 +28,8 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import { edit as appearanceEdit } from '@/routes/appearance';
 import { edit as companyEdit } from '@/routes/company';
 import { edit as profileEdit } from '@/routes/profile';
-import { edit as securityEdit } from '@/routes/security';
 import type { NavGroup, NavItem } from '@/types';
 
 const mainNavGroups: NavGroup[] = [
@@ -67,7 +63,7 @@ const mainNavGroups: NavGroup[] = [
         items: [
             {
                 title: 'Purchase Items',
-                href: '/purchase-items',
+                href: '/purchases',
                 icon: ClipboardList,
             },
             {
@@ -114,16 +110,6 @@ const mainNavGroups: NavGroup[] = [
                 title: 'Profile Setting',
                 href: profileEdit(),
                 icon: UserCog,
-            },
-            {
-                title: 'Security Setting',
-                href: securityEdit(),
-                icon: ShieldCheck,
-            },
-            {
-                title: 'Appearance Setting',
-                href: appearanceEdit(),
-                icon: Palette,
             },
         ],
     },

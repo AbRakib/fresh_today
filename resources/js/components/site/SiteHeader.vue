@@ -84,7 +84,7 @@ const categoryLinks = [
                 <input
                     type="text"
                     placeholder="Search for fish, meat & more..."
-                    class="h-12 w-full rounded-md border border-slate-200 bg-white px-4 pr-14 text-sm transition outline-none focus:border-[#319d57] focus:ring-2 focus:ring-[#e0f5e5]"
+                    class="h-12 w-full rounded-md border border-slate-200 bg-white px-4 pr-14 text-sm transition outline-none focus:border-[#319d57] focus:ring-1 focus:ring-[#e0f5e5]"
                 />
                 <button
                     class="absolute top-0 right-0 grid h-12 w-12 place-items-center rounded-r-md bg-[#176536] text-white hover:bg-[#15512e]"

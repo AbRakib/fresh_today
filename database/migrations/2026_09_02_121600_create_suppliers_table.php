@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->text('address')->nullable();
             $table->text('note')->nullable();
+            $table->decimal('balance_amount', 15, 2)->default(0);
             $table->decimal('opening_balance_amount', 15, 2)->default(0);
             $table->date('opening_balance_date')->nullable();
             $table->tinyInteger('status')->default(1)->comment('0=Inactive, 1=Active');
