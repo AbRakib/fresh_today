@@ -2,11 +2,13 @@
 import { Link } from '@inertiajs/vue3';
 import {
     Building2,
+    ChartNoAxesCombined,
     ClipboardList,
-    ExternalLink,
     LayoutGrid,
     Layers3,
     Package,
+    ReceiptText,
+    ScrollText,
     ShoppingCart,
     Ruler,
     Tags,
@@ -15,7 +17,6 @@ import {
     Users,
 } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
-import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import {
@@ -30,7 +31,7 @@ import {
 import { dashboard } from '@/routes';
 import { edit as companyEdit } from '@/routes/company';
 import { edit as profileEdit } from '@/routes/profile';
-import type { NavGroup, NavItem } from '@/types';
+import type { NavGroup } from '@/types';
 
 const mainNavGroups: NavGroup[] = [
     {
@@ -74,6 +75,16 @@ const mainNavGroups: NavGroup[] = [
         ],
     },
     {
+        title: 'Accounting',
+        items: [
+            {
+                title: 'Transactions',
+                href: '/transactions',
+                icon: ReceiptText,
+            },
+        ],
+    },
+    {
         title: 'Inventory',
         items: [
             {
@@ -99,6 +110,21 @@ const mainNavGroups: NavGroup[] = [
         ],
     },
     {
+        title: 'Report Summery',
+        items: [
+            {
+                title: 'Stock Report',
+                href: '/reports/stock',
+                icon: ScrollText,
+            },
+            {
+                title: 'Profit Loss Report',
+                href: '/reports/profit-loss',
+                icon: ChartNoAxesCombined,
+            },
+        ],
+    },
+    {
         title: 'Settings',
         items: [
             {
@@ -115,13 +141,6 @@ const mainNavGroups: NavGroup[] = [
     },
 ];
 
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Visit Website',
-        href: '/',
-        icon: ExternalLink,
-    },
-];
 </script>
 
 <template>
@@ -143,7 +162,6 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>
