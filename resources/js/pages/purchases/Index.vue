@@ -56,7 +56,18 @@ type PurchaseDetail = {
     expire_date: string | null;
 };
 
-const { purchases } = defineProps<{ purchases: Purchase[] }>();
+type BankAccount = {
+    id: number;
+    name: string;
+    account_number: string | null;
+    available_balance: string;
+    is_default: number;
+};
+
+const { purchases, bankAccounts } = defineProps<{
+    purchases: Purchase[];
+    bankAccounts: BankAccount[];
+}>();
 
 const search = ref('');
 const deleteOpen = ref(false);
@@ -64,7 +75,11 @@ const selectedPurchase = ref<Purchase | null>(null);
 const deleting = ref(false);
 const paymentOpen = ref(false);
 const paymentPurchase = ref<Purchase | null>(null);
-const paymentForm = useForm({ amount: '' });
+const paymentForm = useForm({
+    account_id: '',
+    amount: '',
+    note: '',
+});
 const receiveOpen = ref(false);
 const receivePurchaseItem = ref<Purchase | null>(null);
 const receivingPurchaseId = ref<number | null>(null);
@@ -89,6 +104,18 @@ const filteredPurchases = computed(() => {
             .some((value) => value!.toLowerCase().includes(query)),
     );
 });
+
+const defaultBankAccount = computed(
+    () =>
+        bankAccounts.find((account) => account.is_default === 1) ??
+        bankAccounts[0],
+);
+
+const selectedPaymentAccount = computed(() =>
+    bankAccounts.find(
+        (account) => String(account.id) === String(paymentForm.account_id),
+    ),
+);
 
 const money = (value: string | number) =>
     Number(value || 0).toLocaleString(undefined, {
@@ -127,7 +154,11 @@ const openDelete = (purchase: Purchase) => {
 const openPayment = (purchase: Purchase) => {
     paymentPurchase.value = purchase;
     paymentForm.reset();
+    paymentForm.account_id = defaultBankAccount.value
+        ? String(defaultBankAccount.value.id)
+        : '';
     paymentForm.amount = Number(purchase.due_amount || 0).toFixed(2);
+    paymentForm.note = '';
     paymentForm.clearErrors();
     paymentOpen.value = true;
 };
@@ -493,12 +524,12 @@ defineOptions({
                             </thead>
                             <tbody class="divide-y">
                                 <tr
-                                    v-for="(detail, index) in receivePurchaseItem.details"
+                                    v-for="(
+                                        detail, index
+                                    ) in receivePurchaseItem.details"
                                     :key="detail.id"
                                 >
-                                    <td
-                                        class="px-3 py-2 text-muted-foreground"
-                                    >
+                                    <td class="px-3 py-2 text-muted-foreground">
                                         {{ index + 1 }}
                                     </td>
                                     <td class="px-3 py-2">
@@ -561,29 +592,97 @@ defineOptions({
                             {{ money(paymentPurchase?.due_amount ?? 0) }}
                         </DialogDescription>
                     </DialogHeader>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div class="space-y-2">
+                            <label
+                                for="payment_account"
+                                class="text-sm font-medium"
+                            >
+                                Account
+                            </label>
+                            <select
+                                id="payment_account"
+                                v-model="paymentForm.account_id"
+                                class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors outline-none focus-visible:border-foreground/60 disabled:cursor-not-allowed disabled:opacity-50"
+                                autofocus
+                            >
+                                <option value="" disabled>
+                                    Select account
+                                </option>
+                                <option
+                                    v-for="account in bankAccounts"
+                                    :key="account.id"
+                                    :value="String(account.id)"
+                                >
+                                    {{ account.name }}
+                                    {{
+                                        account.account_number
+                                            ? `(${account.account_number})`
+                                            : ''
+                                    }}
+                                </option>
+                            </select>
+                            <p
+                                v-if="selectedPaymentAccount"
+                                class="text-xs text-muted-foreground"
+                            >
+                                Available balance:
+                                {{
+                                    money(
+                                        selectedPaymentAccount.available_balance,
+                                    )
+                                }}
+                            </p>
+                            <p
+                                v-if="paymentForm.errors.account_id"
+                                class="text-sm text-destructive"
+                            >
+                                {{ paymentForm.errors.account_id }}
+                            </p>
+                        </div>
+                        <div class="space-y-2">
+                            <label
+                                for="payment_amount"
+                                class="text-sm font-medium"
+                            >
+                                Payment amount
+                            </label>
+                            <Input
+                                id="payment_amount"
+                                v-model="paymentForm.amount"
+                                class="focus-visible:border-foreground/60 focus-visible:ring-0"
+                                type="number"
+                                min="0.01"
+                                step="0.01"
+                                :max="paymentPurchase?.due_amount"
+                                placeholder="0.00"
+                            />
+                            <p class="text-xs text-muted-foreground">
+                                Amount cannot exceed the total due.
+                            </p>
+                            <p
+                                v-if="paymentForm.errors.amount"
+                                class="text-sm text-destructive"
+                            >
+                                {{ paymentForm.errors.amount }}
+                            </p>
+                        </div>
+                    </div>
                     <div class="space-y-2">
-                        <label for="payment_amount" class="text-sm font-medium">
-                            Payment amount
+                        <label for="payment_note" class="text-sm font-medium">
+                            Note
                         </label>
-                        <Input
-                            id="payment_amount"
-                            v-model="paymentForm.amount"
-                            type="number"
-                            :min="paymentPurchase?.due_amount"
-                            step="0.01"
-                            :max="paymentPurchase?.due_amount"
-                            placeholder="0.00"
-                            readonly
-                            autofocus
+                        <textarea
+                            id="payment_note"
+                            v-model="paymentForm.note"
+                            class="flex min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-foreground/60 disabled:cursor-not-allowed disabled:opacity-50"
+                            placeholder="Optional payment note"
                         />
-                        <p class="text-xs text-muted-foreground">
-                            Full due amount is required.
-                        </p>
                         <p
-                            v-if="paymentForm.errors.amount"
+                            v-if="paymentForm.errors.note"
                             class="text-sm text-destructive"
                         >
-                            {{ paymentForm.errors.amount }}
+                            {{ paymentForm.errors.note }}
                         </p>
                     </div>
                     <DialogFooter>

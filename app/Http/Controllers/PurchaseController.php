@@ -4,14 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\PurchaseStoreRequest;
 use App\Http\Requests\PurchaseUpdateRequest;
+use App\Models\BankAccount;
 use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\PurchaseDetail;
 use App\Models\Supplier;
+use App\Models\Transaction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -62,6 +65,7 @@ class PurchaseController extends Controller
 
         return Inertia::render('purchases/Index', [
             'purchases' => $purchases,
+            'bankAccounts' => $this->paymentAccountOptions(),
         ]);
     }
 
@@ -158,16 +162,28 @@ class PurchaseController extends Controller
 
             $validated = $request->validate([
                 'amount' => ['required', 'numeric', 'gt:0'],
+                'account_id' => [
+                    'required',
+                    'integer',
+                    Rule::exists('bank_accounts', 'id')->where(fn ($query) => $query->where('deleted', 0)),
+                ],
+                'note' => ['nullable', 'string', 'max:1000'],
             ]);
 
             $paymentAmount = (float) $validated['amount'];
             $dueAmount = (float) $purchase->due_amount;
 
-            if ($this->moneyToCents($paymentAmount) !== $this->moneyToCents($dueAmount)) {
+            if ($this->moneyToCents($paymentAmount) > $this->moneyToCents($dueAmount)) {
                 throw ValidationException::withMessages([
-                    'amount' => __('Payment amount must equal the total due amount.'),
+                    'amount' => __('Payment amount cannot be greater than the total due amount.'),
                 ]);
             }
+
+            $account = BankAccount::query()
+                ->whereKey($validated['account_id'])
+                ->where('deleted', 0)
+                ->lockForUpdate()
+                ->firstOrFail();
 
             $paidAmount = (float) $purchase->paid_amount + $paymentAmount;
             $remainingDueAmount = max(0, (float) $purchase->subtotal - $paidAmount);
@@ -177,6 +193,26 @@ class PurchaseController extends Controller
                 'due_amount' => $remainingDueAmount,
                 'payment_status' => $remainingDueAmount <= 0 ? 1 : 2,
                 'payment_date' => now()->toDateString(),
+                'updated_by' => $request->user()?->id,
+            ]);
+
+            $account->update([
+                'available_balance' => (float) $account->available_balance - $paymentAmount,
+                'updated_by' => $request->user()?->id,
+            ]);
+
+            Transaction::query()->create([
+                'transaction_no' => $this->nextTransactionNumber(),
+                'date' => now()->toDateString(),
+                'account_id' => $account->id,
+                'payment_type' => 1,
+                'transaction_type' => 0,
+                'reference_type' => Purchase::class,
+                'reference_description' => $purchase->purchase_number,
+                'description' => 'Purchase payment for '.$purchase->purchase_number,
+                'total_amount' => $paymentAmount,
+                'notes' => $validated['note'] ?? null,
+                'created_by' => $request->user()?->id,
                 'updated_by' => $request->user()?->id,
             ]);
 
@@ -352,6 +388,39 @@ class PurchaseController extends Controller
     private function nextPurchaseDetailNumber(Purchase $purchase, int $line): string
     {
         return $purchase->purchase_number.'-'.str_pad((string) $line, 3, '0', STR_PAD_LEFT);
+    }
+
+    private function nextTransactionNumber(): string
+    {
+        $lastNumber = Transaction::query()
+            ->where('transaction_no', 'like', 'TRX-%')
+            ->pluck('transaction_no')
+            ->map(function (string $transactionNumber): ?int {
+                return preg_match('/^TRX-(\d+)$/', $transactionNumber, $matches)
+                    ? (int) $matches[1]
+                    : null;
+            })
+            ->filter()
+            ->max();
+
+        return 'TRX-'.(max(1000, $lastNumber ?? 0) + 1);
+    }
+
+    private function paymentAccountOptions(): array
+    {
+        return BankAccount::query()
+            ->where('deleted', 0)
+            ->orderByDesc('is_default')
+            ->orderBy('name')
+            ->get(['id', 'name', 'account_number', 'available_balance', 'is_default'])
+            ->map(fn (BankAccount $bankAccount) => [
+                'id' => $bankAccount->id,
+                'name' => $bankAccount->name,
+                'account_number' => $bankAccount->account_number,
+                'available_balance' => $bankAccount->available_balance,
+                'is_default' => $bankAccount->is_default,
+            ])
+            ->all();
     }
 
     private function formOptions(): array

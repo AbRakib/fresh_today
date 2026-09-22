@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UnitController;
 use Illuminate\Support\Facades\Route;
 
@@ -46,6 +47,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('bank-accounts/{bankAccount}', [BankAccountController::class, 'update'])->name('bank-accounts.update');
     Route::post('bank-accounts/{bankAccount}/toggle-default', [BankAccountController::class, 'toggleDefault'])->name('bank-accounts.toggle-default');
     Route::delete('bank-accounts/{bankAccount}', [BankAccountController::class, 'destroy'])->name('bank-accounts.destroy');
+
+    Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
 
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
     Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
