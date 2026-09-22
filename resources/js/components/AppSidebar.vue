@@ -4,6 +4,7 @@ import {
     Building2,
     ChartNoAxesCombined,
     ClipboardList,
+    Landmark,
     LayoutGrid,
     Layers3,
     Package,
@@ -82,6 +83,11 @@ const mainNavGroups: NavGroup[] = [
                 href: '/transactions',
                 icon: ReceiptText,
             },
+            {
+                title: 'Bank Accounts',
+                href: '/bank-accounts',
+                icon: Landmark,
+            },
         ],
     },
     {
@@ -140,7 +146,6 @@ const mainNavGroups: NavGroup[] = [
         ],
     },
 ];
-
 </script>
 
 <template>
@@ -157,7 +162,9 @@ const mainNavGroups: NavGroup[] = [
             </SidebarMenu>
         </SidebarHeader>
 
-        <SidebarContent>
+        <SidebarContent
+            class="[scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
             <NavMain :groups="mainNavGroups" />
         </SidebarContent>
 

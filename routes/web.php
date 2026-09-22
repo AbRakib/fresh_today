@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController;
@@ -39,6 +40,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('suppliers', [SupplierController::class, 'store'])->name('suppliers.store');
     Route::post('suppliers/{supplier}', [SupplierController::class, 'update'])->name('suppliers.update');
     Route::delete('suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('suppliers.destroy');
+
+    Route::get('bank-accounts', [BankAccountController::class, 'index'])->name('bank-accounts.index');
+    Route::post('bank-accounts', [BankAccountController::class, 'store'])->name('bank-accounts.store');
+    Route::post('bank-accounts/{bankAccount}', [BankAccountController::class, 'update'])->name('bank-accounts.update');
+    Route::post('bank-accounts/{bankAccount}/toggle-default', [BankAccountController::class, 'toggleDefault'])->name('bank-accounts.toggle-default');
+    Route::delete('bank-accounts/{bankAccount}', [BankAccountController::class, 'destroy'])->name('bank-accounts.destroy');
 
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
     Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
