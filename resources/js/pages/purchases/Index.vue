@@ -234,31 +234,28 @@ defineOptions({
 <template>
     <Head title="Purchases" />
 
-    <div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
+    <div class="flex h-full flex-1 flex-col gap-2 p-4 md:p-6">
         <div
             class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
         >
-            <Heading
-                title="Purchases"
-                description="Manage supplier purchases, item quantities, and pricing."
-            />
+            <div class="relative max-w-sm">
+                <Search
+                    class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                />
+                <Input
+                    v-model="search"
+                    class="pl-9"
+                    placeholder="Search purchases"
+                    aria-label="Search purchases"
+                />
+            </div>
             <Button class="shrink-0" @click="router.visit('/purchases/create')">
                 <Plus class="size-4" />
                 Add purchase
             </Button>
         </div>
 
-        <div class="relative max-w-sm">
-            <Search
-                class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-                v-model="search"
-                class="pl-9"
-                placeholder="Search purchases"
-                aria-label="Search purchases"
-            />
-        </div>
+        
 
         <div class="overflow-hidden rounded-md border">
             <div class="overflow-x-auto">

@@ -110,17 +110,8 @@ defineOptions({
 <template>
     <Head title="Transactions" />
 
-    <div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
-        <div
-            class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-        >
-            <Heading
-                title="Transactions"
-                description="Review deposits, withdrawals, and linked account activity."
-            />
-        </div>
-
-        <div class="grid gap-3 sm:grid-cols-3">
+    <div class="flex h-full flex-1 flex-col gap-2 p-4 md:p-6">
+        <div class="grid gap-3 sm:grid-cols-3 mb-3">
             <div class="rounded-md border p-4">
                 <div class="flex items-center justify-between gap-3">
                     <div>
