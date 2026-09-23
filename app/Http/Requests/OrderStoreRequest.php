@@ -11,6 +11,7 @@ class OrderStoreRequest extends FormRequest
     {
         return [
             'customer_id' => ['required', 'integer', Rule::exists('customers', 'id')->where('deleted', 0)->where('status', 1)],
+            'delivery_charge_id' => ['required', 'integer', Rule::exists('delivery_charges', 'id')->where('deleted', 0)->where('status', 1)],
             'order_date' => ['required', 'date'],
             'delivery_date' => ['nullable', 'date', 'after_or_equal:order_date'],
             'delivery_address' => ['nullable', 'string'],

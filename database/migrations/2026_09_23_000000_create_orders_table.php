@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('order_number')->unique();
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('delivery_charge_id')->constrained()->cascadeOnDelete();
             $table->unsignedInteger('total_product')->default(0);
             $table->decimal('subtotal', 15, 2)->default(0);
             $table->decimal('discount_amount', 15, 2)->default(0);

@@ -3,6 +3,7 @@
 use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DeliveryChargeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
@@ -73,6 +74,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::post('orders/{order}', [OrderController::class, 'update'])->name('orders.update');
     Route::delete('orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
+
+    Route::get('delivery-charges', [DeliveryChargeController::class, 'index'])->name('delivery-charges.index');
+    Route::post('delivery-charges', [DeliveryChargeController::class, 'store'])->name('delivery-charges.store');
+    Route::post('delivery-charges/{deliveryCharge}', [DeliveryChargeController::class, 'update'])->name('delivery-charges.update');
+    Route::delete('delivery-charges/{deliveryCharge}', [DeliveryChargeController::class, 'destroy'])->name('delivery-charges.destroy');
 });
 
 require __DIR__.'/settings.php';

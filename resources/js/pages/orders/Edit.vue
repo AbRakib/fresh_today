@@ -4,6 +4,7 @@ import Heading from '@/components/Heading.vue';
 import OrderForm from './OrderForm.vue';
 import type {
     CustomerOption,
+    DeliveryChargeOption,
     OrderFormData,
     ProductOption,
 } from './OrderForm.vue';
@@ -11,6 +12,7 @@ import type {
 defineProps<{
     customers: CustomerOption[];
     products: ProductOption[];
+    deliveryCharges: DeliveryChargeOption[];
     order: OrderFormData;
 }>();
 
@@ -31,6 +33,11 @@ defineOptions({
             title="Edit order"
             description="Update customer, products, pricing, and delivery details."
         />
-        <OrderForm :customers="customers" :products="products" :order="order" />
+        <OrderForm
+            :customers="customers"
+            :products="products"
+            :delivery-charges="deliveryCharges"
+            :order="order"
+        />
     </div>
 </template>

@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import Heading from '@/components/Heading.vue';
 import OrderForm from './OrderForm.vue';
-import type { CustomerOption, ProductOption } from './OrderForm.vue';
+import type {
+    CustomerOption,
+    DeliveryChargeOption,
+    ProductOption,
+} from './OrderForm.vue';
 
 defineProps<{
     customers: CustomerOption[];
     products: ProductOption[];
+    deliveryCharges: DeliveryChargeOption[];
     nextOrderNumber: string;
 }>();
 
@@ -23,13 +27,10 @@ defineOptions({
 <template>
     <Head title="Create order" />
     <div class="mx-auto w-full max-w-6xl space-y-6 p-4 md:p-6">
-        <Heading
-            title="Create order"
-            description="Create a customer order and reserve product stock."
-        />
         <OrderForm
             :customers="customers"
             :products="products"
+            :delivery-charges="deliveryCharges"
             :next-order-number="nextOrderNumber"
         />
     </div>

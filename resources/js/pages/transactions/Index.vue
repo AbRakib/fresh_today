@@ -10,7 +10,6 @@ import {
     Search,
 } from '@lucide/vue';
 import { computed, ref } from 'vue';
-import Heading from '@/components/Heading.vue';
 import { Input } from '@/components/ui/input';
 import { formatDate } from '@/lib/utils';
 
@@ -26,7 +25,6 @@ type Transaction = {
     reference_description: string | null;
     description: string | null;
     total_amount: string;
-    notes: string | null;
     reviewed: number;
     created_at: string | null;
 };
@@ -68,7 +66,6 @@ const filteredTransactions = computed(() => {
             transaction.account_number,
             transaction.reference_description,
             transaction.description,
-            transaction.notes,
             transactionTypeLabel(transaction.transaction_type),
             paymentTypeLabel(transaction.payment_type),
             referenceLabel(transaction.reference_type),
@@ -179,7 +176,16 @@ defineOptions({
 
         <div class="overflow-hidden rounded-md border">
             <div class="overflow-x-auto">
-                <table class="w-full min-w-[980px] text-sm">
+                <table class="w-full min-w-[960px] table-fixed text-sm">
+                    <colgroup>
+                        <col class="w-[6%]" />
+                        <col class="w-[18%]" />
+                        <col class="w-[22%]" />
+                        <col class="w-[22%]" />
+                        <col class="w-[10%]" />
+                        <col class="w-[12%]" />
+                        <col class="w-[10%]" />
+                    </colgroup>
                     <thead class="border-b bg-muted/50 text-left">
                         <tr>
                             <th class="w-16 px-4 py-3 font-medium">SL</th>
@@ -191,10 +197,9 @@ defineOptions({
                                 Amount
                             </th>
                             <th class="px-4 py-3 font-medium">Status</th>
-                            <th class="px-4 py-3 font-medium">Notes</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y">
+                    <tbody class="divide-y [&_td]:align-middle">
                         <tr
                             v-for="(transaction, index) in filteredTransactions"
                             :key="transaction.id"
@@ -204,7 +209,7 @@ defineOptions({
                                 {{ index + 1 }}
                             </td>
                             <td class="px-4 py-3">
-                                <div class="font-medium">
+                                <div class="truncate font-medium">
                                     {{ transaction.transaction_no }}
                                 </div>
                                 <div
@@ -243,17 +248,19 @@ defineOptions({
                                 </div>
                             </td>
                             <td class="px-4 py-3">
-                                <div class="font-medium">
+                                <div class="truncate font-medium">
                                     {{
                                         transaction.reference_description ||
                                         'No reference'
                                     }}
                                 </div>
-                                <div class="mt-1 text-xs text-muted-foreground">
+                                <div
+                                    class="mt-1 truncate text-xs text-muted-foreground"
+                                >
                                     {{ referenceLabel(transaction.reference_type) }}
                                 </div>
                             </td>
-                            <td class="px-4 py-3">
+                            <td class="whitespace-nowrap px-4 py-3">
                                 <span
                                     class="inline-flex rounded-sm px-1.5 py-0.5 text-xs font-medium"
                                     :class="
@@ -270,11 +277,11 @@ defineOptions({
                                 </span>
                             </td>
                             <td
-                                class="px-4 py-3 text-right font-medium tabular-nums"
+                                class="whitespace-nowrap px-4 py-3 text-right font-medium tabular-nums"
                             >
                                 {{ money(transaction.total_amount) }}
                             </td>
-                            <td class="px-4 py-3">
+                            <td class="whitespace-nowrap px-4 py-3">
                                 <div class="flex flex-col items-start gap-1">
                                     <span
                                         class="inline-flex rounded-sm px-1.5 py-0.5 text-xs font-medium"
@@ -301,17 +308,10 @@ defineOptions({
                                     </span>
                                 </div>
                             </td>
-                            <td class="px-4 py-3 text-muted-foreground">
-                                {{
-                                    transaction.notes ||
-                                    transaction.description ||
-                                    'No notes'
-                                }}
-                            </td>
                         </tr>
                         <tr v-if="filteredTransactions.length === 0">
                             <td
-                                colspan="8"
+                                colspan="7"
                                 class="px-4 py-12 text-center text-muted-foreground"
                             >
                                 <ReceiptText class="mx-auto mb-3 size-8" />

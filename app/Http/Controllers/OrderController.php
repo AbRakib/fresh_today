@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\OrderStoreRequest;
 use App\Http\Requests\OrderUpdateRequest;
 use App\Models\Customer;
+use App\Models\DeliveryCharge;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Product;
@@ -124,16 +125,18 @@ class OrderController extends Controller
     private function saveOrder(Order $order, array $data, ?int $userId): Order
     {
         $items = collect($data['items']);
+        $deliveryCharge = DeliveryCharge::query()->findOrFail($data['delivery_charge_id']);
         $subtotal = $items->sum(fn (array $item) => max(0, ((float) $item['sale_price'] * (int) $item['order_qty']) - (float) $item['discount_amount']));
         $discount = min((float) $data['discount_amount'], $subtotal);
-        $total = max(0, $subtotal - $discount + (float) $data['delivery_charge']);
+        $total = max(0, $subtotal - $discount + (float) $deliveryCharge->amount);
         $paid = $order->exists ? min((float) $order->paid_amount, $total) : 0;
 
         $order->fill([
             'order_number' => $order->exists ? $order->order_number : $this->nextOrderNumber(),
-            'customer_id' => $data['customer_id'], 'total_product' => $items->count(),
+            'customer_id' => $data['customer_id'], 'delivery_charge_id' => $data['delivery_charge_id'],
+            'total_product' => $items->count(),
             'subtotal' => $subtotal, 'discount_amount' => $discount,
-            'delivery_charge' => $data['delivery_charge'], 'total_amount' => $total,
+            'delivery_charge' => $deliveryCharge->amount, 'total_amount' => $total,
             'paid_amount' => $paid, 'due_amount' => max(0, $total - $paid),
             'payment_status' => $paid <= 0 ? 0 : ($paid >= $total ? 1 : 2),
             'order_date' => $data['order_date'], 'delivery_date' => $data['delivery_date'] ?? null,
@@ -226,6 +229,13 @@ class OrderController extends Controller
                     'unit' => $product->measurementUnit?->short_name, 'regular_price' => $product->regular_price,
                     'sale_price' => $product->sale_price, 'stock_quantity' => $product->stock_quantity + ($reserved[$product->id] ?? 0),
                 ]),
+            'deliveryCharges' => DeliveryCharge::query()->where('deleted', 0)->where('status', 1)
+                ->orderBy('title')->get(['id', 'title', 'amount'])
+                ->map(fn (DeliveryCharge $deliveryCharge) => [
+                    'id' => $deliveryCharge->id,
+                    'title' => $deliveryCharge->title,
+                    'amount' => $deliveryCharge->amount,
+                ]),
         ];
     }
 
@@ -233,6 +243,7 @@ class OrderController extends Controller
     {
         return [
             'id' => $order->id, 'order_number' => $order->order_number, 'customer_id' => $order->customer_id,
+            'delivery_charge_id' => $order->delivery_charge_id,
             'order_date' => $order->order_date?->format('Y-m-d'), 'delivery_date' => $order->delivery_date?->format('Y-m-d'),
             'delivery_address' => $order->delivery_address, 'note' => $order->note,
             'discount_amount' => $order->discount_amount, 'delivery_charge' => $order->delivery_charge,

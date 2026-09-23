@@ -9,7 +9,8 @@ import {
     UserRound,
     UserRoundPlus,
 } from '@lucide/vue';
-import { computed, nextTick, ref } from 'vue';
+import { push } from 'notivue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -41,6 +42,11 @@ export type ProductOption = {
     sale_price: string | null;
     stock_quantity: number;
 };
+export type DeliveryChargeOption = {
+    id: number;
+    title: string;
+    amount: number | string;
+};
 export type OrderItemFormData = {
     product_id: number | string;
     order_qty: number | string;
@@ -52,6 +58,7 @@ export type OrderFormData = {
     id: number;
     order_number: string;
     customer_id: number;
+    delivery_charge_id: number;
     order_date: string;
     delivery_date: string | null;
     delivery_address: string | null;
@@ -64,6 +71,7 @@ export type OrderFormData = {
 const props = defineProps<{
     customers: CustomerOption[];
     products: ProductOption[];
+    deliveryCharges: DeliveryChargeOption[];
     nextOrderNumber?: string;
     order?: OrderFormData;
 }>();
@@ -73,9 +81,11 @@ const customerPickerOpen = ref(false);
 const productSearch = ref('');
 const productPickerOpen = ref(false);
 const submitAttempted = ref(false);
+const quantityErrors = ref<Record<string, string>>({});
 
 const form = useForm({
     customer_id: props.order?.customer_id ?? '',
+    delivery_charge_id: props.order?.delivery_charge_id ?? '',
     order_date: props.order?.order_date ?? today,
     delivery_date: props.order?.delivery_date ?? '',
     delivery_address: props.order?.delivery_address ?? '',
@@ -98,6 +108,11 @@ const filteredCustomers = computed(() => {
 const selectedCustomer = computed(() =>
     props.customers.find((c) => String(c.id) === String(form.customer_id)),
 );
+const selectedDeliveryCharge = computed(() =>
+    props.deliveryCharges.find(
+        (charge) => String(charge.id) === String(form.delivery_charge_id),
+    ),
+);
 const filteredProducts = computed(() => {
     const q = productSearch.value.trim().toLowerCase();
 
@@ -113,6 +128,10 @@ const selectedProduct = (id: number | string) =>
     props.products.find((p) => String(p.id) === String(id));
 const productIsAdded = (id: number) =>
     form.items.some((item) => String(item.product_id) === String(id));
+const syncDeliveryChargeAmount = () => {
+    form.delivery_charge = selectedDeliveryCharge.value?.amount ?? 0;
+};
+onMounted(syncDeliveryChargeAmount);
 const chooseCustomer = (id: number) => {
     form.customer_id = id;
     customerPickerOpen.value = false;
@@ -123,7 +142,7 @@ const chooseProduct = (product: ProductOption) => {
         return;
     }
 
-    form.items.push({
+    form.items.unshift({
         product_id: product.id,
         order_qty: 1,
         regular_price: product.regular_price || 0,
@@ -132,6 +151,33 @@ const chooseProduct = (product: ProductOption) => {
     });
     productPickerOpen.value = false;
     productSearch.value = '';
+};
+const updateOrderQuantity = (index: number, value: string | number) => {
+    const item = form.items[index];
+    const product = selectedProduct(item.product_id);
+    const errorKey = String(item.product_id);
+
+    if (value === '') {
+        item.order_qty = '';
+        delete quantityErrors.value[errorKey];
+
+        return;
+    }
+
+    const quantity = Math.max(1, Math.trunc(Number(value) || 1));
+    const availableQuantity = product?.stock_quantity ?? 0;
+
+    if (quantity > availableQuantity) {
+        item.order_qty = availableQuantity;
+        const message = `Only ${availableQuantity} item(s) are available in stock.`;
+        quantityErrors.value[errorKey] = message;
+        push.error(message);
+
+        return;
+    }
+
+    item.order_qty = quantity;
+    delete quantityErrors.value[errorKey];
 };
 const subtotal = computed(() =>
     form.items.reduce(
@@ -145,11 +191,28 @@ const subtotal = computed(() =>
         0,
     ),
 );
+const itemDiscountTotal = computed(() =>
+    form.items.reduce((sum, item) => {
+        const lineAmount =
+            Number(item.sale_price || 0) * Number(item.order_qty || 0);
+
+        return (
+            sum +
+            Math.min(Math.max(0, Number(item.discount_amount || 0)), lineAmount)
+        );
+    }, 0),
+);
+const orderDiscount = computed(() =>
+    Math.min(Math.max(0, Number(form.discount_amount || 0)), subtotal.value),
+);
+const totalDiscount = computed(
+    () => itemDiscountTotal.value + orderDiscount.value,
+);
 const total = computed(() =>
     Math.max(
         0,
         subtotal.value -
-            Number(form.discount_amount || 0) +
+            orderDiscount.value +
             Number(form.delivery_charge || 0),
     ),
 );
@@ -281,6 +344,40 @@ const submit = () =>
                     /><InputError :message="form.errors.delivery_date" />
                 </div>
                 <div class="grid gap-1.5">
+                    <Label for="delivery_charge_id"
+                        >Delivery charge
+                        <span class="text-destructive">*</span></Label
+                    >
+                    <select
+                        id="delivery_charge_id"
+                        v-model="form.delivery_charge_id"
+                        name="delivery_charge_id"
+                        required
+                        class="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
+                        @change="syncDeliveryChargeAmount"
+                    >
+                        <option value="">Select charge</option>
+                        <option
+                            v-for="charge in deliveryCharges"
+                            :key="charge.id"
+                            :value="charge.id"
+                        >
+                            {{ charge.title }} - {{ money(charge.amount) }}
+                        </option>
+                    </select>
+                    <input
+                        name="delivery_charge"
+                        type="hidden"
+                        :value="form.delivery_charge"
+                    />
+                    <InputError
+                        :message="
+                            form.errors.delivery_charge_id ||
+                            form.errors.delivery_charge
+                        "
+                    />
+                </div>
+                <div class="grid gap-1.5 sm:col-span-2">
                     <Label for="delivery_address">Delivery address</Label
                     ><Input
                         id="delivery_address"
@@ -314,122 +411,143 @@ const submit = () =>
                 No items added. Use Add item to choose a product.
             </div>
             <div
-                v-for="(item, index) in form.items"
-                :key="String(item.product_id)"
-                class="grid gap-4 rounded-md border p-4 xl:grid-cols-[minmax(220px,2fr)_100px_130px_130px_130px_110px_2.25rem] xl:items-start"
+                v-else
+                class="space-y-4"
+                :class="{
+                    'max-h-[31rem] overflow-y-auto pr-2': form.items.length > 3,
+                }"
             >
-                <div class="grid gap-1.5">
-                    <Label>Item</Label
-                    ><input
-                        :name="`items.${index}.product_id`"
-                        type="hidden"
-                        :value="item.product_id"
-                    />
-                    <div
-                        class="flex min-h-9 items-center rounded-md border bg-muted/20 px-3 text-sm"
-                    >
-                        <div>
-                            <p class="font-medium">
-                                {{ selectedProduct(item.product_id)?.name }}
-                            </p>
-                            <p class="text-xs text-muted-foreground">
-                                Stock:
-                                {{
-                                    selectedProduct(item.product_id)
-                                        ?.stock_quantity
-                                }}
-                            </p>
+                <div
+                    v-for="(item, index) in form.items"
+                    :key="String(item.product_id)"
+                    class="grid gap-4 rounded-md border p-4 xl:grid-cols-[minmax(220px,2fr)_100px_130px_130px_130px_110px_2.25rem] xl:items-start"
+                >
+                    <div class="grid gap-1.5">
+                        <Label>Item</Label
+                        ><input
+                            :name="`items.${index}.product_id`"
+                            type="hidden"
+                            :value="item.product_id"
+                        />
+                        <div
+                            class="flex min-h-9 items-center rounded-md border bg-muted/20 px-3 text-sm"
+                        >
+                            <div>
+                                <p class="font-medium">
+                                    {{ selectedProduct(item.product_id)?.name }}
+                                </p>
+                                <p class="text-xs text-muted-foreground">
+                                    Stock:
+                                    {{
+                                        selectedProduct(item.product_id)
+                                            ?.stock_quantity
+                                    }}
+                                </p>
+                            </div>
+                        </div>
+                        <InputError
+                            :message="errorFor(`items.${index}.product_id`)"
+                        />
+                    </div>
+                    <div class="grid gap-1.5">
+                        <Label :for="`qty_${index}`">Qty</Label
+                        ><Input
+                            :id="`qty_${index}`"
+                            :model-value="item.order_qty"
+                            type="number"
+                            min="1"
+                            :max="
+                                selectedProduct(item.product_id)?.stock_quantity
+                            "
+                            :name="`items.${index}.order_qty`"
+                            :aria-invalid="
+                                Boolean(
+                                    quantityErrors[String(item.product_id)] ||
+                                        errorFor(`items.${index}.order_qty`),
+                                )
+                            "
+                            required
+                            @update:model-value="
+                                updateOrderQuantity(index, $event)
+                            "
+                        /><InputError
+                            :message="errorFor(`items.${index}.order_qty`)"
+                        />
+                    </div>
+                    <div class="grid gap-1.5">
+                        <Label :for="`regular_${index}`">Regular price</Label
+                        ><Input
+                            :id="`regular_${index}`"
+                            v-model="item.regular_price"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            :name="`items.${index}.regular_price`"
+                            required
+                        /><InputError
+                            :message="errorFor(`items.${index}.regular_price`)"
+                        />
+                    </div>
+                    <div class="grid gap-1.5">
+                        <Label :for="`sale_${index}`">Sale price</Label
+                        ><Input
+                            :id="`sale_${index}`"
+                            v-model="item.sale_price"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            :name="`items.${index}.sale_price`"
+                            required
+                        /><InputError
+                            :message="errorFor(`items.${index}.sale_price`)"
+                        />
+                    </div>
+                    <div class="grid gap-1.5">
+                        <Label :for="`item_discount_${index}`">Discount</Label
+                        ><Input
+                            :id="`item_discount_${index}`"
+                            v-model="item.discount_amount"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            :name="`items.${index}.discount_amount`"
+                            required
+                        /><InputError
+                            :message="
+                                errorFor(`items.${index}.discount_amount`)
+                            "
+                        />
+                    </div>
+                    <div class="grid gap-1.5">
+                        <Label>Line total</Label>
+                        <div
+                            class="flex h-9 items-center justify-end rounded-md border bg-muted/20 px-3 text-sm font-medium"
+                        >
+                            {{
+                                money(
+                                    Math.max(
+                                        0,
+                                        Number(item.sale_price || 0) *
+                                            Number(item.order_qty || 0) -
+                                            Number(item.discount_amount || 0),
+                                    ),
+                                )
+                            }}
                         </div>
                     </div>
-                    <InputError
-                        :message="errorFor(`items.${index}.product_id`)"
-                    />
-                </div>
-                <div class="grid gap-1.5">
-                    <Label :for="`qty_${index}`">Qty</Label
-                    ><Input
-                        :id="`qty_${index}`"
-                        v-model="item.order_qty"
-                        type="number"
-                        min="1"
-                        :max="selectedProduct(item.product_id)?.stock_quantity"
-                        :name="`items.${index}.order_qty`"
-                        required
-                    /><InputError
-                        :message="errorFor(`items.${index}.order_qty`)"
-                    />
-                </div>
-                <div class="grid gap-1.5">
-                    <Label :for="`regular_${index}`">Regular price</Label
-                    ><Input
-                        :id="`regular_${index}`"
-                        v-model="item.regular_price"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        :name="`items.${index}.regular_price`"
-                        required
-                    /><InputError
-                        :message="errorFor(`items.${index}.regular_price`)"
-                    />
-                </div>
-                <div class="grid gap-1.5">
-                    <Label :for="`sale_${index}`">Sale price</Label
-                    ><Input
-                        :id="`sale_${index}`"
-                        v-model="item.sale_price"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        :name="`items.${index}.sale_price`"
-                        required
-                    /><InputError
-                        :message="errorFor(`items.${index}.sale_price`)"
-                    />
-                </div>
-                <div class="grid gap-1.5">
-                    <Label :for="`item_discount_${index}`">Discount</Label
-                    ><Input
-                        :id="`item_discount_${index}`"
-                        v-model="item.discount_amount"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        :name="`items.${index}.discount_amount`"
-                        required
-                    /><InputError
-                        :message="errorFor(`items.${index}.discount_amount`)"
-                    />
-                </div>
-                <div class="grid gap-1.5">
-                    <Label>Line total</Label>
-                    <div
-                        class="flex h-9 items-center justify-end rounded-md border bg-muted/20 px-3 text-sm font-medium"
-                    >
-                        {{
-                            money(
-                                Math.max(
-                                    0,
-                                    Number(item.sale_price || 0) *
-                                        Number(item.order_qty || 0) -
-                                        Number(item.discount_amount || 0),
-                                ),
-                            )
-                        }}
+                    <div class="grid content-start gap-1.5">
+                        <span class="hidden h-5 xl:block" /><Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            class="size-9 text-destructive"
+                            title="Remove item"
+                            @click="form.items.splice(index, 1)"
+                            ><Trash2 class="size-4" /><span class="sr-only"
+                                >Remove item</span
+                            ></Button
+                        >
                     </div>
-                </div>
-                <div class="grid content-start gap-1.5">
-                    <span class="hidden h-5 xl:block" /><Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        class="size-9 text-destructive"
-                        title="Remove item"
-                        @click="form.items.splice(index, 1)"
-                        ><Trash2 class="size-4" /><span class="sr-only"
-                            >Remove item</span
-                        ></Button
-                    >
                 </div>
             </div>
             <InputError :message="form.errors.items" />
@@ -471,23 +589,13 @@ const submit = () =>
                         :message="form.errors.discount_amount"
                     />
                 </div>
-                <div>
-                    <div class="flex items-center justify-between gap-4">
-                        <Label for="delivery_charge">Delivery charge</Label>
-                        <Input
-                            id="delivery_charge"
-                            v-model="form.delivery_charge"
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            name="delivery_charge"
-                            class="h-8 w-28 text-right"
-                        />
-                    </div>
-                    <InputError
-                        class="mt-1 text-right"
-                        :message="form.errors.delivery_charge"
-                    />
+                <div class="flex justify-between text-sm">
+                    <span>Total discount</span>
+                    <span>{{ money(totalDiscount) }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span>Delivery charge</span>
+                    <span>{{ money(form.delivery_charge) }}</span>
                 </div>
                 <div class="flex justify-between border-t pt-3 font-semibold">
                     <span>Total</span><span>{{ money(total) }}</span>

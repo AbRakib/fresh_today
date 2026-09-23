@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'order_number', 'customer_id', 'total_product', 'subtotal', 'discount_amount',
+    'order_number', 'customer_id', 'delivery_charge_id', 'total_product', 'subtotal', 'discount_amount',
     'delivery_charge', 'total_amount', 'paid_amount', 'due_amount', 'payment_status',
     'order_date', 'payment_date', 'delivery_date', 'delivery_address', 'note',
     'order_status', 'created_by', 'updated_by', 'deleted', 'deleted_at', 'deleted_by',
@@ -18,6 +18,11 @@ class Order extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function deliveryCharge(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryCharge::class);
     }
 
     public function details(): HasMany

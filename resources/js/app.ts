@@ -4,6 +4,9 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
+import { createNotivue } from 'notivue';
+import 'notivue/notification.css';
+import 'notivue/animations.css';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -25,6 +28,9 @@ createInertiaApp({
     },
     progress: {
         color: '#4B5563',
+    },
+    withApp: (app) => {
+        app.use(createNotivue());
     },
 });
 
