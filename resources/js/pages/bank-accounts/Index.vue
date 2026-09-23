@@ -43,7 +43,7 @@ type BankAccount = {
     opening_balance: string;
     opening_balance_date: string | null;
     can_edit: number;
-    is_default: number;
+    is_default: number | string;
     created_at: string | null;
 };
 
@@ -52,11 +52,13 @@ const { bankAccounts } = defineProps<{ bankAccounts: BankAccount[] }>();
 const search = ref('');
 const formOpen = ref(false);
 const deleteOpen = ref(false);
-const defaultConfirmOpen = ref(false);
 const selectedAccount = ref<BankAccount | null>(null);
 const deleting = ref(false);
-const changingDefault = ref(false);
+const changingDefaultId = ref<number | null>(null);
 const { money: formatBalance } = useCurrency();
+
+const isDefaultAccount = (account: BankAccount) =>
+    Number(account.is_default) === 1;
 
 const filteredAccounts = computed(() => {
     const query = search.value.trim().toLowerCase();
@@ -95,27 +97,18 @@ const openDelete = (account: BankAccount) => {
     deleteOpen.value = true;
 };
 
-const openDefaultConfirmation = (account: BankAccount) => {
-    selectedAccount.value = account;
-    defaultConfirmOpen.value = true;
-};
-
-const toggleDefault = () => {
-    if (!selectedAccount.value) {
+const setDefault = (account: BankAccount) => {
+    if (isDefaultAccount(account)) {
         return;
     }
 
-    changingDefault.value = true;
+    changingDefaultId.value = account.id;
     router.post(
-        `/bank-accounts/${selectedAccount.value.id}/toggle-default`,
+        `/bank-accounts/${account.id}/toggle-default`,
         {},
         {
             preserveScroll: true,
-            onSuccess: () => {
-                defaultConfirmOpen.value = false;
-                selectedAccount.value = null;
-            },
-            onFinish: () => (changingDefault.value = false),
+            onFinish: () => (changingDefaultId.value = null),
         },
     );
 };
@@ -174,13 +167,13 @@ defineOptions({
                         <tr>
                             <th class="w-16 px-4 py-3 font-medium">SL</th>
                             <th class="px-4 py-3 font-medium">Account</th>
-                            <th class="px-4 py-3 font-medium">
+                            <th class="px-4 py-3 text-center font-medium">
                                 Account number
                             </th>
-                            <th class="px-4 py-3 text-right font-medium">
+                            <th class="px-4 py-3 text-center font-medium">
                                 Opening balance
                             </th>
-                            <th class="px-4 py-3 text-right font-medium">
+                            <th class="px-4 py-3 text-center font-medium">
                                 Available balance
                             </th>
                             <th class="px-4 py-3 font-medium">Default</th>
@@ -229,31 +222,38 @@ defineOptions({
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-4 py-3 text-muted-foreground">
+                            <td
+                                class="px-4 py-3 text-center text-muted-foreground"
+                            >
                                 {{ account.account_number || 'Not provided' }}
                             </td>
-                            <td class="px-4 py-3 text-right tabular-nums">
+                            <td class="px-4 py-3 text-center tabular-nums">
                                 {{ formatBalance(account.opening_balance) }}
                             </td>
                             <td
-                                class="px-4 py-3 text-right font-medium tabular-nums"
+                                class="px-4 py-3 text-center font-medium tabular-nums"
                             >
                                 {{ formatBalance(account.available_balance) }}
                             </td>
                             <td class="px-4 py-3">
                                 <Button
+                                    type="button"
                                     size="sm"
                                     :variant="
-                                        account.is_default
+                                        isDefaultAccount(account)
                                             ? 'outline'
                                             : 'default'
                                     "
                                     class="h-7 px-2.5 text-xs"
-                                    @click="openDefaultConfirmation(account)"
+                                    :disabled="
+                                        isDefaultAccount(account) ||
+                                        changingDefaultId !== null
+                                    "
+                                    @click="setDefault(account)"
                                 >
                                     <Star class="size-3.5" />
                                     {{
-                                        account.is_default
+                                        isDefaultAccount(account)
                                             ? 'Default'
                                             : 'Set default'
                                     }}
@@ -318,10 +318,13 @@ defineOptions({
             style="width: min(620px, calc(100vw - 2rem)); max-width: 620px"
         >
             <DialogHeader class="gap-1.5 pr-6">
-                <DialogTitle
-                    >{ selectedAccount ? 'Edit bank account' : 'Add bank
-                    account' }</DialogTitle
-                >
+                <DialogTitle>
+                    {{
+                        selectedAccount
+                            ? 'Edit bank account'
+                            : 'Add bank account'
+                    }}
+                </DialogTitle>
                 <DialogDescription>
                     Enter the account details and opening balance.
                 </DialogDescription>
@@ -400,28 +403,15 @@ defineOptions({
                     </div>
                 </div>
 
-                <label
-                    class="flex cursor-pointer items-start gap-3 rounded-md border p-3"
-                >
-                    <input type="hidden" name="is_default" value="0" />
-                    <input
-                        type="checkbox"
-                        name="is_default"
-                        value="1"
-                        :checked="Boolean(selectedAccount?.is_default)"
-                        class="mt-0.5 size-4 accent-primary"
-                    />
-                    <span>
-                        <span class="block text-sm font-medium"
-                            >Default account</span
-                        >
-                        <span class="block text-xs text-muted-foreground"
-                            >Use this account as the default for new
-                            transactions.</span
-                        >
-                    </span>
-                </label>
-                <InputError :message="errors.is_default" />
+                <input
+                    type="hidden"
+                    name="is_default"
+                    :value="
+                        selectedAccount && isDefaultAccount(selectedAccount)
+                            ? 1
+                            : 0
+                    "
+                />
 
                 <DialogFooter class="border-t pt-4">
                     <Button
@@ -436,29 +426,6 @@ defineOptions({
                     </Button>
                 </DialogFooter>
             </Form>
-        </DialogContent>
-    </Dialog>
-
-    <Dialog v-model:open="defaultConfirmOpen">
-        <DialogContent class="sm:max-w-md">
-            <DialogHeader>
-                <DialogTitle>Update default account</DialogTitle>
-                <DialogDescription>
-                    {{
-                        selectedAccount?.is_default
-                            ? `Remove ${selectedAccount.name} as the default account?`
-                            : `Use ${selectedAccount?.name} as the default account?`
-                    }}
-                </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-                <Button variant="outline" @click="defaultConfirmOpen = false">
-                    Cancel
-                </Button>
-                <Button :disabled="changingDefault" @click="toggleDefault">
-                    Confirm
-                </Button>
-            </DialogFooter>
         </DialogContent>
     </Dialog>
 

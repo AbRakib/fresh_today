@@ -95,6 +95,22 @@ test('only one bank account can be the default', function () {
         ->and($second->refresh()->is_default)->toBe(1);
 });
 
+test('the current default bank account stays default when selected again', function () {
+    $user = User::factory()->create();
+    $account = BankAccount::query()->create([
+        'name' => 'Cash On Hand',
+        'slug' => 'cash-on-hand',
+        'is_default' => 1,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('bank-accounts.toggle-default', $account))
+        ->assertRedirect(route('bank-accounts.index'));
+
+    expect($account->refresh()->is_default)->toBe(1)
+        ->and($account->updated_by)->toBe($user->id);
+});
+
 test('editable bank accounts are soft deleted', function () {
     $user = User::factory()->create();
     $account = BankAccount::query()->create([

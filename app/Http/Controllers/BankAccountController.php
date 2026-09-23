@@ -96,17 +96,13 @@ class BankAccountController extends Controller
         abort_if($bankAccount->deleted, 404);
 
         DB::transaction(function () use ($request, $bankAccount): void {
-            $isDefault = ! $bankAccount->is_default;
-
-            if ($isDefault) {
-                BankAccount::query()
-                    ->where('deleted', 0)
-                    ->whereKeyNot($bankAccount->id)
-                    ->update(['is_default' => 0]);
-            }
+            BankAccount::query()
+                ->where('deleted', 0)
+                ->whereKeyNot($bankAccount->id)
+                ->update(['is_default' => 0]);
 
             $bankAccount->update([
-                'is_default' => (int) $isDefault,
+                'is_default' => 1,
                 'updated_by' => $request->user()?->id,
             ]);
         });
