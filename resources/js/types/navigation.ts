@@ -15,5 +15,8 @@ export type NavItem = {
 
 export type NavGroup = {
     title: string;
+    label?: string;
     items: NavItem[];
+    icon?: LucideIcon;
+    collapsible?: boolean;
 };

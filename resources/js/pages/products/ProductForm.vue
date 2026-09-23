@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
 import { ImageIcon } from '@lucide/vue';
-import { computed, nextTick, onBeforeUnmount, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
 import TextEditor from '@/components/TextEditor.vue';
 import { Button } from '@/components/ui/button';
@@ -49,7 +49,7 @@ const props = defineProps<{
 }>();
 
 const categoryId = ref<number | string>(
-    props.product?.category_id ?? props.categories[0]?.id ?? '',
+    props.product?.category_id ?? '',
 );
 const subcategoryId = ref<number | string>(props.product?.subcategory_id ?? '');
 const unitId = ref<number | string>(
@@ -76,7 +76,7 @@ const showProductStateFields = computed(
     () => props.showProductStateFields ?? true,
 );
 
-const changeCategory = () => {
+watch(categoryId, () => {
     if (
         !filteredSubcategories.value.some(
             (subcategory) =>
@@ -85,7 +85,7 @@ const changeCategory = () => {
     ) {
         subcategoryId.value = '';
     }
-};
+});
 
 const handleThumbnailChange = (event: Event) => {
     if (thumbnailPreviewUrl.value) {
@@ -248,7 +248,6 @@ onBeforeUnmount(() => {
                                 name="category_id"
                                 class="h-9 rounded-md border border-input bg-background px-3 text-sm"
                                 required
-                                @change="changeCategory"
                             >
                                 <option value="" disabled>
                                     Select category
@@ -270,8 +269,15 @@ onBeforeUnmount(() => {
                                 v-model="subcategoryId"
                                 name="subcategory_id"
                                 class="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                                :disabled="!categoryId"
                             >
-                                <option value="">Select subcategory</option>
+                                <option value="">
+                                    {{
+                                        categoryId
+                                            ? 'Select subcategory'
+                                            : 'Select category first'
+                                    }}
+                                </option>
                                 <option
                                     v-for="subcategory in filteredSubcategories"
                                     :key="subcategory.id"

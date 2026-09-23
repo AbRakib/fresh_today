@@ -4,6 +4,7 @@ import {
     Building2,
     ChartNoAxesCombined,
     ClipboardList,
+    ExternalLink,
     Landmark,
     LayoutGrid,
     Layers3,
@@ -12,6 +13,7 @@ import {
     ScrollText,
     ShoppingCart,
     Ruler,
+    Settings,
     Tags,
     Truck,
     UserCog,
@@ -29,7 +31,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+import { dashboard, home } from '@/routes';
 import { edit as companyEdit } from '@/routes/company';
 import { edit as profileEdit } from '@/routes/profile';
 import type { NavGroup } from '@/types';
@@ -47,6 +49,8 @@ const mainNavGroups: NavGroup[] = [
     },
     {
         title: 'Sale',
+        icon: ShoppingCart,
+        collapsible: true,
         items: [
             {
                 title: 'Orders',
@@ -62,6 +66,8 @@ const mainNavGroups: NavGroup[] = [
     },
     {
         title: 'Purchase',
+        icon: ClipboardList,
+        collapsible: true,
         items: [
             {
                 title: 'Purchase Items',
@@ -77,6 +83,8 @@ const mainNavGroups: NavGroup[] = [
     },
     {
         title: 'Accounting',
+        icon: Landmark,
+        collapsible: true,
         items: [
             {
                 title: 'Transactions',
@@ -92,6 +100,8 @@ const mainNavGroups: NavGroup[] = [
     },
     {
         title: 'Inventory',
+        icon: Package,
+        collapsible: true,
         items: [
             {
                 title: 'Products',
@@ -116,7 +126,9 @@ const mainNavGroups: NavGroup[] = [
         ],
     },
     {
-        title: 'Report Summery',
+        title: 'Report',
+        icon: ChartNoAxesCombined,
+        collapsible: true,
         items: [
             {
                 title: 'Stock Report',
@@ -132,14 +144,17 @@ const mainNavGroups: NavGroup[] = [
     },
     {
         title: 'Settings',
+        label: 'Administrator',
+        icon: Settings,
+        collapsible: true,
         items: [
             {
-                title: 'Company Setting',
+                title: 'Company Settings',
                 href: companyEdit(),
                 icon: Building2,
             },
             {
-                title: 'Profile Setting',
+                title: 'Profile Settings',
                 href: profileEdit(),
                 icon: UserCog,
             },
@@ -169,6 +184,20 @@ const mainNavGroups: NavGroup[] = [
         </SidebarContent>
 
         <SidebarFooter>
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton as-child tooltip="Visit Website">
+                        <a
+                            :href="home().url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <ExternalLink />
+                            <span>Visit Website</span>
+                        </a>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
             <NavUser />
         </SidebarFooter>
     </Sidebar>
