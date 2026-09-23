@@ -10,7 +10,7 @@ import {
 <template>
     <Notivue v-slot="item" position="bottom-center">
         <NotivueSwipe :item="item">
-            <Notification :item="item">
+            <Notification :item="item" hide-close>
                 <NotificationProgress :item="item" />
             </Notification>
         </NotivueSwipe>

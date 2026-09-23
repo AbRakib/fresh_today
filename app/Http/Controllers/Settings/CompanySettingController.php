@@ -33,7 +33,7 @@ class CompanySettingController extends Controller
                 ->where('deleted', 0)
                 ->where('status', 1)
                 ->orderBy('name')
-                ->get(['id', 'name', 'phone_code', 'currency']),
+                ->get(['id', 'name', 'phone_code', 'currency', 'currency_symbol']),
         ]);
     }
 

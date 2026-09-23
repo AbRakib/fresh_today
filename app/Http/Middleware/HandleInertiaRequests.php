@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\Currency;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
@@ -41,6 +42,7 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'currency' => Currency::current(),
             'auth' => [
                 'user' => $user ? [
                     ...$user->toArray(),

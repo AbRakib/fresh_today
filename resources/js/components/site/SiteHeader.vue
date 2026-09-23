@@ -87,7 +87,7 @@ const categoryLinks = [
                     class="h-12 w-full rounded-md border border-slate-200 bg-white px-4 pr-14 text-sm transition outline-none focus:border-[#319d57] focus:ring-1 focus:ring-[#e0f5e5]"
                 />
                 <button
-                    class="absolute top-0 right-0 grid h-12 w-12 place-items-center rounded-r-md bg-[#176536] text-white hover:bg-[#15512e]"
+                    class="absolute top-0 right-0 grid h-12 w-12 place-items-center rounded-r-md bg-lime-500 text-white hover:bg-lime-600"
                     aria-label="Search"
                 >
                     <Search class="h-5 w-5" />
@@ -126,7 +126,7 @@ const categoryLinks = [
                     <span class="relative">
                         <ShoppingCart class="h-7 w-7" />
                         <span
-                            class="absolute -top-3 left-5 grid h-5 w-5 place-items-center rounded-full bg-[#218a37] text-[10px] font-bold text-white"
+                            class="absolute -top-3 left-5 grid h-5 w-5 place-items-center rounded-full bg-lime-500 text-[10px] font-bold text-white"
                             >0</span
                         >
                     </span>

@@ -19,6 +19,7 @@ import {
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
+import { useCurrency } from '@/composables/useCurrency';
 
 type Product = {
     name: string;
@@ -44,109 +45,113 @@ const products: Product[] = [
     {
         name: 'Imported Frozen Dory Fillets',
         unit: '1 kg',
-        old: '৳640',
-        price: '৳580',
+        old: '640',
+        price: '580',
         discount: '12% OFF',
     },
     {
         name: 'Deshi Magur Fish',
         unit: '500g',
-        old: '৳492',
-        price: '৳450',
+        old: '492',
+        price: '450',
         discount: '8% OFF',
     },
     {
         name: 'River Baila Fish',
         unit: '500g',
-        old: '৳590',
-        price: '৳524',
+        old: '590',
+        price: '524',
         discount: '11% OFF',
     },
     {
         name: 'Biler Deshi Shing Fish',
         unit: '500g',
-        old: '৳599',
-        price: '৳444',
+        old: '599',
+        price: '444',
         discount: '10% OFF',
     },
     {
         name: 'River Gulsha Tengra Fish',
         unit: '500g',
-        old: '৳538',
-        price: '৳490',
+        old: '538',
+        price: '490',
         discount: '9% OFF',
     },
     {
         name: 'Datina Koral Fish',
         unit: '1 kg',
-        old: '৳770',
-        price: '৳720',
+        old: '770',
+        price: '720',
         discount: '7% OFF',
     },
     {
         name: 'River Boal Fish',
         unit: '1 kg',
-        old: '৳684',
-        price: '৳630',
+        old: '684',
+        price: '630',
         discount: '9% OFF',
     },
     {
         name: 'Sea Lal Poa Fish',
         unit: '1 kg',
-        old: '৳744',
-        price: '৳670',
+        old: '744',
+        price: '670',
         discount: '10% OFF',
     },
     {
         name: 'Bagda Shrimp Whole',
         unit: '500g',
-        old: '৳990',
-        price: '৳930',
+        old: '990',
+        price: '930',
         discount: '6% OFF',
     },
     {
         name: 'Panchmishali Fish',
         unit: '1 kg',
-        old: '৳649',
-        price: '৳575',
+        old: '649',
+        price: '575',
         discount: '10% OFF',
     },
     {
         name: 'Premium Rui Fish',
         unit: '1 kg',
-        old: '৳720',
-        price: '৳660',
+        old: '720',
+        price: '660',
         discount: '8% OFF',
     },
     {
         name: 'Fresh Prawn Medium',
         unit: '500g',
-        old: '৳880',
-        price: '৳799',
+        old: '880',
+        price: '799',
         discount: '9% OFF',
     },
     {
         name: 'Tilapia Clean & Dressed',
         unit: '1 kg',
-        old: '৳430',
-        price: '৳399',
+        old: '430',
+        price: '399',
         discount: '7% OFF',
     },
     {
         name: 'Katla Fish Steak',
         unit: '500g',
-        old: '৳510',
-        price: '৳459',
+        old: '510',
+        price: '459',
         discount: '10% OFF',
     },
     {
         name: 'Fresh Salmon Cut',
         unit: '500g',
-        old: '৳1450',
-        price: '৳1320',
+        old: '1450',
+        price: '1320',
         discount: '9% OFF',
     },
 ];
+
+const { money } = useCurrency();
+const priceAmount = (value: string) => Number(value.replace(/[^\d.]/g, ''));
+const displayPrice = (value: string) => money(priceAmount(value));
 
 const visibleProducts = ref(10);
 const totalSeconds = ref(10 * 3600 + 45 * 60 + 32);
@@ -242,7 +247,7 @@ onBeforeUnmount(() => {
 
                             <a
                                 href="#deals"
-                                class="mt-7 inline-flex w-fit items-center rounded-md bg-[#176536] px-6 py-3 text-sm font-bold text-white shadow hover:bg-[#15512e]"
+                                class="mt-7 inline-flex w-fit items-center rounded-md bg-lime-500 px-6 py-3 text-sm font-bold text-white shadow hover:bg-lime-600"
                                 >Shop Combo</a
                             >
                         </div>
@@ -262,7 +267,7 @@ onBeforeUnmount(() => {
                                     FINAL PRICE
                                 </div>
                                 <div class="text-2xl font-black text-[#15512e]">
-                                    ৳2,077
+                                    {{ money(2077) }}
                                 </div>
                             </div>
 
@@ -288,7 +293,7 @@ onBeforeUnmount(() => {
                                             Mixed Fish
                                         </div>
                                         <div class="font-black text-[#15512e]">
-                                            ৳335
+                                            {{ money(335) }}
                                         </div>
                                     </div>
                                     <div>
@@ -296,7 +301,7 @@ onBeforeUnmount(() => {
                                             Koi Fish
                                         </div>
                                         <div class="font-black text-[#15512e]">
-                                            ৳444
+                                            {{ money(444) }}
                                         </div>
                                     </div>
                                     <div>
@@ -304,7 +309,7 @@ onBeforeUnmount(() => {
                                             Deshi Shol
                                         </div>
                                         <div class="font-black text-[#15512e]">
-                                            ৳480
+                                            {{ money(480) }}
                                         </div>
                                     </div>
                                     <div>
@@ -312,7 +317,7 @@ onBeforeUnmount(() => {
                                             Small Prawn
                                         </div>
                                         <div class="font-black text-[#15512e]">
-                                            ৳427
+                                            {{ money(427) }}
                                         </div>
                                     </div>
                                     <div>
@@ -320,7 +325,7 @@ onBeforeUnmount(() => {
                                             River Baila
                                         </div>
                                         <div class="font-black text-[#15512e]">
-                                            ৳524
+                                            {{ money(524) }}
                                         </div>
                                     </div>
                                 </div>
@@ -453,11 +458,11 @@ onBeforeUnmount(() => {
                             <div class="mt-3 flex flex-wrap items-end gap-2">
                                 <span
                                     class="text-xs text-slate-400 line-through"
-                                    >{{ product.old }}</span
+                                    >{{ displayPrice(product.old) }}</span
                                 >
                                 <span
                                     class="text-base font-black text-[#176536]"
-                                    >{{ product.price }}</span
+                                    >{{ displayPrice(product.price) }}</span
                                 >
                                 <span class="pb-0.5 text-[10px] text-slate-500"
                                     >/{{ product.unit }}</span
@@ -465,7 +470,7 @@ onBeforeUnmount(() => {
                             </div>
 
                             <button
-                                class="mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-[#319d57] py-2 text-xs font-bold text-[#176536] transition hover:bg-[#176536] hover:text-white"
+                                class="mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-lime-500 py-2 text-xs font-bold text-lime-600 transition hover:bg-lime-500 hover:text-white"
                             >
                                 Add to Cart
                                 <ShoppingCart class="h-3.5 w-3.5" />
@@ -479,7 +484,7 @@ onBeforeUnmount(() => {
                     class="mt-6 flex justify-center"
                 >
                     <button
-                        class="inline-flex items-center gap-2 rounded-md bg-[#176536] px-8 py-3 text-sm font-bold text-white hover:bg-[#15512e]"
+                        class="inline-flex items-center gap-2 rounded-md bg-lime-500 px-8 py-3 text-sm font-bold text-white hover:bg-lime-600"
                         @click="loadMoreProducts"
                     >
                         Load More Products
@@ -511,7 +516,7 @@ onBeforeUnmount(() => {
                                 </p>
                                 <a
                                     href="#deals"
-                                    class="mt-4 inline-block rounded-md bg-[#176536] px-5 py-2.5 text-xs font-bold text-white"
+                                    class="mt-4 inline-block rounded-md bg-lime-500 px-5 py-2.5 text-xs font-bold text-white hover:bg-lime-600"
                                     >Shop Now</a
                                 >
                             </div>

@@ -217,7 +217,7 @@ defineOptions({
                             </td>
                             <td class="px-4 py-3">
                                 <span
-                                    class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
+                                    class="inline-flex rounded px-2 py-0.5 text-xs font-medium"
                                     :class="
                                         category.status
                                             ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'

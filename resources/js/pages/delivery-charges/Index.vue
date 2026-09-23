@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useCurrency } from '@/composables/useCurrency';
 import { formatDate } from '@/lib/utils';
 
 type DeliveryCharge = {
@@ -39,6 +40,7 @@ const formOpen = ref(false);
 const deleteOpen = ref(false);
 const selectedDeliveryCharge = ref<DeliveryCharge | null>(null);
 const deleting = ref(false);
+const { money: formatAmount } = useCurrency();
 
 const filteredDeliveryCharges = computed(() => {
     const query = search.value.trim().toLowerCase();
@@ -51,12 +53,6 @@ const filteredDeliveryCharges = computed(() => {
         deliveryCharge.title.toLowerCase().includes(query),
     );
 });
-
-const formatAmount = (amount: string) =>
-    new Intl.NumberFormat(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    }).format(Number(amount));
 
 const openCreate = () => {
     selectedDeliveryCharge.value = null;
@@ -182,7 +178,7 @@ defineOptions({
                             </td>
                             <td class="px-4 py-3">
                                 <span
-                                    class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
+                                    class="inline-flex rounded px-2 py-0.5 text-xs font-medium"
                                     :class="
                                         deliveryCharge.status
                                             ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'

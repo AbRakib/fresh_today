@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useCurrency } from '@/composables/useCurrency';
 
 export type SupplierOption = {
     id: number;
@@ -74,6 +75,7 @@ const supplierPickerOpen = ref(false);
 const productSearch = ref('');
 const productPickerOpen = ref(false);
 const submitAttempted = ref(false);
+const { money } = useCurrency();
 
 const itemFromProduct = (product: ProductOption): PurchaseItemFormData => ({
     product_id: product.id,
@@ -138,12 +140,6 @@ const subtotal = computed(() =>
         0,
     ),
 );
-
-const money = (value: number | string) =>
-    Number(value || 0).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
 
 const errorFor = (key: string) => form.errors[key as keyof typeof form.errors];
 

@@ -27,6 +27,7 @@ type Country = {
     name: string;
     phone_code: string;
     currency: string;
+    currency_symbol: string;
 };
 
 const { countries, setting } = defineProps<{
@@ -126,7 +127,8 @@ defineOptions({
                             :key="country.id"
                             :value="country.id"
                         >
-                            {{ country.name }} ({{ country.currency }})
+                            {{ country.name }} ({{ country.currency_symbol }}
+                            {{ country.currency }})
                         </option>
                     </select>
                     <InputError class="mt-2" :message="errors.country_id" />

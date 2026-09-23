@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useCurrency } from '@/composables/useCurrency';
 
 export type CustomerOption = {
     id: number;
@@ -75,6 +76,7 @@ const props = defineProps<{
     nextOrderNumber?: string;
     order?: OrderFormData;
 }>();
+const { money } = useCurrency();
 const today = new Date().toISOString().slice(0, 10);
 const customerSearch = ref('');
 const customerPickerOpen = ref(false);
@@ -202,6 +204,10 @@ const itemDiscountTotal = computed(() =>
         );
     }, 0),
 );
+const hasItemDiscount = computed(() =>
+    form.items.some((item) => Number(item.discount_amount || 0) > 0),
+);
+const hasOrderDiscount = computed(() => Number(form.discount_amount || 0) > 0);
 const orderDiscount = computed(() =>
     Math.min(Math.max(0, Number(form.discount_amount || 0)), subtotal.value),
 );
@@ -216,11 +222,6 @@ const total = computed(() =>
             Number(form.delivery_charge || 0),
     ),
 );
-const money = (value: number | string) =>
-    Number(value || 0).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
 const errorFor = (key: string) => form.errors[key as keyof typeof form.errors];
 const submit = () =>
     form.post(props.order ? `/orders/${props.order.id}` : '/orders', {
@@ -412,18 +413,29 @@ const submit = () =>
             </div>
             <div
                 v-else
-                class="space-y-4"
+                class="space-y-1"
                 :class="{
                     'max-h-[31rem] overflow-y-auto pr-2': form.items.length > 3,
                 }"
             >
                 <div
+                    class="hidden px-4 text-sm font-medium xl:grid xl:grid-cols-[minmax(220px,2fr)_100px_130px_130px_130px_110px_2.25rem] xl:gap-4"
+                >
+                    <span>Item</span>
+                    <span>Qty</span>
+                    <span>Regular price</span>
+                    <span>Sale price</span>
+                    <span>Discount</span>
+                    <span>Line total</span>
+                    <span aria-hidden="true" />
+                </div>
+                <div
                     v-for="(item, index) in form.items"
                     :key="String(item.product_id)"
-                    class="grid gap-4 rounded-md border p-4 xl:grid-cols-[minmax(220px,2fr)_100px_130px_130px_130px_110px_2.25rem] xl:items-start"
+                    class="grid gap-4 px-4 py-1 xl:grid-cols-[minmax(220px,2fr)_100px_130px_130px_130px_110px_2.25rem] xl:items-start"
                 >
                     <div class="grid gap-1.5">
-                        <Label>Item</Label
+                        <Label class="xl:sr-only">Item</Label
                         ><input
                             :name="`items.${index}.product_id`"
                             type="hidden"
@@ -450,7 +462,8 @@ const submit = () =>
                         />
                     </div>
                     <div class="grid gap-1.5">
-                        <Label :for="`qty_${index}`">Qty</Label
+                        <Label class="xl:sr-only" :for="`qty_${index}`"
+                            >Qty</Label
                         ><Input
                             :id="`qty_${index}`"
                             :model-value="item.order_qty"
@@ -463,7 +476,7 @@ const submit = () =>
                             :aria-invalid="
                                 Boolean(
                                     quantityErrors[String(item.product_id)] ||
-                                        errorFor(`items.${index}.order_qty`),
+                                    errorFor(`items.${index}.order_qty`),
                                 )
                             "
                             required
@@ -475,7 +488,8 @@ const submit = () =>
                         />
                     </div>
                     <div class="grid gap-1.5">
-                        <Label :for="`regular_${index}`">Regular price</Label
+                        <Label class="xl:sr-only" :for="`regular_${index}`"
+                            >Regular price</Label
                         ><Input
                             :id="`regular_${index}`"
                             v-model="item.regular_price"
@@ -489,7 +503,8 @@ const submit = () =>
                         />
                     </div>
                     <div class="grid gap-1.5">
-                        <Label :for="`sale_${index}`">Sale price</Label
+                        <Label class="xl:sr-only" :for="`sale_${index}`"
+                            >Sale price</Label
                         ><Input
                             :id="`sale_${index}`"
                             v-model="item.sale_price"
@@ -503,7 +518,10 @@ const submit = () =>
                         />
                     </div>
                     <div class="grid gap-1.5">
-                        <Label :for="`item_discount_${index}`">Discount</Label
+                        <Label
+                            class="xl:sr-only"
+                            :for="`item_discount_${index}`"
+                            >Discount</Label
                         ><Input
                             :id="`item_discount_${index}`"
                             v-model="item.discount_amount"
@@ -511,6 +529,7 @@ const submit = () =>
                             min="0"
                             step="0.01"
                             :name="`items.${index}.discount_amount`"
+                            :disabled="hasOrderDiscount"
                             required
                         /><InputError
                             :message="
@@ -519,7 +538,7 @@ const submit = () =>
                         />
                     </div>
                     <div class="grid gap-1.5">
-                        <Label>Line total</Label>
+                        <Label class="xl:sr-only">Line total</Label>
                         <div
                             class="flex h-9 items-center justify-end rounded-md border bg-muted/20 px-3 text-sm font-medium"
                         >
@@ -536,7 +555,7 @@ const submit = () =>
                         </div>
                     </div>
                     <div class="grid content-start gap-1.5">
-                        <span class="hidden h-5 xl:block" /><Button
+                        <Button
                             type="button"
                             variant="ghost"
                             size="icon"
@@ -582,6 +601,7 @@ const submit = () =>
                             step="0.01"
                             name="discount_amount"
                             class="h-8 w-28 text-right"
+                            :disabled="hasItemDiscount"
                         />
                     </div>
                     <InputError

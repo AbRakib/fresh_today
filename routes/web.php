@@ -7,6 +7,7 @@ use App\Http\Controllers\DeliveryChargeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TransactionController;
@@ -72,8 +73,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('orders/create', [OrderController::class, 'create'])->name('orders.create');
     Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
     Route::get('orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
+    Route::post('orders/{order}/advance-status', [OrderController::class, 'advanceStatus'])->name('orders.advance-status');
+    Route::post('orders/{order}/payment', [OrderController::class, 'payment'])->name('orders.payment');
     Route::post('orders/{order}', [OrderController::class, 'update'])->name('orders.update');
     Route::delete('orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
+
+    Route::get('reports/stock', [ReportController::class, 'stock'])->name('reports.stock');
+    Route::get('reports/stock/pdf', [ReportController::class, 'stockPdf'])->name('reports.stock.pdf');
+    Route::get('reports/profit-loss', [ReportController::class, 'profitLoss'])->name('reports.profit-loss');
+    Route::get('reports/profit-loss/pdf', [ReportController::class, 'profitLossPdf'])->name('reports.profit-loss.pdf');
 
     Route::get('delivery-charges', [DeliveryChargeController::class, 'index'])->name('delivery-charges.index');
     Route::post('delivery-charges', [DeliveryChargeController::class, 'store'])->name('delivery-charges.store');

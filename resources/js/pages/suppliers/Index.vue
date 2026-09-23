@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useCurrency } from '@/composables/useCurrency';
 
 type Supplier = {
     id: number;
@@ -53,6 +54,7 @@ const deleteOpen = ref(false);
 const selectedSupplier = ref<Supplier | null>(null);
 const deleting = ref(false);
 const photoPreviewUrl = ref<string | null>(null);
+const { money } = useCurrency();
 
 const displayedPhotoUrl = computed(
     () => photoPreviewUrl.value ?? selectedSupplier.value?.photo_url ?? null,
@@ -164,8 +166,6 @@ defineOptions({
             </Button>
         </div>
 
-        
-
         <div class="overflow-hidden rounded-md border">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -174,8 +174,12 @@ defineOptions({
                             <th class="w-16 px-4 py-3 font-medium">SL</th>
                             <th class="px-4 py-3 font-medium">Supplier</th>
                             <th class="px-4 py-3 font-medium">Phone</th>
-                            <th class="px-4 py-3 font-medium">Balance</th>
-                            <th class="px-4 py-3 font-medium">Status</th>
+                            <th class="px-4 py-3 text-center font-medium">
+                                Balance
+                            </th>
+                            <th class="px-4 py-3 text-center font-medium">
+                                Status
+                            </th>
                             <th class="w-24 px-4 py-3 text-right font-medium">
                                 Actions
                             </th>
@@ -217,12 +221,12 @@ defineOptions({
                             <td class="px-4 py-3 text-muted-foreground">
                                 {{ supplier.phone || 'Not provided' }}
                             </td>
-                            <td class="px-4 py-3 font-medium">
-                                {{ supplier.balance_amount }}
+                            <td class="px-4 py-3 text-center font-medium">
+                                {{ money(supplier.balance_amount) }}
                             </td>
-                            <td class="px-4 py-3">
+                            <td class="px-4 py-3 text-center">
                                 <span
-                                    class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
+                                    class="inline-flex rounded px-2 py-0.5 text-xs font-medium"
                                     :class="
                                         supplier.status
                                             ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'

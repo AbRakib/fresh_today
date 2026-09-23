@@ -15,6 +15,7 @@ import {
 } from '@lucide/vue';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
+import { useCurrency } from '@/composables/useCurrency';
 
 type Product = {
     name: string;
@@ -35,11 +36,15 @@ const filters = [
     ['Ready to Cook', '10'],
 ];
 
+const { money } = useCurrency();
+const priceAmount = (value: string) => Number(value.replace(/[^\d.]/g, ''));
+const displayPrice = (value: string) => money(priceAmount(value));
+
 const prices = [
-    'Under ৳500',
-    '৳500 - ৳1,000',
-    '৳1,000 - ৳1,500',
-    'Above ৳1,500',
+    `Under ${money(500)}`,
+    `${money(500)} - ${money(1000)}`,
+    `${money(1000)} - ${money(1500)}`,
+    `Above ${money(1500)}`,
 ];
 const weights = [
     'Up to 250g',
@@ -53,118 +58,118 @@ const products: Product[] = [
     {
         name: 'Rohu Fish (Rui)',
         weight: '1kg - 1.2kg',
-        old: '৳420',
-        price: '৳380',
+        old: '420',
+        price: '380',
     },
     {
         name: 'Catla Fish (Katal)',
         weight: '1kg - 1.5kg',
-        old: '৳460',
-        price: '৳420',
+        old: '460',
+        price: '420',
     },
     {
         name: 'Hilsha Fish (Ilish)',
         weight: '500g - 700g',
-        old: '৳1,800',
-        price: '৳1,620',
+        old: '1,800',
+        price: '1,620',
         badge: '10% OFF',
     },
-    { name: 'Pangash Fish', weight: '1kg - 1.2kg', old: '৳320', price: '৳280' },
-    { name: 'Tilapia Fish', weight: '500g - 700g', old: '৳260', price: '৳230' },
+    { name: 'Pangash Fish', weight: '1kg - 1.2kg', old: '320', price: '280' },
+    { name: 'Tilapia Fish', weight: '500g - 700g', old: '260', price: '230' },
     {
         name: 'Boal Fish',
         weight: '1kg - 1.5kg',
-        old: '৳650',
-        price: '৳590',
+        old: '650',
+        price: '590',
         badge: '10% OFF',
     },
-    { name: 'Rui Fish Steak', weight: '500g', old: '৳340', price: '৳300' },
+    { name: 'Rui Fish Steak', weight: '500g', old: '340', price: '300' },
     {
         name: 'Silver Pomfret',
         weight: '500g - 700g',
-        old: '৳580',
-        price: '৳520',
+        old: '580',
+        price: '520',
         badge: '10% OFF',
     },
     {
         name: 'Prawn (Bagda)',
         weight: '500g',
-        old: '৳950',
-        price: '৳810',
+        old: '950',
+        price: '810',
         badge: '15% OFF',
     },
-    { name: 'Deshi Prawn (Golda)', weight: '500g', old: '৳950', price: '৳890' },
-    { name: 'Shrimp (Chingri)', weight: '500g', old: '৳620', price: '৳540' },
-    { name: 'Crab (Kakra)', weight: '500g - 700g', old: '৳550', price: '৳480' },
+    { name: 'Deshi Prawn (Golda)', weight: '500g', old: '950', price: '890' },
+    { name: 'Shrimp (Chingri)', weight: '500g', old: '620', price: '540' },
+    { name: 'Crab (Kakra)', weight: '500g - 700g', old: '550', price: '480' },
     {
         name: 'Sea Bass (Bhetki)',
         weight: '500g - 700g',
-        old: '৳780',
-        price: '৳690',
+        old: '780',
+        price: '690',
         badge: '10% OFF',
     },
-    { name: 'Mackerel (Ayre)', weight: '1kg', old: '৳400', price: '৳360' },
-    { name: 'Red Snapper', weight: '500g - 700g', old: '৳680', price: '৳600' },
-    { name: 'Tuna Fish', weight: '500g - 700g', old: '৳650', price: '৳570' },
+    { name: 'Mackerel (Ayre)', weight: '1kg', old: '400', price: '360' },
+    { name: 'Red Snapper', weight: '500g - 700g', old: '680', price: '600' },
+    { name: 'Tuna Fish', weight: '500g - 700g', old: '650', price: '570' },
     {
         name: 'Shol Fish (Gajar)',
         weight: '500g - 700g',
-        old: '৳420',
-        price: '৳360',
+        old: '420',
+        price: '360',
     },
     {
         name: 'Magur Fish',
         weight: '500g - 700g',
-        old: '৳380',
-        price: '৳320',
+        old: '380',
+        price: '320',
         badge: '15% OFF',
     },
-    { name: 'Koi Fish', weight: '500g - 700g', old: '৳360', price: '৳310' },
-    { name: 'Sole Fish', weight: '500g - 700g', old: '৳460', price: '৳420' },
-    { name: 'Dry Shutki (Lona)', weight: '250g', old: '৳220', price: '৳190' },
-    { name: 'Dry Loitta Shutki', weight: '250g', old: '৳240', price: '৳210' },
+    { name: 'Koi Fish', weight: '500g - 700g', old: '360', price: '310' },
+    { name: 'Sole Fish', weight: '500g - 700g', old: '460', price: '420' },
+    { name: 'Dry Shutki (Lona)', weight: '250g', old: '220', price: '190' },
+    { name: 'Dry Loitta Shutki', weight: '250g', old: '240', price: '210' },
     {
         name: 'Dry Chingri Shutki',
         weight: '250g',
-        old: '৳300',
-        price: '৳250',
+        old: '300',
+        price: '250',
         badge: '17% OFF',
     },
-    { name: 'Dry Kachki Shutki', weight: '250g', old: '৳200', price: '৳170' },
+    { name: 'Dry Kachki Shutki', weight: '250g', old: '200', price: '170' },
     {
         name: 'Salmon Fillet',
         weight: '500g',
-        old: '৳1,250',
-        price: '৳1,090',
+        old: '1,250',
+        price: '1,090',
         badge: '10% OFF',
     },
-    { name: 'Fish Finger (Ready)', weight: '250g', old: '৳260', price: '৳220' },
+    { name: 'Fish Finger (Ready)', weight: '250g', old: '260', price: '220' },
     {
         name: 'Prawn Cutlet (Ready)',
         weight: '250g',
-        old: '৳280',
-        price: '৳240',
+        old: '280',
+        price: '240',
     },
     {
         name: 'Fish Curry Cut (Ready)',
         weight: '500g',
-        old: '৳380',
-        price: '৳330',
+        old: '380',
+        price: '330',
     },
     {
         name: 'Hilsha (Large)',
         weight: '1kg - 1.2kg',
-        old: '৳2,200',
-        price: '৳1,980',
+        old: '2,200',
+        price: '1,980',
         badge: '10% OFF',
     },
-    { name: 'Rohu (Large)', weight: '1.5kg', old: '৳550', price: '৳490' },
-    { name: 'Catla (Large)', weight: '1.5kg', old: '৳600', price: '৳530' },
+    { name: 'Rohu (Large)', weight: '1.5kg', old: '550', price: '490' },
+    { name: 'Catla (Large)', weight: '1.5kg', old: '600', price: '530' },
     {
         name: 'Pangash Fillet',
         weight: '1kg',
-        old: '৳520',
-        price: '৳450',
+        old: '520',
+        price: '450',
         badge: '13% OFF',
     },
 ];
@@ -254,7 +259,7 @@ const imageUrl = (text: string) =>
                                         class="grid h-4 w-4 place-items-center rounded-full border"
                                         :class="
                                             index === 0
-                                                ? 'border-[#218a37] bg-[#218a37]'
+                                                ? 'border-lime-500 bg-lime-500'
                                                 : 'border-slate-300'
                                         "
                                     >
@@ -275,12 +280,17 @@ const imageUrl = (text: string) =>
                     <section
                         class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
                     >
-                        <h2 class="mb-4 text-sm font-bold">Price Range (৳)</h2>
-                        <div class="h-1.5 rounded-full bg-[#218a37]"></div>
+                        <h2 class="mb-4 text-sm font-bold">
+                            Price Range ({{
+                                money(0).replace(/[\d\s.,]/g, '')
+                            }})
+                        </h2>
+                        <div class="h-1.5 rounded-full bg-lime-500"></div>
                         <div
                             class="mt-3 flex justify-between text-xs text-slate-500"
                         >
-                            <span>৳ 0</span><span>৳ 2,500</span>
+                            <span>{{ money(0) }}</span
+                            ><span>{{ money(2500) }}</span>
                         </div>
                         <div class="mt-4 space-y-2">
                             <button
@@ -315,7 +325,7 @@ const imageUrl = (text: string) =>
                         <h2 class="mb-4 text-sm font-bold">Availability</h2>
                         <label class="flex items-center gap-2 text-xs">
                             <span
-                                class="grid h-4 w-4 place-items-center rounded bg-[#218a37]"
+                                class="grid h-4 w-4 place-items-center rounded bg-lime-500"
                                 ><Check class="h-3 w-3 text-white"
                             /></span>
                             In Stock Only
@@ -349,7 +359,7 @@ const imageUrl = (text: string) =>
                             We're here to help you choose the best fish.
                         </p>
                         <button
-                            class="mt-4 w-full rounded bg-[#218a37] py-2 text-xs font-bold text-white"
+                            class="mt-4 w-full rounded bg-lime-500 py-2 text-xs font-bold text-white hover:bg-lime-600"
                         >
                             Chat with us
                         </button>
@@ -383,7 +393,7 @@ const imageUrl = (text: string) =>
                             </button>
                             <label class="flex items-center gap-3 text-xs">
                                 <span
-                                    class="flex h-6 w-11 items-center rounded-full bg-[#218a37] p-1"
+                                    class="flex h-6 w-11 items-center rounded-full bg-lime-500 p-1"
                                 >
                                     <span
                                         class="h-4 w-4 rounded-full bg-white"
@@ -437,15 +447,15 @@ const imageUrl = (text: string) =>
                                 <div class="mt-2 flex items-end gap-2">
                                     <span
                                         class="text-xs text-slate-400 line-through"
-                                        >{{ product.old }}</span
+                                        >{{ displayPrice(product.old) }}</span
                                     >
                                     <span
                                         class="text-lg font-black text-[#218a37]"
-                                        >{{ product.price }}</span
+                                        >{{ displayPrice(product.price) }}</span
                                     >
                                 </div>
                                 <button
-                                    class="mt-3 flex w-full items-center justify-center gap-2 rounded border border-[#218a37] py-2 text-xs font-bold text-[#218a37] hover:bg-[#218a37] hover:text-white"
+                                    class="mt-3 flex w-full items-center justify-center gap-2 rounded border border-lime-500 py-2 text-xs font-bold text-lime-600 hover:bg-lime-500 hover:text-white"
                                 >
                                     <ShoppingCart class="h-4 w-4" /> Add to cart
                                 </button>
@@ -460,7 +470,7 @@ const imageUrl = (text: string) =>
                             <ChevronRight class="h-4 w-4 rotate-180" />
                         </button>
                         <button
-                            class="grid h-9 w-9 place-items-center rounded bg-[#218a37] text-sm font-bold text-white"
+                            class="grid h-9 w-9 place-items-center rounded bg-lime-500 text-sm font-bold text-white"
                         >
                             1
                         </button>

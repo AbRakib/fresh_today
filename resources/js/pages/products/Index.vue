@@ -27,6 +27,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { useCurrency } from '@/composables/useCurrency';
 import { formatDate } from '@/lib/utils';
 
 type Product = {
@@ -61,6 +62,7 @@ const search = ref('');
 const deleteOpen = ref(false);
 const selectedProduct = ref<Product | null>(null);
 const deleting = ref(false);
+const { money: formatMoney } = useCurrency();
 
 const filteredProducts = computed(() => {
     const query = search.value.trim().toLowerCase();
@@ -87,10 +89,7 @@ const money = (value: string | null) => {
         return 'N/A';
     }
 
-    return Number(value).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
+    return formatMoney(value);
 };
 
 const openDelete = (product: Product) => {
@@ -146,8 +145,6 @@ defineOptions({
                 Add product
             </Button>
         </div>
-
-        
 
         <div class="overflow-hidden rounded-md border">
             <div class="overflow-x-auto">
@@ -220,18 +217,7 @@ defineOptions({
                             </td>
                             <td class="px-4 py-3">
                                 <div class="font-medium">
-                                    {{
-                                        money(
-                                            product.sale_price ||
-                                                product.regular_price,
-                                        )
-                                    }}
-                                </div>
-                                <div
-                                    v-if="product.sale_price"
-                                    class="text-xs text-muted-foreground line-through"
-                                >
-                                    {{ money(product.regular_price) }}
+                                    {{ money(product.sale_price) }}
                                 </div>
                             </td>
                             <td class="px-4 py-3 text-muted-foreground">

@@ -6,6 +6,7 @@ import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 import { createNotivue } from 'notivue';
 import 'notivue/notification.css';
+import 'notivue/notification-progress.css';
 import 'notivue/animations.css';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
@@ -30,7 +31,18 @@ createInertiaApp({
         color: '#4B5563',
     },
     withApp: (app) => {
-        app.use(createNotivue());
+        app.use(
+            createNotivue({
+                pauseOnHover: false,
+                pauseOnTouch: false,
+                pauseOnTabChange: false,
+                notifications: {
+                    global: {
+                        duration: 4000,
+                    },
+                },
+            }),
+        );
     },
 });
 

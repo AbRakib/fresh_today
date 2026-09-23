@@ -26,6 +26,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { useCurrency } from '@/composables/useCurrency';
 import { formatDate } from '@/lib/utils';
 
 type Purchase = {
@@ -83,6 +84,7 @@ const paymentForm = useForm({
 const receiveOpen = ref(false);
 const receivePurchaseItem = ref<Purchase | null>(null);
 const receivingPurchaseId = ref<number | null>(null);
+const { money } = useCurrency();
 
 const filteredPurchases = computed(() => {
     const query = search.value.trim().toLowerCase();
@@ -116,12 +118,6 @@ const selectedPaymentAccount = computed(() =>
         (account) => String(account.id) === String(paymentForm.account_id),
     ),
 );
-
-const money = (value: string | number) =>
-    Number(value || 0).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
 
 const initials = (name: string | null) =>
     (name || 'S')
@@ -255,8 +251,6 @@ defineOptions({
             </Button>
         </div>
 
-        
-
         <div class="overflow-hidden rounded-md border">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -265,9 +259,15 @@ defineOptions({
                             <th class="w-16 px-4 py-3 font-medium">SL</th>
                             <th class="px-4 py-3 font-medium">Purchase</th>
                             <th class="px-4 py-3 font-medium">Supplier</th>
-                            <th class="px-4 py-3 font-medium">Items</th>
-                            <th class="px-4 py-3 font-medium">Subtotal</th>
-                            <th class="px-4 py-3 font-medium">Status</th>
+                            <th class="px-4 py-3 text-center font-medium">
+                                Items
+                            </th>
+                            <th class="px-4 py-3 text-center font-medium">
+                                Subtotal
+                            </th>
+                            <th class="px-4 py-3 text-center font-medium">
+                                Status
+                            </th>
                             <th class="px-4 py-3 font-medium">Date</th>
                             <th class="w-24 px-4 py-3 text-right font-medium">
                                 Actions
@@ -340,14 +340,16 @@ defineOptions({
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-4 py-3 text-muted-foreground">
+                            <td
+                                class="px-4 py-3 text-center text-muted-foreground"
+                            >
                                 {{ purchase.total_product }}
                             </td>
-                            <td class="px-4 py-3 font-medium">
+                            <td class="px-4 py-3 text-center font-medium">
                                 {{ money(purchase.subtotal) }}
                             </td>
-                            <td class="px-4 py-3">
-                                <div class="flex flex-col items-start gap-1">
+                            <td class="px-4 py-3 text-center">
+                                <div class="flex flex-col items-center gap-1">
                                     <span
                                         class="inline-flex rounded-sm px-1.5 py-0.5 text-xs font-medium"
                                         :class="{
@@ -368,10 +370,10 @@ defineOptions({
                                     <button
                                         v-if="purchase.payment_status !== 1"
                                         type="button"
-                                        class="text-xs font-medium text-primary underline-offset-4 hover:underline"
+                                        class="text-xs font-medium text-blue-600 underline-offset-4 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
                                         @click="openPayment(purchase)"
                                     >
-                                        Payment
+                                        Make Payment
                                     </button>
                                 </div>
                             </td>

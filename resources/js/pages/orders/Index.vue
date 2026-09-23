@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import {
     Eye,
     MoreVertical,
@@ -26,6 +26,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { useCurrency } from '@/composables/useCurrency';
 
 type Detail = {
     id: number;
@@ -56,12 +57,33 @@ type Order = {
     created_by_name: string | null;
     details: Detail[];
 };
-const { orders } = defineProps<{ orders: Order[] }>();
+type BankAccount = {
+    id: number;
+    name: string;
+    account_number: string | null;
+    available_balance: string;
+    is_default: number;
+};
+const { orders, bankAccounts } = defineProps<{
+    orders: Order[];
+    bankAccounts: BankAccount[];
+}>();
+const { money } = useCurrency();
 const search = ref('');
 const selected = ref<Order | null>(null);
 const detailsOpen = ref(false);
 const deleteOpen = ref(false);
 const deleting = ref(false);
+const statusOpen = ref(false);
+const statusOrder = ref<Order | null>(null);
+const updatingStatusId = ref<number | null>(null);
+const paymentOpen = ref(false);
+const paymentOrder = ref<Order | null>(null);
+const paymentForm = useForm({
+    account_id: '',
+    amount: '',
+    note: '',
+});
 const filtered = computed(() => {
     const q = search.value.trim().toLowerCase();
 
@@ -78,11 +100,6 @@ const filtered = computed(() => {
           )
         : orders;
 });
-const money = (value: number | string) =>
-    Number(value || 0).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
 const formatDate = (value: string | null) =>
     value
         ? new Intl.DateTimeFormat(undefined, {
@@ -95,6 +112,16 @@ const statusLabel = (status: number) =>
     ['Pending', 'Processing', 'Delivered', 'Cancelled'][status] ?? 'Unknown';
 const paymentLabel = (status: number) =>
     ['Unpaid', 'Paid', 'Partial'][status] ?? 'Unknown';
+const defaultBankAccount = computed(
+    () =>
+        bankAccounts.find((account) => account.is_default === 1) ??
+        bankAccounts[0],
+);
+const selectedPaymentAccount = computed(() =>
+    bankAccounts.find(
+        (account) => String(account.id) === String(paymentForm.account_id),
+    ),
+);
 const showDetails = (order: Order) => {
     selected.value = order;
     detailsOpen.value = true;
@@ -102,6 +129,60 @@ const showDetails = (order: Order) => {
 const showDelete = (order: Order) => {
     selected.value = order;
     deleteOpen.value = true;
+};
+const openStatusConfirmation = (order: Order) => {
+    if (order.order_status > 1 || updatingStatusId.value !== null) {
+        return;
+    }
+
+    statusOrder.value = order;
+    statusOpen.value = true;
+};
+const confirmAdvanceStatus = () => {
+    if (!statusOrder.value) {
+        return;
+    }
+
+    updatingStatusId.value = statusOrder.value.id;
+    router.post(
+        `/orders/${statusOrder.value.id}/advance-status`,
+        {},
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                statusOpen.value = false;
+                statusOrder.value = null;
+            },
+            onFinish: () => {
+                updatingStatusId.value = null;
+            },
+        },
+    );
+};
+const openPayment = (order: Order) => {
+    paymentOrder.value = order;
+    paymentForm.reset();
+    paymentForm.account_id = defaultBankAccount.value
+        ? String(defaultBankAccount.value.id)
+        : '';
+    paymentForm.amount = Number(order.due_amount || 0).toFixed(2);
+    paymentForm.note = '';
+    paymentForm.clearErrors();
+    paymentOpen.value = true;
+};
+const submitPayment = () => {
+    if (!paymentOrder.value) {
+        return;
+    }
+
+    paymentForm.post(`/orders/${paymentOrder.value.id}/payment`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            paymentOpen.value = false;
+            paymentOrder.value = null;
+            paymentForm.reset();
+        },
+    });
 };
 const deleteOrder = () => {
     if (!selected.value) {
@@ -129,7 +210,7 @@ defineOptions({
 
 <template>
     <Head title="Orders" />
-    <div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
+    <div class="flex h-full flex-1 flex-col gap-2 p-4 md:p-6">
         <div
             class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
         >
@@ -151,20 +232,36 @@ defineOptions({
         </div>
         <div class="overflow-hidden rounded-md border">
             <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+                <table class="w-full table-fixed text-sm">
+                    <colgroup>
+                        <col class="w-[5%]" />
+                        <col class="w-[16%]" />
+                        <col class="w-[25%]" />
+                        <col class="w-[8%]" />
+                        <col class="w-[14%]" />
+                        <col class="w-[13%]" />
+                        <col class="w-[14%]" />
+                        <col class="w-[5%]" />
+                    </colgroup>
                     <thead class="border-b bg-muted/50 text-left">
                         <tr>
+                            <th class="px-4 py-3 text-center font-medium">
+                                SL
+                            </th>
                             <th class="px-4 py-3 font-medium">Order</th>
                             <th class="px-4 py-3 font-medium">Customer</th>
                             <th class="px-4 py-3 text-center font-medium">
                                 Items
                             </th>
-                            <th class="px-4 py-3 text-right font-medium">
+                            <th class="px-4 py-3 text-center font-medium">
                                 Total
                             </th>
-                            <th class="px-4 py-3 font-medium">Payment</th>
-                            <th class="px-4 py-3 font-medium">Status</th>
-                            <th class="px-4 py-3 font-medium">Order date</th>
+                            <th class="px-4 py-3 text-center font-medium">
+                                Payment
+                            </th>
+                            <th class="px-4 py-3 text-center font-medium">
+                                Delivery status
+                            </th>
                             <th class="w-14 px-4 py-3">
                                 <span class="sr-only">Actions</span>
                             </th>
@@ -172,12 +269,27 @@ defineOptions({
                     </thead>
                     <tbody class="divide-y">
                         <tr
-                            v-for="order in filtered"
+                            v-for="(order, index) in filtered"
                             :key="order.id"
                             class="hover:bg-muted/20"
                         >
-                            <td class="px-4 py-3 font-medium">
-                                {{ order.order_number }}
+                            <td class="px-4 py-3 text-center">
+                                {{ index + 1 }}
+                            </td>
+                            <td class="px-4 py-3 font-medium whitespace-nowrap">
+                                <button
+                                    type="button"
+                                    class="text-left text-primary underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                    :aria-label="`View details for order ${order.order_number}`"
+                                    @click="showDetails(order)"
+                                >
+                                    {{ order.order_number }}
+                                </button>
+                                <div
+                                    class="mt-1 text-xs font-normal text-muted-foreground"
+                                >
+                                    {{ formatDate(order.order_date) }}
+                                </div>
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
@@ -193,14 +305,14 @@ defineOptions({
                                     >
                                         <UserRound class="size-4" />
                                     </div>
-                                    <div>
-                                        <div class="font-medium">
+                                    <div class="min-w-0">
+                                        <div class="truncate font-medium">
                                             {{
                                                 order.customer_name || 'Unknown'
                                             }}
                                         </div>
                                         <div
-                                            class="text-xs text-muted-foreground"
+                                            class="truncate text-xs text-muted-foreground"
                                         >
                                             {{
                                                 order.customer_phone ||
@@ -213,32 +325,65 @@ defineOptions({
                             <td class="px-4 py-3 text-center">
                                 {{ order.total_product }}
                             </td>
-                            <td class="px-4 py-3 text-right font-medium">
+                            <td class="px-4 py-3 text-center font-medium">
                                 {{ money(order.total_amount) }}
                             </td>
-                            <td class="px-4 py-3">
+                            <td class="px-4 py-3 text-center">
+                                <div class="flex flex-col items-center gap-2">
+                                    <span
+                                        class="rounded-sm px-2 py-1 text-xs font-medium"
+                                        :class="
+                                            order.payment_status === 1
+                                                ? 'bg-emerald-100 text-emerald-700'
+                                                : order.payment_status === 2
+                                                  ? 'bg-amber-100 text-amber-700'
+                                                  : 'bg-red-100 text-red-700'
+                                        "
+                                        >{{
+                                            paymentLabel(order.payment_status)
+                                        }}</span
+                                    >
+                                    <button
+                                        v-if="order.payment_status !== 1"
+                                        type="button"
+                                        class="text-xs font-medium text-blue-600 underline-offset-4 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                                        @click="openPayment(order)"
+                                    >
+                                        Make Payment
+                                    </button>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <button
+                                    v-if="order.order_status < 2"
+                                    type="button"
+                                    class="rounded-sm px-2 py-1 text-xs font-medium transition-colors hover:opacity-80 disabled:cursor-wait disabled:opacity-60"
+                                    :class="
+                                        order.order_status === 0
+                                            ? 'bg-amber-100 text-amber-700'
+                                            : 'bg-sky-100 text-sky-700'
+                                    "
+                                    :disabled="updatingStatusId !== null"
+                                    :title="`Change delivery status to ${statusLabel(order.order_status + 1)}`"
+                                    @click="openStatusConfirmation(order)"
+                                >
+                                    {{
+                                        updatingStatusId === order.id
+                                            ? 'Updating...'
+                                            : statusLabel(order.order_status)
+                                    }}
+                                </button>
                                 <span
+                                    v-else
                                     class="rounded-sm px-2 py-1 text-xs font-medium"
                                     :class="
-                                        order.payment_status === 1
+                                        order.order_status === 2
                                             ? 'bg-emerald-100 text-emerald-700'
-                                            : order.payment_status === 2
-                                              ? 'bg-amber-100 text-amber-700'
-                                              : 'bg-red-100 text-red-700'
+                                            : 'bg-red-100 text-red-700'
                                     "
-                                    >{{
-                                        paymentLabel(order.payment_status)
-                                    }}</span
                                 >
-                            </td>
-                            <td class="px-4 py-3">
-                                <span
-                                    class="rounded-sm bg-muted px-2 py-1 text-xs font-medium"
-                                    >{{ statusLabel(order.order_status) }}</span
-                                >
-                            </td>
-                            <td class="px-4 py-3">
-                                {{ formatDate(order.order_date) }}
+                                    {{ statusLabel(order.order_status) }}
+                                </span>
                             </td>
                             <td class="px-4 py-3">
                                 <DropdownMenu
@@ -398,4 +543,147 @@ defineOptions({
             ></DialogContent
         ></Dialog
     >
+    <Dialog v-model:open="statusOpen">
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Change delivery status</DialogTitle>
+                <DialogDescription>
+                    Are you sure you want to change
+                    {{ statusOrder?.order_number }} delivery status to
+                    {{
+                        statusOrder
+                            ? statusLabel(statusOrder.order_status + 1)
+                            : ''
+                    }}?
+                </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+                <Button variant="outline" @click="statusOpen = false"
+                    >No</Button
+                >
+                <Button
+                    :disabled="updatingStatusId !== null"
+                    @click="confirmAdvanceStatus"
+                    >{{
+                        updatingStatusId !== null ? 'Updating...' : 'Yes'
+                    }}</Button
+                >
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+    <Dialog v-model:open="paymentOpen">
+        <DialogContent>
+            <form class="space-y-4" @submit.prevent="submitPayment">
+                <DialogHeader>
+                    <DialogTitle>Order payment</DialogTitle>
+                    <DialogDescription>
+                        Record payment for {{ paymentOrder?.order_number }}.
+                        Due: {{ money(paymentOrder?.due_amount ?? 0) }}
+                    </DialogDescription>
+                </DialogHeader>
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="space-y-2">
+                        <label
+                            for="payment_account"
+                            class="text-sm font-medium"
+                        >
+                            Account
+                        </label>
+                        <select
+                            id="payment_account"
+                            v-model="paymentForm.account_id"
+                            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors outline-none focus-visible:border-foreground/60 disabled:cursor-not-allowed disabled:opacity-50"
+                            autofocus
+                        >
+                            <option value="" disabled>Select account</option>
+                            <option
+                                v-for="account in bankAccounts"
+                                :key="account.id"
+                                :value="String(account.id)"
+                            >
+                                {{ account.name }}
+                                {{
+                                    account.account_number
+                                        ? `(${account.account_number})`
+                                        : ''
+                                }}
+                            </option>
+                        </select>
+                        <p
+                            v-if="selectedPaymentAccount"
+                            class="text-xs text-muted-foreground"
+                        >
+                            Available balance:
+                            {{
+                                money(selectedPaymentAccount.available_balance)
+                            }}
+                        </p>
+                        <p
+                            v-if="paymentForm.errors.account_id"
+                            class="text-sm text-destructive"
+                        >
+                            {{ paymentForm.errors.account_id }}
+                        </p>
+                    </div>
+                    <div class="space-y-2">
+                        <label for="payment_amount" class="text-sm font-medium">
+                            Payment amount
+                        </label>
+                        <Input
+                            id="payment_amount"
+                            v-model="paymentForm.amount"
+                            class="focus-visible:border-foreground/60 focus-visible:ring-0"
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            :max="paymentOrder?.due_amount"
+                            placeholder="0.00"
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            Amount cannot exceed the total due.
+                        </p>
+                        <p
+                            v-if="paymentForm.errors.amount"
+                            class="text-sm text-destructive"
+                        >
+                            {{ paymentForm.errors.amount }}
+                        </p>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label for="payment_note" class="text-sm font-medium">
+                        Note
+                    </label>
+                    <textarea
+                        id="payment_note"
+                        v-model="paymentForm.note"
+                        class="flex min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-foreground/60 disabled:cursor-not-allowed disabled:opacity-50"
+                        placeholder="Optional payment note"
+                    />
+                    <p
+                        v-if="paymentForm.errors.note"
+                        class="text-sm text-destructive"
+                    >
+                        {{ paymentForm.errors.note }}
+                    </p>
+                </div>
+                <DialogFooter>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        @click="paymentOpen = false"
+                    >
+                        Cancel
+                    </Button>
+                    <Button type="submit" :disabled="paymentForm.processing">
+                        {{
+                            paymentForm.processing
+                                ? 'Saving...'
+                                : 'Save payment'
+                        }}
+                    </Button>
+                </DialogFooter>
+            </form>
+        </DialogContent>
+    </Dialog>
 </template>

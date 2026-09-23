@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useCurrency } from '@/composables/useCurrency';
 import { formatDate } from '@/lib/utils';
 
 type BankAccount = {
@@ -55,6 +56,7 @@ const defaultConfirmOpen = ref(false);
 const selectedAccount = ref<BankAccount | null>(null);
 const deleting = ref(false);
 const changingDefault = ref(false);
+const { money: formatBalance } = useCurrency();
 
 const filteredAccounts = computed(() => {
     const query = search.value.trim().toLowerCase();
@@ -69,12 +71,6 @@ const filteredAccounts = computed(() => {
             .some((value) => value!.toLowerCase().includes(query)),
     );
 });
-
-const formatBalance = (balance: string) =>
-    new Intl.NumberFormat(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    }).format(Number(balance));
 
 const openCreate = () => {
     selectedAccount.value = null;
@@ -170,8 +166,6 @@ defineOptions({
                 Add account
             </Button>
         </div>
-
-        
 
         <div class="overflow-hidden rounded-md border">
             <div class="overflow-x-auto">

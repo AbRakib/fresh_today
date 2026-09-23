@@ -11,6 +11,7 @@ import {
 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { Input } from '@/components/ui/input';
+import { useCurrency } from '@/composables/useCurrency';
 import { formatDate } from '@/lib/utils';
 
 type Transaction = {
@@ -32,12 +33,7 @@ type Transaction = {
 const { transactions } = defineProps<{ transactions: Transaction[] }>();
 
 const search = ref('');
-
-const money = (value: string | number) =>
-    Number(value || 0).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
+const { money } = useCurrency();
 
 const transactionTypeLabel = (type: number) =>
     type === 0 ? 'Withdraw' : 'Deposit';
@@ -108,7 +104,7 @@ defineOptions({
     <Head title="Transactions" />
 
     <div class="flex h-full flex-1 flex-col gap-2 p-4 md:p-6">
-        <div class="grid gap-3 sm:grid-cols-3 mb-3">
+        <div class="mb-3 grid gap-3 sm:grid-cols-3">
             <div class="rounded-md border p-4">
                 <div class="flex items-center justify-between gap-3">
                     <div>
@@ -257,10 +253,14 @@ defineOptions({
                                 <div
                                     class="mt-1 truncate text-xs text-muted-foreground"
                                 >
-                                    {{ referenceLabel(transaction.reference_type) }}
+                                    {{
+                                        referenceLabel(
+                                            transaction.reference_type,
+                                        )
+                                    }}
                                 </div>
                             </td>
-                            <td class="whitespace-nowrap px-4 py-3">
+                            <td class="px-4 py-3 whitespace-nowrap">
                                 <span
                                     class="inline-flex rounded-sm px-1.5 py-0.5 text-xs font-medium"
                                     :class="
@@ -277,11 +277,11 @@ defineOptions({
                                 </span>
                             </td>
                             <td
-                                class="whitespace-nowrap px-4 py-3 text-right font-medium tabular-nums"
+                                class="px-4 py-3 text-right font-medium whitespace-nowrap tabular-nums"
                             >
                                 {{ money(transaction.total_amount) }}
                             </td>
-                            <td class="whitespace-nowrap px-4 py-3">
+                            <td class="px-4 py-3 whitespace-nowrap">
                                 <div class="flex flex-col items-start gap-1">
                                     <span
                                         class="inline-flex rounded-sm px-1.5 py-0.5 text-xs font-medium"
@@ -297,9 +297,7 @@ defineOptions({
                                             )
                                         }}
                                     </span>
-                                    <span
-                                        class="text-xs text-muted-foreground"
-                                    >
+                                    <span class="text-xs text-muted-foreground">
                                         {{
                                             transaction.reviewed
                                                 ? 'Reviewed'
