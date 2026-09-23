@@ -55,8 +55,10 @@ onBeforeUnmount(() => {
 
     <h1 class="sr-only">Profile settings</h1>
 
-    <div class="flex">
-        <div class="flex w-full max-w-2xl flex-col space-y-6 rounded-lg border border-gray-200 p-10">
+    <div class="flex justify-center">
+        <div
+            class="flex w-full max-w-2xl flex-col space-y-6 rounded-lg border border-gray-200 p-10"
+        >
             <Heading
                 class="text-center"
                 variant="small"
@@ -100,7 +102,8 @@ onBeforeUnmount(() => {
                         />
                         <p class="text-xs text-muted-foreground">
                             {{
-                                photoFileName || 'JPG, PNG, GIF, or WebP up to 2 MB'
+                                photoFileName ||
+                                'JPG, PNG, GIF, or WebP up to 2 MB'
                             }}
                         </p>
                         <InputError :message="errors.photo" />
@@ -136,7 +139,9 @@ onBeforeUnmount(() => {
                     <InputError class="mt-2" :message="errors.email" />
                 </div>
 
-                <div v-if="page.props.mustVerifyEmail && !user.email_verified_at">
+                <div
+                    v-if="page.props.mustVerifyEmail && !user.email_verified_at"
+                >
                     <p class="-mt-4 text-sm text-muted-foreground">
                         Your email address is unverified.
                         <Link
@@ -152,7 +157,8 @@ onBeforeUnmount(() => {
                         v-if="page.props.status === 'verification-link-sent'"
                         class="mt-2 text-sm font-medium text-green-600"
                     >
-                        A new verification link has been sent to your email address.
+                        A new verification link has been sent to your email
+                        address.
                     </div>
                 </div>
 

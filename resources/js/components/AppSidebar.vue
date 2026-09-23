@@ -58,6 +58,11 @@ const mainNavGroups: NavGroup[] = [
                 icon: ShoppingCart,
             },
             {
+                title: 'Delivery Charge',
+                href: '/delivery-charges',
+                icon: Truck,
+            },
+            {
                 title: 'Customers',
                 href: '/customers',
                 icon: Users,
