@@ -17,7 +17,7 @@ class CompanySettingController extends Controller
     {
         $setting = Setting::query()->where('deleted', 0)->first();
 
-        return Inertia::render('settings/Company', [
+        return Inertia::render('backend/settings/Company', [
             'setting' => [
                 'country_id' => $setting?->country_id,
                 'company_name' => $setting?->company_name ?? '',

@@ -33,7 +33,7 @@ class CustomerController extends Controller
                 'status' => $customer->status,
             ]);
 
-        return Inertia::render('customers/Index', ['customers' => $customers]);
+        return Inertia::render('backend/customers/Index', ['customers' => $customers]);
     }
 
     public function store(CustomerStoreRequest $request): RedirectResponse

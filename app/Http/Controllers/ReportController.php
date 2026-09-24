@@ -18,7 +18,7 @@ class ReportController extends Controller
 {
     public function stock(Request $request): Response
     {
-        return Inertia::render('reports/Stock', $this->stockData($request));
+        return Inertia::render('backend/reports/Stock', $this->stockData($request));
     }
 
     public function stockPdf(Request $request): HttpResponse
@@ -82,7 +82,7 @@ class ReportController extends Controller
 
     public function profitLoss(Request $request): Response
     {
-        return Inertia::render('reports/ProfitLoss', $this->profitLossData($request));
+        return Inertia::render('backend/reports/ProfitLoss', $this->profitLossData($request));
     }
 
     public function profitLossPdf(Request $request): HttpResponse

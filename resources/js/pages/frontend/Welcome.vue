@@ -20,6 +20,7 @@ import { useCurrency } from '@/composables/useCurrency';
 type Product = {
     id: number;
     name: string;
+    slug: string;
     thumbnail_url: string | null;
     short_description: string | null;
     unit: string | null;
@@ -59,6 +60,8 @@ const discountLabel = (product: Product) => {
 
     return product.badge || 'Fresh';
 };
+const productUrl = (product: Product) => `/product/${product.slug}`;
+
 const productUnit = (product: Product) => {
     const amount = product.weight || product.gross_weight;
 
@@ -350,7 +353,10 @@ onBeforeUnmount(() => {
                             }}</span
                         >
 
-                        <div class="overflow-hidden rounded-lg bg-slate-50">
+                        <Link
+                            :href="productUrl(product)"
+                            class="block overflow-hidden rounded-lg bg-slate-50"
+                        >
                             <img
                                 :src="
                                     product.thumbnail_url ??
@@ -359,14 +365,15 @@ onBeforeUnmount(() => {
                                 :alt="product.name"
                                 class="h-40 w-full object-cover transition duration-300 group-hover:scale-105"
                             />
-                        </div>
+                        </Link>
 
                         <div class="pt-3">
-                            <h3
-                                class="min-h-10 text-xs leading-5 font-semibold text-slate-800"
+                            <Link
+                                :href="productUrl(product)"
+                                class="block min-h-10 text-xs leading-5 font-semibold text-slate-800 hover:text-[#176536]"
                             >
                                 {{ product.name }}
-                            </h3>
+                            </Link>
                             <p class="mt-1 text-[10px] text-slate-500">
                                 {{
                                     product.short_description ||

@@ -33,7 +33,7 @@ class TransactionController extends Controller
                 'created_at' => $transaction->created_at?->format('Y-m-d'),
             ]);
 
-        return Inertia::render('transactions/Index', [
+        return Inertia::render('backend/transactions/Index', [
             'transactions' => $transactions,
         ]);
     }

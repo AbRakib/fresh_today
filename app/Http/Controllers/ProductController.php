@@ -17,6 +17,24 @@ use Inertia\Response;
 
 class ProductController extends Controller
 {
+    public function frontendIndex(): Response
+    {
+        return Inertia::render('frontend/FreshFish', [
+            'frontend_products' => $this->frontendProducts(),
+        ]);
+    }
+
+    public function frontendShow(Product $product): Response
+    {
+        abort_if($product->deleted || ! $product->status, 404);
+
+        $product->load(['category:id,name', 'subcategory:id,name', 'measurementUnit:id,short_name']);
+
+        return Inertia::render('frontend/ProductDetails', [
+            'product' => $this->frontendProductData($product),
+        ]);
+    }
+
     public function index(): Response
     {
         $products = Product::query()
@@ -52,14 +70,14 @@ class ProductController extends Controller
                 'created_at' => $product->created_at?->format('Y-m-d'),
             ]);
 
-        return Inertia::render('products/Index', [
+        return Inertia::render('backend/products/Index', [
             'products' => $products,
         ]);
     }
 
     public function create(): Response
     {
-        return Inertia::render('products/Create', [
+        return Inertia::render('backend/products/Create', [
             ...$this->formOptions(),
             'nextSku' => $this->nextSku(),
         ]);
@@ -69,7 +87,7 @@ class ProductController extends Controller
     {
         abort_if($product->deleted, 404);
 
-        return Inertia::render('products/Edit', [
+        return Inertia::render('backend/products/Edit', [
             ...$this->formOptions(),
             'product' => $this->productFormData($product),
         ]);
@@ -209,6 +227,43 @@ class ProductController extends Controller
             'minimum_order_quantity' => $product->minimum_order_quantity,
             'is_featured' => $product->is_featured,
             'status' => $product->status,
+        ];
+    }
+
+    public function frontendProducts()
+    {
+        return Product::query()
+            ->with(['category:id,name', 'subcategory:id,name', 'measurementUnit:id,short_name'])
+            ->where('deleted', 0)
+            ->where('status', 1)
+            ->latest('id')
+            ->get()
+            ->map(fn (Product $product) => $this->frontendProductData($product));
+    }
+
+    private function frontendProductData(Product $product): array
+    {
+        return [
+            'id' => $product->id,
+            'category_name' => $product->category?->name,
+            'subcategory_name' => $product->subcategory?->name,
+            'name' => $product->name,
+            'slug' => $product->slug,
+            'sku' => $product->sku,
+            'thumbnail_url' => $product->thumbnail
+                ? Storage::disk('public')->url($product->thumbnail)
+                : null,
+            'short_description' => $product->short_description,
+            'description' => $product->description,
+            'unit' => $product->measurementUnit?->short_name,
+            'gross_weight' => $product->gross_weight,
+            'weight' => $product->weight,
+            'regular_price' => $product->regular_price,
+            'sale_price' => $product->sale_price,
+            'discount_percentage' => $product->discount_percentage,
+            'badge' => $product->badge,
+            'stock_quantity' => $product->stock_quantity,
+            'minimum_order_quantity' => $product->minimum_order_quantity,
         ];
     }
 }

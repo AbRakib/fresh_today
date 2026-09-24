@@ -63,7 +63,7 @@ class PurchaseController extends Controller
                 ]),
             ]);
 
-        return Inertia::render('purchases/Index', [
+        return Inertia::render('backend/purchases/Index', [
             'purchases' => $purchases,
             'bankAccounts' => $this->paymentAccountOptions(),
         ]);
@@ -71,7 +71,7 @@ class PurchaseController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('purchases/Create', [
+        return Inertia::render('backend/purchases/Create', [
             ...$this->formOptions(),
             'nextPurchaseNumber' => $this->nextPurchaseNumber(),
         ]);
@@ -83,7 +83,7 @@ class PurchaseController extends Controller
 
         $purchase->load(['details' => fn ($query) => $query->where('deleted', 0)->orderBy('id')]);
 
-        return Inertia::render('purchases/Edit', [
+        return Inertia::render('backend/purchases/Edit', [
             ...$this->formOptions(),
             'purchase' => $this->purchaseFormData($purchase),
         ]);

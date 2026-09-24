@@ -39,7 +39,7 @@ class SubcategoryController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        return Inertia::render('subcategories/Index', [
+        return Inertia::render('backend/subcategories/Index', [
             'subcategories' => $subcategories,
             'categories' => $categories,
         ]);

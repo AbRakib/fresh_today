@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import {
     Check,
     ChevronDown,
@@ -13,16 +13,24 @@ import {
     SlidersHorizontal,
     Truck,
 } from '@lucide/vue';
+import { computed } from 'vue';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
 import { useCurrency } from '@/composables/useCurrency';
 
 type Product = {
+    id: number;
     name: string;
-    weight: string;
-    old: string;
-    price: string;
-    badge?: string;
+    slug: string;
+    thumbnail_url: string | null;
+    short_description: string | null;
+    unit: string | null;
+    gross_weight: string | null;
+    weight: string | null;
+    regular_price: string;
+    sale_price: string | null;
+    discount_percentage: string | null;
+    badge: string | null;
 };
 
 const filters = [
@@ -37,8 +45,7 @@ const filters = [
 ];
 
 const { money } = useCurrency();
-const priceAmount = (value: string) => Number(value.replace(/[^\d.]/g, ''));
-const displayPrice = (value: string) => money(priceAmount(value));
+const displayPrice = (value: string | null) => money(value ?? 0);
 
 const prices = [
     `Under ${money(500)}`,
@@ -54,125 +61,27 @@ const weights = [
     'Above 2kg',
 ];
 
-const products: Product[] = [
-    {
-        name: 'Rohu Fish (Rui)',
-        weight: '1kg - 1.2kg',
-        old: '420',
-        price: '380',
-    },
-    {
-        name: 'Catla Fish (Katal)',
-        weight: '1kg - 1.5kg',
-        old: '460',
-        price: '420',
-    },
-    {
-        name: 'Hilsha Fish (Ilish)',
-        weight: '500g - 700g',
-        old: '1,800',
-        price: '1,620',
-        badge: '10% OFF',
-    },
-    { name: 'Pangash Fish', weight: '1kg - 1.2kg', old: '320', price: '280' },
-    { name: 'Tilapia Fish', weight: '500g - 700g', old: '260', price: '230' },
-    {
-        name: 'Boal Fish',
-        weight: '1kg - 1.5kg',
-        old: '650',
-        price: '590',
-        badge: '10% OFF',
-    },
-    { name: 'Rui Fish Steak', weight: '500g', old: '340', price: '300' },
-    {
-        name: 'Silver Pomfret',
-        weight: '500g - 700g',
-        old: '580',
-        price: '520',
-        badge: '10% OFF',
-    },
-    {
-        name: 'Prawn (Bagda)',
-        weight: '500g',
-        old: '950',
-        price: '810',
-        badge: '15% OFF',
-    },
-    { name: 'Deshi Prawn (Golda)', weight: '500g', old: '950', price: '890' },
-    { name: 'Shrimp (Chingri)', weight: '500g', old: '620', price: '540' },
-    { name: 'Crab (Kakra)', weight: '500g - 700g', old: '550', price: '480' },
-    {
-        name: 'Sea Bass (Bhetki)',
-        weight: '500g - 700g',
-        old: '780',
-        price: '690',
-        badge: '10% OFF',
-    },
-    { name: 'Mackerel (Ayre)', weight: '1kg', old: '400', price: '360' },
-    { name: 'Red Snapper', weight: '500g - 700g', old: '680', price: '600' },
-    { name: 'Tuna Fish', weight: '500g - 700g', old: '650', price: '570' },
-    {
-        name: 'Shol Fish (Gajar)',
-        weight: '500g - 700g',
-        old: '420',
-        price: '360',
-    },
-    {
-        name: 'Magur Fish',
-        weight: '500g - 700g',
-        old: '380',
-        price: '320',
-        badge: '15% OFF',
-    },
-    { name: 'Koi Fish', weight: '500g - 700g', old: '360', price: '310' },
-    { name: 'Sole Fish', weight: '500g - 700g', old: '460', price: '420' },
-    { name: 'Dry Shutki (Lona)', weight: '250g', old: '220', price: '190' },
-    { name: 'Dry Loitta Shutki', weight: '250g', old: '240', price: '210' },
-    {
-        name: 'Dry Chingri Shutki',
-        weight: '250g',
-        old: '300',
-        price: '250',
-        badge: '17% OFF',
-    },
-    { name: 'Dry Kachki Shutki', weight: '250g', old: '200', price: '170' },
-    {
-        name: 'Salmon Fillet',
-        weight: '500g',
-        old: '1,250',
-        price: '1,090',
-        badge: '10% OFF',
-    },
-    { name: 'Fish Finger (Ready)', weight: '250g', old: '260', price: '220' },
-    {
-        name: 'Prawn Cutlet (Ready)',
-        weight: '250g',
-        old: '280',
-        price: '240',
-    },
-    {
-        name: 'Fish Curry Cut (Ready)',
-        weight: '500g',
-        old: '380',
-        price: '330',
-    },
-    {
-        name: 'Hilsha (Large)',
-        weight: '1kg - 1.2kg',
-        old: '2,200',
-        price: '1,980',
-        badge: '10% OFF',
-    },
-    { name: 'Rohu (Large)', weight: '1.5kg', old: '550', price: '490' },
-    { name: 'Catla (Large)', weight: '1.5kg', old: '600', price: '530' },
-    {
-        name: 'Pangash Fillet',
-        weight: '1kg',
-        old: '520',
-        price: '450',
-        badge: '13% OFF',
-    },
-];
+const page = usePage<{ frontend_products?: Product[] }>();
+const products = computed(() => page.props.frontend_products ?? []);
+
+const productUrl = (product: Product) => `/product/${product.slug}`;
+const dealPrice = (product: Product) =>
+    product.sale_price || product.regular_price;
+const showRegularPrice = (product: Product) =>
+    Boolean(product.sale_price) && product.sale_price !== product.regular_price;
+const discountLabel = (product: Product) => {
+    const discount = Number(product.discount_percentage ?? 0);
+
+    if (discount > 0) {
+        return `${Number.isInteger(discount) ? discount : discount.toFixed(1)}% OFF`;
+    }
+
+    return product.badge;
+};
+const productUnit = (product: Product) =>
+    [product.weight || product.gross_weight, product.unit]
+        .filter(Boolean)
+        .join(' ') || 'Per item';
 
 const imageUrl = (text: string) =>
     `https://placehold.co/420x360/f5f7f4/23833f?text=${encodeURIComponent(text)}`;
@@ -418,40 +327,53 @@ const imageUrl = (text: string) =>
                     >
                         <article
                             v-for="product in products"
-                            :key="product.name"
+                            :key="product.id"
                             class="relative rounded-lg border border-slate-200 bg-white p-2 shadow-sm"
                         >
                             <span
-                                v-if="product.badge"
+                                v-if="discountLabel(product)"
                                 class="absolute top-3 left-3 z-10 rounded bg-red-500 px-2 py-1 text-[10px] font-black text-white"
                             >
-                                {{ product.badge }}
+                                {{ discountLabel(product) }}
                             </span>
                             <button
                                 class="absolute top-3 right-3 z-10 grid h-7 w-7 place-items-center rounded-full bg-white text-slate-400 shadow"
                             >
                                 <Heart class="h-4 w-4" />
                             </button>
-                            <img
-                                :src="imageUrl(product.name)"
-                                :alt="product.name"
-                                class="h-44 w-full rounded-md object-cover"
-                            />
+                            <Link :href="productUrl(product)" class="block">
+                                <img
+                                    :src="
+                                        product.thumbnail_url ??
+                                        imageUrl(product.name)
+                                    "
+                                    :alt="product.name"
+                                    class="h-44 w-full rounded-md object-cover"
+                                />
+                            </Link>
                             <div class="p-2">
-                                <h3 class="text-sm font-bold text-slate-800">
+                                <Link
+                                    :href="productUrl(product)"
+                                    class="block text-sm font-bold text-slate-800 hover:text-[#218a37]"
+                                >
                                     {{ product.name }}
-                                </h3>
+                                </Link>
                                 <p class="mt-1 text-xs text-slate-500">
-                                    {{ product.weight }}
+                                    {{ productUnit(product) }}
                                 </p>
                                 <div class="mt-2 flex items-end gap-2">
                                     <span
+                                        v-if="showRegularPrice(product)"
                                         class="text-xs text-slate-400 line-through"
-                                        >{{ displayPrice(product.old) }}</span
+                                        >{{
+                                            displayPrice(product.regular_price)
+                                        }}</span
                                     >
                                     <span
                                         class="text-lg font-black text-[#218a37]"
-                                        >{{ displayPrice(product.price) }}</span
+                                        >{{
+                                            displayPrice(dealPrice(product))
+                                        }}</span
                                     >
                                 </div>
                                 <button

@@ -26,7 +26,7 @@ class DeliveryChargeController extends Controller
                 'created_at' => $deliveryCharge->created_at?->format('Y-m-d'),
             ]);
 
-        return Inertia::render('delivery-charges/Index', [
+        return Inertia::render('backend/delivery-charges/Index', [
             'deliveryCharges' => $deliveryCharges,
         ]);
     }

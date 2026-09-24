@@ -12,42 +12,19 @@ use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UnitController;
-use App\Models\Product;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    $products = Product::query()
-        ->with('measurementUnit:id,short_name')
-        ->where('deleted', 0)
-        ->where('status', 1)
-        ->latest('id')
-        ->get()
-        ->map(fn (Product $product) => [
-            'id' => $product->id,
-            'name' => $product->name,
-            'thumbnail_url' => $product->thumbnail
-                ? Storage::disk('public')->url($product->thumbnail)
-                : null,
-            'short_description' => $product->short_description,
-            'unit' => $product->measurementUnit?->short_name,
-            'gross_weight' => $product->gross_weight,
-            'weight' => $product->weight,
-            'regular_price' => $product->regular_price,
-            'sale_price' => $product->sale_price,
-            'discount_percentage' => $product->discount_percentage,
-            'badge' => $product->badge,
-        ]);
-
-    return Inertia::render('Welcome', [
-        'frontend_products' => $products,
+Route::get('/', function (ProductController $products) {
+    return Inertia::render('frontend/Welcome', [
+        'frontend_products' => $products->frontendProducts(),
     ]);
 })->name('home');
-Route::inertia('/fresh-fish', 'FreshFish')->name('fresh-fish');
+Route::get('/fresh-fish', [ProductController::class, 'frontendIndex'])->name('fresh-fish');
+Route::get('/product/{product:slug}', [ProductController::class, 'frontendShow'])->name('products.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+    Route::inertia('dashboard', 'backend/Dashboard')->name('dashboard');
     Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
     Route::post('customers', [CustomerController::class, 'store'])->name('customers.store');
     Route::post('customers/{customer}', [CustomerController::class, 'update'])->name('customers.update');

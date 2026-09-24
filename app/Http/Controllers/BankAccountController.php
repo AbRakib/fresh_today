@@ -34,7 +34,7 @@ class BankAccountController extends Controller
                 'created_at' => $bankAccount->created_at?->format('Y-m-d'),
             ]);
 
-        return Inertia::render('bank-accounts/Index', ['bankAccounts' => $bankAccounts]);
+        return Inertia::render('backend/bank-accounts/Index', ['bankAccounts' => $bankAccounts]);
     }
 
     public function store(BankAccountStoreRequest $request): RedirectResponse

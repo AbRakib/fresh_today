@@ -60,7 +60,7 @@ class OrderController extends Controller
                 ]),
             ]);
 
-        return Inertia::render('orders/Index', [
+        return Inertia::render('backend/orders/Index', [
             'orders' => $orders,
             'bankAccounts' => $this->paymentAccountOptions(),
         ]);
@@ -68,7 +68,7 @@ class OrderController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('orders/Create', [
+        return Inertia::render('backend/orders/Create', [
             ...$this->formOptions(),
             'nextOrderNumber' => $this->nextOrderNumber(),
         ]);
@@ -79,7 +79,7 @@ class OrderController extends Controller
         abort_if($order->deleted, 404);
         $order->load(['details' => fn ($query) => $query->where('deleted', 0)->orderBy('id')]);
 
-        return Inertia::render('orders/Edit', [
+        return Inertia::render('backend/orders/Edit', [
             ...$this->formOptions($order),
             'order' => $this->orderFormData($order),
         ]);

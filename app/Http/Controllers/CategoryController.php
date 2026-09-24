@@ -29,7 +29,7 @@ class CategoryController extends Controller
                 'created_at' => $category->created_at?->format('Y-m-d'),
             ]);
 
-        return Inertia::render('categories/Index', ['categories' => $categories]);
+        return Inertia::render('backend/categories/Index', ['categories' => $categories]);
     }
 
     public function store(CategoryStoreRequest $request): RedirectResponse

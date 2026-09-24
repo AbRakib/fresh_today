@@ -35,7 +35,7 @@ class SupplierController extends Controller
                 'status' => $supplier->status,
             ]);
 
-        return Inertia::render('suppliers/Index', ['suppliers' => $suppliers]);
+        return Inertia::render('backend/suppliers/Index', ['suppliers' => $suppliers]);
     }
 
     public function store(SupplierStoreRequest $request): RedirectResponse

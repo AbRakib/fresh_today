@@ -26,7 +26,7 @@ class UnitController extends Controller
                 'created_at' => $unit->created_at?->format('Y-m-d'),
             ]);
 
-        return Inertia::render('units/Index', ['units' => $units]);
+        return Inertia::render('backend/units/Index', ['units' => $units]);
     }
 
     public function store(UnitStoreRequest $request): RedirectResponse
