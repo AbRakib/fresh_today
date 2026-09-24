@@ -20,7 +20,7 @@ Route::get('/', function (ProductController $products) {
         'frontend_products' => $products->frontendProducts(),
     ]);
 })->name('home');
-Route::get('/fresh-fish', [ProductController::class, 'frontendIndex'])->name('fresh-fish');
+Route::get('/shop', [ProductController::class, 'frontendIndex'])->name('shop');
 Route::get('/product/{product:slug}', [ProductController::class, 'frontendShow'])->name('products.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {

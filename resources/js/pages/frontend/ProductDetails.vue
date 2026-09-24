@@ -68,8 +68,8 @@ const productUnit =
             <div class="mb-6 flex items-center gap-2 text-xs text-slate-500">
                 <Link href="/" class="hover:text-[#218a37]">Home</Link>
                 <ChevronRight class="h-3 w-3" />
-                <Link href="/fresh-fish" class="hover:text-[#218a37]">
-                    Fresh Fish
+                <Link href="/shop" class="hover:text-[#218a37]">
+                    Shop
                 </Link>
                 <ChevronRight class="h-3 w-3" />
                 <span class="text-slate-700">{{ product.name }}</span>

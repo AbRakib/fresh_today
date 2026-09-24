@@ -19,7 +19,7 @@ class ProductController extends Controller
 {
     public function frontendIndex(): Response
     {
-        return Inertia::render('frontend/FreshFish', [
+        return Inertia::render('frontend/Shop', [
             'frontend_products' => $this->frontendProducts(),
         ]);
     }
@@ -103,7 +103,7 @@ class ProductController extends Controller
 
         Product::query()->create($validated);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Product created.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Product has been created successfully.')]);
 
         return to_route('products.index');
     }
@@ -129,7 +129,7 @@ class ProductController extends Controller
 
         $product->update($validated);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Product updated.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Product has been updated successfully.')]);
 
         return to_route('products.index');
     }
@@ -144,7 +144,7 @@ class ProductController extends Controller
             'deleted_by' => $request->user()?->id,
         ]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Product deleted.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Product has been deleted successfully.')]);
 
         return to_route('products.index');
     }
@@ -264,6 +264,7 @@ class ProductController extends Controller
             'badge' => $product->badge,
             'stock_quantity' => $product->stock_quantity,
             'minimum_order_quantity' => $product->minimum_order_quantity,
+            'is_featured' => $product->is_featured,
         ];
     }
 }

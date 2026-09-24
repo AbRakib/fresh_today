@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
 import {
     ChevronDown,
     Fish,
@@ -10,6 +9,7 @@ import {
     ShoppingCart,
     UserRound,
 } from '@lucide/vue';
+import { computed } from 'vue';
 import { dashboard, login, register } from '@/routes';
 
 type FrontendCategory = {
@@ -21,6 +21,7 @@ type FrontendCategory = {
 const page = usePage<{ frontend_categories?: FrontendCategory[] }>();
 
 const frontendCategories = computed(() => page.props.frontend_categories ?? []);
+const isHomePage = computed(() => page.url.split('?')[0] === '/');
 </script>
 
 <template>
@@ -137,14 +138,14 @@ const frontendCategories = computed(() => page.props.frontend_categories ?? []);
             </nav>
         </div>
 
-        <div class="border-t border-slate-100">
+        <div v-if="isHomePage" class="border-t border-slate-100">
             <div
                 class="mx-auto flex w-[min(1180px,calc(100%-32px))] [scrollbar-width:none] gap-8 overflow-x-auto py-3 text-sm [&::-webkit-scrollbar]:hidden"
             >
                 <Link
                     v-for="(category, index) in frontendCategories"
                     :key="category.id"
-                    href="/fresh-fish"
+                    href="/shop"
                     class="flex shrink-0 items-center gap-2 pb-2"
                     :class="
                         index === 0

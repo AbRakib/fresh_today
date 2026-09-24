@@ -62,6 +62,9 @@ const discountLabel = (product: Product) => {
 };
 const productUrl = (product: Product) => `/product/${product.slug}`;
 
+const netWeightLabel = (product: Product) =>
+    [product.weight, product.unit].filter(Boolean).join(' ');
+
 const productUnit = (product: Product) => {
     const amount = product.weight || product.gross_weight;
 
@@ -285,7 +288,7 @@ onBeforeUnmount(() => {
                         <Link
                             v-for="category in categories"
                             :key="category.id"
-                            href="/fresh-fish"
+                            href="/shop"
                             class="group rounded-xl border border-slate-200 bg-white p-3 text-center shadow-[0_4px_16px_rgba(0,0,0,.08)] transition hover:-translate-y-1 hover:border-[#97d6a8]"
                         >
                             <div
@@ -380,6 +383,12 @@ onBeforeUnmount(() => {
                                     product.badge ||
                                     'Clean & Dressed'
                                 }}
+                            </p>
+                            <p
+                                v-if="netWeightLabel(product)"
+                                class="mt-1 text-[10px] font-semibold text-[#176536]"
+                            >
+                                Net weight: {{ netWeightLabel(product) }}
                             </p>
 
                             <div class="mt-3 flex flex-wrap items-end gap-2">
