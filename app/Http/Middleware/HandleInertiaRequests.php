@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Category;
 use App\Support\Currency;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -43,6 +44,18 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'currency' => Currency::current(),
+            'frontend_categories' => Category::query()
+                ->where('deleted', 0)
+                ->where('status', 1)
+                ->orderBy('id')
+                ->get(['id', 'name', 'icon'])
+                ->map(fn (Category $category) => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'icon_url' => $category->icon
+                        ? Storage::disk('public')->url($category->icon)
+                        : null,
+                ]),
             'auth' => [
                 'user' => $user ? [
                     ...$user->toArray(),

@@ -1,17 +1,13 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import {
     BadgeCheck,
-    Beef,
     Bike,
-    ChevronDown,
     ChevronLeft,
     ChevronRight,
-    Drumstick,
     Fish,
     Leaf,
     PackageCheck,
-    Salad,
     ShieldCheck,
     ShoppingCart,
     Truck,
@@ -22,144 +18,60 @@ import SiteHeader from '@/components/site/SiteHeader.vue';
 import { useCurrency } from '@/composables/useCurrency';
 
 type Product = {
+    id: number;
     name: string;
-    unit: string;
-    old: string;
-    price: string;
-    discount: string;
+    thumbnail_url: string | null;
+    short_description: string | null;
+    unit: string | null;
+    gross_weight: string | null;
+    weight: string | null;
+    regular_price: string;
+    sale_price: string | null;
+    discount_percentage: string | null;
+    badge: string | null;
 };
 
-const categories = [
-    { name: 'Fresh Water Fish', label: 'fresh water fish', icon: Fish },
-    { name: 'Shell Fish', label: 'shell fish', icon: Fish },
-    { name: 'Seafood', label: 'seafood', icon: Fish },
-    { name: 'Steaks & Fillets', label: 'steaks', icon: Fish },
-    { name: 'Chicken & Duck', label: 'chicken', icon: Drumstick },
-    { name: 'Beef & Mutton', label: 'meat', icon: Beef },
-    { name: 'Combo Pack', label: 'combo', icon: Fish },
-    { name: 'Dried Fish', label: 'dried fish', icon: Fish },
-    { name: 'Paste Spice', label: 'spices', icon: Salad },
-];
+type FrontendCategory = {
+    id: number;
+    name: string;
+    icon_url: string | null;
+};
 
-const products: Product[] = [
-    {
-        name: 'Imported Frozen Dory Fillets',
-        unit: '1 kg',
-        old: '640',
-        price: '580',
-        discount: '12% OFF',
-    },
-    {
-        name: 'Deshi Magur Fish',
-        unit: '500g',
-        old: '492',
-        price: '450',
-        discount: '8% OFF',
-    },
-    {
-        name: 'River Baila Fish',
-        unit: '500g',
-        old: '590',
-        price: '524',
-        discount: '11% OFF',
-    },
-    {
-        name: 'Biler Deshi Shing Fish',
-        unit: '500g',
-        old: '599',
-        price: '444',
-        discount: '10% OFF',
-    },
-    {
-        name: 'River Gulsha Tengra Fish',
-        unit: '500g',
-        old: '538',
-        price: '490',
-        discount: '9% OFF',
-    },
-    {
-        name: 'Datina Koral Fish',
-        unit: '1 kg',
-        old: '770',
-        price: '720',
-        discount: '7% OFF',
-    },
-    {
-        name: 'River Boal Fish',
-        unit: '1 kg',
-        old: '684',
-        price: '630',
-        discount: '9% OFF',
-    },
-    {
-        name: 'Sea Lal Poa Fish',
-        unit: '1 kg',
-        old: '744',
-        price: '670',
-        discount: '10% OFF',
-    },
-    {
-        name: 'Bagda Shrimp Whole',
-        unit: '500g',
-        old: '990',
-        price: '930',
-        discount: '6% OFF',
-    },
-    {
-        name: 'Panchmishali Fish',
-        unit: '1 kg',
-        old: '649',
-        price: '575',
-        discount: '10% OFF',
-    },
-    {
-        name: 'Premium Rui Fish',
-        unit: '1 kg',
-        old: '720',
-        price: '660',
-        discount: '8% OFF',
-    },
-    {
-        name: 'Fresh Prawn Medium',
-        unit: '500g',
-        old: '880',
-        price: '799',
-        discount: '9% OFF',
-    },
-    {
-        name: 'Tilapia Clean & Dressed',
-        unit: '1 kg',
-        old: '430',
-        price: '399',
-        discount: '7% OFF',
-    },
-    {
-        name: 'Katla Fish Steak',
-        unit: '500g',
-        old: '510',
-        price: '459',
-        discount: '10% OFF',
-    },
-    {
-        name: 'Fresh Salmon Cut',
-        unit: '500g',
-        old: '1450',
-        price: '1320',
-        discount: '9% OFF',
-    },
-];
+const page = usePage<{
+    frontend_categories?: FrontendCategory[];
+    frontend_products?: Product[];
+}>();
+const categories = computed(() => page.props.frontend_categories ?? []);
+const products = computed(() => page.props.frontend_products ?? []);
 
 const { money } = useCurrency();
-const priceAmount = (value: string) => Number(value.replace(/[^\d.]/g, ''));
-const displayPrice = (value: string) => money(priceAmount(value));
+const displayPrice = (value: string | null) => money(value ?? 0);
+const dealPrice = (product: Product) =>
+    product.sale_price || product.regular_price;
+const showRegularPrice = (product: Product) =>
+    Boolean(product.sale_price) && product.sale_price !== product.regular_price;
+const discountLabel = (product: Product) => {
+    const discount = Number(product.discount_percentage ?? 0);
 
-const visibleProducts = ref(10);
+    if (discount > 0) {
+        return `${Number.isInteger(discount) ? discount : discount.toFixed(1)}% OFF`;
+    }
+
+    return product.badge || 'Fresh';
+};
+const productUnit = (product: Product) => {
+    const amount = product.weight || product.gross_weight;
+
+    return (
+        [amount, product.unit].filter(Boolean).join(' ') ||
+        product.unit ||
+        'item'
+    );
+};
+
 const totalSeconds = ref(10 * 3600 + 45 * 60 + 32);
 let countdownTimer: number | undefined;
 
-const visibleProductList = computed(() =>
-    products.slice(0, visibleProducts.value),
-);
 const countdown = computed(() => {
     const hours = String(Math.floor(totalSeconds.value / 3600)).padStart(
         2,
@@ -175,10 +87,6 @@ const countdown = computed(() => {
 
 const imageUrl = (text: string, size = '500x360') =>
     `https://placehold.co/${size}/f7f8f5/2f7d45?text=${encodeURIComponent(text)}`;
-
-const loadMoreProducts = () => {
-    visibleProducts.value += 5;
-};
 
 onMounted(() => {
     countdownTimer = window.setInterval(() => {
@@ -373,7 +281,7 @@ onBeforeUnmount(() => {
                     >
                         <Link
                             v-for="category in categories"
-                            :key="category.name"
+                            :key="category.id"
                             href="/fresh-fish"
                             class="group rounded-xl border border-slate-200 bg-white p-3 text-center shadow-[0_4px_16px_rgba(0,0,0,.08)] transition hover:-translate-y-1 hover:border-[#97d6a8]"
                         >
@@ -381,17 +289,20 @@ onBeforeUnmount(() => {
                                 class="relative overflow-hidden rounded-lg bg-slate-50"
                             >
                                 <img
-                                    :src="imageUrl(category.label, '500x320')"
+                                    :src="imageUrl(category.name, '500x320')"
                                     :alt="category.name"
                                     class="h-32 w-full object-cover transition duration-300 group-hover:scale-105"
                                 />
                                 <span
                                     class="absolute bottom-2 left-1/2 grid h-9 w-9 -translate-x-1/2 translate-y-1/2 place-items-center rounded-full border border-[#97d6a8] bg-white text-[#176536] shadow"
                                 >
-                                    <component
-                                        :is="category.icon"
-                                        class="h-4 w-4"
+                                    <img
+                                        v-if="category.icon_url"
+                                        :src="category.icon_url"
+                                        :alt="category.name"
+                                        class="h-4 w-4 object-contain"
                                     />
+                                    <Fish v-else class="h-4 w-4" />
                                 </span>
                             </div>
                             <div
@@ -428,18 +339,23 @@ onBeforeUnmount(() => {
                     class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
                 >
                     <article
-                        v-for="(product, index) in visibleProductList"
-                        :key="product.name"
+                        v-for="product in products"
+                        :key="product.id"
                         class="group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-[0_4px_16px_rgba(0,0,0,.08)]"
                     >
                         <span
                             class="absolute top-2 left-2 z-10 rounded-md bg-red-500 px-2 py-1 text-[10px] leading-tight font-black whitespace-pre-line text-white"
-                            >{{ product.discount.replace(' ', '\n') }}</span
+                            >{{
+                                discountLabel(product).replace(' ', '\n')
+                            }}</span
                         >
 
                         <div class="overflow-hidden rounded-lg bg-slate-50">
                             <img
-                                :src="imageUrl(`Fresh Fish ${index + 1}`)"
+                                :src="
+                                    product.thumbnail_url ??
+                                    imageUrl(product.name)
+                                "
                                 :alt="product.name"
                                 class="h-40 w-full object-cover transition duration-300 group-hover:scale-105"
                             />
@@ -452,20 +368,29 @@ onBeforeUnmount(() => {
                                 {{ product.name }}
                             </h3>
                             <p class="mt-1 text-[10px] text-slate-500">
-                                Clean & Dressed
+                                {{
+                                    product.short_description ||
+                                    product.badge ||
+                                    'Clean & Dressed'
+                                }}
                             </p>
 
                             <div class="mt-3 flex flex-wrap items-end gap-2">
                                 <span
+                                    v-if="showRegularPrice(product)"
                                     class="text-xs text-slate-400 line-through"
-                                    >{{ displayPrice(product.old) }}</span
+                                    >{{
+                                        displayPrice(product.regular_price)
+                                    }}</span
                                 >
                                 <span
                                     class="text-base font-black text-[#176536]"
-                                    >{{ displayPrice(product.price) }}</span
+                                    >{{
+                                        displayPrice(dealPrice(product))
+                                    }}</span
                                 >
                                 <span class="pb-0.5 text-[10px] text-slate-500"
-                                    >/{{ product.unit }}</span
+                                    >/{{ productUnit(product) }}</span
                                 >
                             </div>
 
@@ -477,19 +402,6 @@ onBeforeUnmount(() => {
                             </button>
                         </div>
                     </article>
-                </div>
-
-                <div
-                    v-if="visibleProducts < products.length"
-                    class="mt-6 flex justify-center"
-                >
-                    <button
-                        class="inline-flex items-center gap-2 rounded-md bg-lime-500 px-8 py-3 text-sm font-bold text-white hover:bg-lime-600"
-                        @click="loadMoreProducts"
-                    >
-                        Load More Products
-                        <ChevronDown class="h-4 w-4" />
-                    </button>
                 </div>
             </section>
 

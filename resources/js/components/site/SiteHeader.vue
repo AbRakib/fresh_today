@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import {
     ChevronDown,
     Fish,
@@ -11,16 +12,15 @@ import {
 } from '@lucide/vue';
 import { dashboard, login, register } from '@/routes';
 
-const categoryLinks = [
-    'Fresh Fish',
-    'Prawn & Shrimp',
-    'Hilsha Corner',
-    'Crab & Shellfish',
-    'Dry Fish',
-    'Meat & Poultry',
-    'Ready to Cook',
-    'Offers',
-];
+type FrontendCategory = {
+    id: number;
+    name: string;
+    icon_url: string | null;
+};
+
+const page = usePage<{ frontend_categories?: FrontendCategory[] }>();
+
+const frontendCategories = computed(() => page.props.frontend_categories ?? []);
 </script>
 
 <template>
@@ -142,8 +142,8 @@ const categoryLinks = [
                 class="mx-auto flex w-[min(1180px,calc(100%-32px))] [scrollbar-width:none] gap-8 overflow-x-auto py-3 text-sm [&::-webkit-scrollbar]:hidden"
             >
                 <Link
-                    v-for="(link, index) in categoryLinks"
-                    :key="link"
+                    v-for="(category, index) in frontendCategories"
+                    :key="category.id"
                     href="/fresh-fish"
                     class="flex shrink-0 items-center gap-2 pb-2"
                     :class="
@@ -152,7 +152,14 @@ const categoryLinks = [
                             : 'text-slate-700 hover:text-[#218a37]'
                     "
                 >
-                    <Fish class="h-4 w-4" /> {{ link }}
+                    <img
+                        v-if="category.icon_url"
+                        :src="category.icon_url"
+                        :alt="`${category.name} icon`"
+                        class="h-4 w-4 object-contain"
+                    />
+                    <Fish v-else class="h-4 w-4" />
+                    {{ category.name }}
                 </Link>
             </div>
         </div>
