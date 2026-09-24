@@ -16,6 +16,9 @@ class CategoryController extends Controller
     public function index(): Response
     {
         $categories = Category::query()
+            ->withCount([
+                'products' => fn ($query) => $query->where('deleted', 0),
+            ])
             ->where('deleted', 0)
             ->latest('id')
             ->get()
@@ -26,6 +29,7 @@ class CategoryController extends Controller
                     ? Storage::disk('public')->url($category->icon)
                     : null,
                 'status' => $category->status,
+                'products_count' => $category->products_count,
                 'created_at' => $category->created_at?->format('Y-m-d'),
             ]);
 

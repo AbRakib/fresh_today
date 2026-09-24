@@ -45,7 +45,7 @@ type Product = {
     unit: string | null;
     gross_weight: string | null;
     weight: string | null;
-    regular_price: string;
+    cost_price: string;
     sale_price: string | null;
     discount_percentage: string | null;
     badge: string | null;

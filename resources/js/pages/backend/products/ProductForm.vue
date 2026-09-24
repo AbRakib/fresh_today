@@ -29,7 +29,7 @@ export type ProductFormData = {
     unit_id: number | null;
     gross_weight: string | null;
     weight: string | null;
-    regular_price: string;
+    cost_price: string;
     sale_price: string | null;
     discount_percentage: string | null;
     badge: string | null;
@@ -338,23 +338,23 @@ onBeforeUnmount(() => {
             >
                 <div class="grid gap-4 sm:grid-cols-3">
                     <div class="grid gap-1.5">
-                        <Label for="product_regular_price"
-                            >Regular price
+                        <Label for="product_cost_price"
+                            >Cost price
                             <span class="text-destructive" aria-hidden="true"
                                 >*</span
                             ></Label
                         >
                         <Input
-                            id="product_regular_price"
+                            id="product_cost_price"
                             type="number"
                             step="0.01"
                             min="0"
-                            name="regular_price"
-                            :default-value="product?.regular_price ?? '0'"
+                            name="cost_price"
+                            :default-value="product?.cost_price ?? '0'"
                             placeholder="0.00"
                             required
                         />
-                        <InputError :message="errors.regular_price" />
+                        <InputError :message="errors.cost_price" />
                     </div>
                     <div class="grid gap-1.5">
                         <Label for="product_sale_price"

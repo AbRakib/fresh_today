@@ -18,6 +18,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class Category extends Model
 {
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
     public function subcategories(): HasMany
     {
         return $this->hasMany(Subcategory::class);

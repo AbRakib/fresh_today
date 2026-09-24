@@ -24,7 +24,7 @@ return new class extends Migration
             $table->longText('description')->nullable();
             $table->string('weight')->nullable();
             $table->string('gross_weight')->nullable();
-            $table->decimal('regular_price', 10, 2)->default(0);
+            $table->decimal('cost_price', 10, 2)->default(0);
             $table->decimal('sale_price', 10, 2)->nullable();
             $table->decimal('discount_percentage', 5, 2)->nullable();
             $table->string('badge')->nullable();

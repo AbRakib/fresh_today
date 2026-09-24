@@ -390,11 +390,11 @@ class OrderController extends Controller
                     'email' => $customer->email, 'phone' => $customer->phone, 'address' => $customer->address,
                 ]),
             'products' => Product::query()->with('measurementUnit:id,short_name')->where('deleted', 0)->where('status', 1)
-                ->orderBy('name')->get(['id', 'name', 'sku', 'thumbnail', 'unit_id', 'regular_price', 'sale_price', 'stock_quantity'])
+                ->orderBy('name')->get(['id', 'name', 'sku', 'thumbnail', 'unit_id', 'cost_price', 'sale_price', 'stock_quantity'])
                 ->map(fn (Product $product) => [
                     'id' => $product->id, 'name' => $product->name, 'sku' => $product->sku,
                     'thumbnail_url' => $product->thumbnail ? Storage::disk('public')->url($product->thumbnail) : null,
-                    'unit' => $product->measurementUnit?->short_name, 'regular_price' => $product->regular_price,
+                    'unit' => $product->measurementUnit?->short_name, 'regular_price' => $product->cost_price,
                     'sale_price' => $product->sale_price, 'stock_quantity' => $product->stock_quantity + ($reserved[$product->id] ?? 0),
                 ]),
             'deliveryCharges' => DeliveryCharge::query()->where('deleted', 0)->where('status', 1)

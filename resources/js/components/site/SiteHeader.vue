@@ -153,13 +153,7 @@ const isHomePage = computed(() => page.url.split('?')[0] === '/');
                             : 'text-slate-700 hover:text-[#218a37]'
                     "
                 >
-                    <img
-                        v-if="category.icon_url"
-                        :src="category.icon_url"
-                        :alt="`${category.name} icon`"
-                        class="h-4 w-4 object-contain"
-                    />
-                    <Fish v-else class="h-4 w-4" />
+                    <Fish class="h-4 w-4" />
                     {{ category.name }}
                 </Link>
             </div>

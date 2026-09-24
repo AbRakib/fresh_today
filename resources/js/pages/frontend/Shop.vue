@@ -107,8 +107,34 @@ const productWeightInGrams = (product: Product) => {
 };
 
 const productUrl = (product: Product) => `/product/${product.slug}`;
+
+const formatWeightLabel = (
+    amount: string | null,
+    unit: string | null,
+): string => {
+    if (!amount) {
+        return unit ?? '';
+    }
+
+    const trimmedAmount = amount.trim();
+    const trimmedUnit = unit?.trim();
+
+    if (!trimmedUnit) {
+        return trimmedAmount.replace(/^([\d.,]+)\s*([a-zA-Z]+)$/, '$1 $2');
+    }
+
+    const amountAlreadyHasUnit = new RegExp(
+        `\\s*${trimmedUnit.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+        'i',
+    ).test(trimmedAmount);
+
+    return amountAlreadyHasUnit
+        ? trimmedAmount.replace(/^([\d.,]+)\s*([a-zA-Z]+)$/, '$1 $2')
+        : `${trimmedAmount} ${trimmedUnit}`;
+};
+
 const netWeightLabel = (product: Product) =>
-    [product.weight, product.unit].filter(Boolean).join(' ');
+    formatWeightLabel(product.weight, product.unit);
 const dealPrice = (product: Product) =>
     product.sale_price || product.regular_price;
 const showRegularPrice = (product: Product) =>
@@ -175,9 +201,8 @@ const discountLabel = (product: Product) => {
     return product.badge;
 };
 const productUnit = (product: Product) =>
-    [product.weight || product.gross_weight, product.unit]
-        .filter(Boolean)
-        .join(' ') || 'Per item';
+    formatWeightLabel(product.weight || product.gross_weight, product.unit) ||
+    'Per item';
 
 const imageUrl = (text: string) =>
     `https://placehold.co/420x360/f5f7f4/23833f?text=${encodeURIComponent(text)}`;
@@ -409,7 +434,7 @@ const imageUrl = (text: string) =>
                                 <div class="mt-2 flex items-end gap-2">
                                     <span
                                         v-if="showRegularPrice(product)"
-                                        class="text-xs text-slate-400 line-through"
+                                        class="text-xs text-red-600 line-through"
                                         >{{
                                             displayPrice(product.regular_price)
                                         }}</span

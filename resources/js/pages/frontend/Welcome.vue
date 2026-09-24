@@ -12,7 +12,7 @@ import {
     ShoppingCart,
     Truck,
 } from '@lucide/vue';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed } from 'vue';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
 import { useCurrency } from '@/composables/useCurrency';
@@ -62,49 +62,42 @@ const discountLabel = (product: Product) => {
 };
 const productUrl = (product: Product) => `/product/${product.slug}`;
 
+const formatWeightLabel = (
+    amount: string | null,
+    unit: string | null,
+): string => {
+    if (!amount) {
+        return unit ?? '';
+    }
+
+    const trimmedAmount = amount.trim();
+    const trimmedUnit = unit?.trim();
+
+    if (!trimmedUnit) {
+        return trimmedAmount.replace(/^([\d.,]+)\s*([a-zA-Z]+)$/, '$1 $2');
+    }
+
+    const amountAlreadyHasUnit = new RegExp(
+        `\\s*${trimmedUnit.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+        'i',
+    ).test(trimmedAmount);
+
+    return amountAlreadyHasUnit
+        ? trimmedAmount.replace(/^([\d.,]+)\s*([a-zA-Z]+)$/, '$1 $2')
+        : `${trimmedAmount} ${trimmedUnit}`;
+};
+
 const netWeightLabel = (product: Product) =>
-    [product.weight, product.unit].filter(Boolean).join(' ');
+    formatWeightLabel(product.weight, product.unit);
 
 const productUnit = (product: Product) => {
     const amount = product.weight || product.gross_weight;
 
-    return (
-        [amount, product.unit].filter(Boolean).join(' ') ||
-        product.unit ||
-        'item'
-    );
+    return formatWeightLabel(amount, product.unit) || product.unit || 'item';
 };
-
-const totalSeconds = ref(10 * 3600 + 45 * 60 + 32);
-let countdownTimer: number | undefined;
-
-const countdown = computed(() => {
-    const hours = String(Math.floor(totalSeconds.value / 3600)).padStart(
-        2,
-        '0',
-    );
-    const minutes = String(
-        Math.floor((totalSeconds.value % 3600) / 60),
-    ).padStart(2, '0');
-    const seconds = String(totalSeconds.value % 60).padStart(2, '0');
-
-    return `${hours} : ${minutes} : ${seconds}`;
-});
 
 const imageUrl = (text: string, size = '500x360') =>
     `https://placehold.co/${size}/f7f8f5/2f7d45?text=${encodeURIComponent(text)}`;
-
-onMounted(() => {
-    countdownTimer = window.setInterval(() => {
-        totalSeconds.value = Math.max(0, totalSeconds.value - 1);
-    }, 1000);
-});
-
-onBeforeUnmount(() => {
-    if (countdownTimer) {
-        window.clearInterval(countdownTimer);
-    }
-});
 </script>
 
 <template>
@@ -291,28 +284,29 @@ onBeforeUnmount(() => {
                             href="/shop"
                             class="group rounded-xl border border-slate-200 bg-white p-3 text-center shadow-[0_4px_16px_rgba(0,0,0,.08)] transition hover:-translate-y-1 hover:border-[#97d6a8]"
                         >
-                            <div
-                                class="relative overflow-hidden rounded-lg bg-slate-50"
-                            >
-                                <img
-                                    :src="imageUrl(category.name, '500x320')"
-                                    :alt="category.name"
-                                    class="h-32 w-full object-cover transition duration-300 group-hover:scale-105"
-                                />
-                                <span
-                                    class="absolute bottom-2 left-1/2 grid h-9 w-9 -translate-x-1/2 translate-y-1/2 place-items-center rounded-full border border-[#97d6a8] bg-white text-[#176536] shadow"
-                                >
+                            <div class="relative rounded-lg bg-slate-50 pb-5">
+                                <div class="overflow-hidden rounded-lg">
                                     <img
                                         v-if="category.icon_url"
                                         :src="category.icon_url"
                                         :alt="category.name"
-                                        class="h-4 w-4 object-contain"
+                                        class="h-32 w-full object-cover transition duration-300 group-hover:scale-105"
                                     />
-                                    <Fish v-else class="h-4 w-4" />
+                                    <div
+                                        v-else
+                                        class="flex h-32 w-full items-center justify-center bg-[#f7f8f5] px-4 text-center text-lg font-black text-[#2f7d45]"
+                                    >
+                                        {{ category.name }}
+                                    </div>
+                                </div>
+                                <span
+                                    class="absolute bottom-1 left-1/2 grid h-9 w-9 -translate-x-1/2 translate-y-1/2 place-items-center rounded-full border border-[#97d6a8] bg-white text-[#176536] shadow"
+                                >
+                                    <Fish class="h-4 w-4" />
                                 </span>
                             </div>
                             <div
-                                class="mt-6 pb-1 text-sm font-semibold text-slate-800"
+                                class="mt-4 pb-1 text-sm font-semibold text-slate-800"
                             >
                                 {{ category.name }}
                             </div>
@@ -325,20 +319,10 @@ onBeforeUnmount(() => {
                 id="deals"
                 class="mx-auto w-[min(1180px,calc(100%-32px))] pt-2 pb-5"
             >
-                <div
-                    class="mb-5 flex flex-wrap items-center justify-center gap-4"
-                >
+                <div class="mb-5 flex items-center justify-center">
                     <h2 class="text-xl font-black text-[#124327]">
-                        Deals of the Day
+                        Popular Products
                     </h2>
-                    <div
-                        class="rounded-full border border-[#97d6a8] bg-[#f2fbf4] px-3 py-1 text-xs font-semibold text-[#15512e]"
-                    >
-                        Offer ends in
-                        <span class="ml-2 font-mono text-sm font-black">{{
-                            countdown
-                        }}</span>
-                    </div>
                 </div>
 
                 <div
@@ -394,7 +378,7 @@ onBeforeUnmount(() => {
                             <div class="mt-3 flex flex-wrap items-end gap-2">
                                 <span
                                     v-if="showRegularPrice(product)"
-                                    class="text-xs text-slate-400 line-through"
+                                    class="text-xs text-red-600 line-through"
                                     >{{
                                         displayPrice(product.regular_price)
                                     }}</span

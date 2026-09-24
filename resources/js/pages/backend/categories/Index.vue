@@ -37,6 +37,7 @@ type Category = {
     name: string;
     icon_url: string | null;
     status: number;
+    products_count: number;
     created_at: string | null;
 };
 
@@ -165,7 +166,7 @@ defineOptions({
                         <tr>
                             <th class="w-16 px-4 py-3 font-medium">SL</th>
                             <th class="px-4 py-3 font-medium">Category</th>
-                            <th class="px-4 py-3 font-medium">Icon</th>
+                            <th class="px-4 py-3 font-medium">Products</th>
                             <th class="px-4 py-3 font-medium">Status</th>
                             <th class="px-4 py-3 font-medium">Created</th>
                             <th class="w-24 px-4 py-3 text-right font-medium">
@@ -185,9 +186,15 @@ defineOptions({
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     <div
-                                        class="flex size-9 items-center justify-center rounded-md bg-muted text-muted-foreground"
+                                        class="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted text-muted-foreground"
                                     >
-                                        <Tags class="size-4" />
+                                        <img
+                                            v-if="category.icon_url"
+                                            :src="category.icon_url"
+                                            :alt="`${category.name} icon`"
+                                            class="size-full object-cover"
+                                        />
+                                        <Tags v-else class="size-4" />
                                     </div>
                                     <div class="min-w-0">
                                         <div class="font-medium">
@@ -201,19 +208,8 @@ defineOptions({
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-4 py-3">
-                                <img
-                                    v-if="category.icon_url"
-                                    :src="category.icon_url"
-                                    :alt="`${category.name} icon`"
-                                    class="size-10 rounded-md border object-cover"
-                                />
-                                <div
-                                    v-else
-                                    class="flex size-10 items-center justify-center rounded-md border bg-muted text-muted-foreground"
-                                >
-                                    <Tags class="size-4" />
-                                </div>
+                            <td class="px-4 py-3 font-medium">
+                                {{ category.products_count }}
                             </td>
                             <td class="px-4 py-3">
                                 <span
