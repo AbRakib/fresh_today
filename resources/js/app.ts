@@ -21,6 +21,7 @@ createInertiaApp({
                 'frontend/ProductDetails',
                 'frontend/Wishlist',
                 'frontend/Cart',
+                'frontend/Checkout',
             ].includes(name):
                 return null;
             case name.startsWith('backend/auth/'):

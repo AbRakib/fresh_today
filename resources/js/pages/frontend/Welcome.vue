@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
     BadgeCheck,
     Bike,
@@ -31,6 +31,8 @@ type Product = {
     sale_price: string | null;
     discount_percentage: string | null;
     badge: string | null;
+    stock_quantity: number;
+    is_in_cart: boolean;
 };
 
 type FrontendCategory = {
@@ -61,7 +63,17 @@ const discountLabel = (product: Product) => {
 
     return product.badge || 'Fresh';
 };
-const productUrl = (product: Product) => `/product/${product.slug}`;
+const productUrl = (product: Product) => '/product/' + product.slug;
+const toggleCart = (product: Product) => {
+    const options = { preserveScroll: true, preserveState: true };
+
+    if (product.is_in_cart) {
+        router.visit('/cart');
+        return;
+    }
+
+    router.post('/cart/' + product.id, {}, options);
+};
 
 const formatWeightLabel = (
     amount: string | null,
@@ -398,10 +410,26 @@ const imageUrl = (text: string, size = '500x360') =>
                             <div class="mt-3 grid grid-cols-2 gap-2">
                                 <button
                                     type="button"
-                                    class="flex min-h-9 items-center justify-center gap-1.5 rounded-md border border-lime-500 px-2 text-[11px] font-bold text-lime-600 transition hover:bg-lime-500 hover:text-white"
+                                    class="flex min-h-9 items-center justify-center gap-1.5 rounded-md border border-lime-500 px-2 text-[11px] font-bold text-lime-600 transition hover:bg-lime-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                                    :class="
+                                        product.is_in_cart
+                                            ? 'border-[#176536] bg-[#176536] text-white hover:bg-[#0f4b27]'
+                                            : ''
+                                    "
+                                    :disabled="
+                                        product.stock_quantity < 1 &&
+                                        !product.is_in_cart
+                                    "
+                                    @click="toggleCart(product)"
                                 >
                                     <ShoppingCart class="h-3.5 w-3.5" />
-                                    <span>Cart</span>
+                                    <span>{{
+                                        product.is_in_cart
+                                            ? 'View'
+                                            : product.stock_quantity > 0
+                                              ? 'Cart'
+                                              : 'Out'
+                                    }}</span>
                                 </button>
                                 <button
                                     type="button"

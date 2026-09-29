@@ -3,6 +3,7 @@
 use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DeliveryChargeController;
 use App\Http\Controllers\FrontendCustomerAuthController;
@@ -31,6 +32,8 @@ Route::delete('/wishlist/{product}', [WishlistController::class, 'destroy'])->na
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/{product}', [CartController::class, 'store'])->name('cart.store');
 Route::delete('/cart/{product}', [CartController::class, 'destroy'])->name('cart.destroy');
+Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
+Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 Route::post('/customer/login', [FrontendCustomerAuthController::class, 'login'])->name('frontend.customer.login');
 Route::post('/customer/register', [FrontendCustomerAuthController::class, 'register'])->name('frontend.customer.register');
 Route::post('/customer/logout', [FrontendCustomerAuthController::class, 'logout'])->name('frontend.customer.logout');
@@ -90,6 +93,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/create', [OrderController::class, 'create'])->name('orders.create');
     Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
+    Route::get('orders/{order}/pdf', [OrderController::class, 'pdf'])->name('orders.pdf');
     Route::get('orders/{order}/edit', [OrderController::class, 'edit'])->name('orders.edit');
     Route::post('orders/{order}/advance-status', [OrderController::class, 'advanceStatus'])->name('orders.advance-status');
     Route::post('orders/{order}/payment', [OrderController::class, 'payment'])->name('orders.payment');

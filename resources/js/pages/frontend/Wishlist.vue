@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ChevronRight, Heart, ShoppingCart, Trash2 } from '@lucide/vue';
+import {
+    ChevronRight,
+    Heart,
+    ShoppingBag,
+    ShoppingCart,
+    Trash2,
+} from '@lucide/vue';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
 import { useCurrency } from '@/composables/useCurrency';
@@ -19,6 +25,7 @@ type WishlistProduct = {
     discount_percentage: string | null;
     badge: string | null;
     stock_quantity: number;
+    is_in_cart: boolean;
 };
 
 defineProps<{
@@ -53,12 +60,33 @@ const removeFromWishlist = (product: WishlistProduct) => {
     });
 };
 const addToCart = (product: WishlistProduct) => {
+    if (product.is_in_cart) {
+        router.visit('/cart');
+        return;
+    }
+
     router.post(
         `/cart/${product.id}`,
         {},
         {
             preserveScroll: true,
             preserveState: true,
+        },
+    );
+};
+const checkoutProduct = (product: WishlistProduct) => {
+    if (product.is_in_cart) {
+        router.visit('/checkout');
+        return;
+    }
+
+    router.post(
+        `/cart/${product.id}`,
+        {},
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => router.visit('/checkout'),
         },
     );
 };
@@ -159,19 +187,43 @@ const addToCart = (product: WishlistProduct) => {
                                 {{ money(product.regular_price) }}
                             </span>
                         </div>
-                        <button
-                            type="button"
-                            class="mt-3 flex w-full items-center justify-center gap-2 rounded border border-lime-500 py-2 text-xs font-bold text-lime-600 hover:bg-lime-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-                            :disabled="product.stock_quantity < 1"
-                            @click="addToCart(product)"
-                        >
-                            <ShoppingCart class="h-4 w-4" />
-                            {{
-                                product.stock_quantity > 0
-                                    ? 'Add to cart'
-                                    : 'Out of stock'
-                            }}
-                        </button>
+                        <div class="mt-3 grid gap-2">
+                            <button
+                                type="button"
+                                class="flex w-full items-center justify-center gap-2 rounded border border-lime-500 py-2 text-xs font-bold text-lime-600 hover:bg-lime-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                                :class="
+                                    product.is_in_cart
+                                        ? 'border-[#176536] bg-[#176536] text-white hover:bg-[#0f4b27]'
+                                        : ''
+                                "
+                                :disabled="
+                                    product.stock_quantity < 1 &&
+                                    !product.is_in_cart
+                                "
+                                @click="addToCart(product)"
+                            >
+                                <ShoppingCart class="h-4 w-4" />
+                                {{
+                                    product.is_in_cart
+                                        ? 'View cart'
+                                        : product.stock_quantity > 0
+                                          ? 'Add to cart'
+                                          : 'Out of stock'
+                                }}
+                            </button>
+                            <button
+                                type="button"
+                                class="flex w-full items-center justify-center gap-2 rounded bg-[#218a37] py-2 text-xs font-bold text-white hover:bg-[#176536] disabled:cursor-not-allowed disabled:opacity-50"
+                                :disabled="
+                                    product.stock_quantity < 1 &&
+                                    !product.is_in_cart
+                                "
+                                @click="checkoutProduct(product)"
+                            >
+                                <ShoppingBag class="h-4 w-4" />
+                                Checkout
+                            </button>
+                        </div>
                     </div>
                 </article>
             </div>

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import {
-    ChevronDown,
     Fish,
     Heart,
     LogOut,
@@ -136,7 +135,7 @@ watch(
 <template>
     <div class="bg-[#15512e] text-xs text-white">
         <div
-            class="mx-auto flex h-9 w-[min(1180px,calc(100%-32px))] items-center justify-between gap-4"
+            class="mx-auto flex h-9 w-[min(1180px,calc(100%-32px))] items-center gap-4"
         >
             <div class="flex items-center gap-5">
                 <a
@@ -153,22 +152,6 @@ watch(
                     <Mail class="h-3.5 w-3.5" />
                     <span>support@freshtodaybd.com</span>
                 </a>
-            </div>
-
-            <div class="flex items-center gap-4">
-                <button class="flex items-center gap-1">
-                    EN <ChevronDown class="h-3 w-3" />
-                </button>
-                <button class="flex items-center gap-1">
-                    BDT <ChevronDown class="h-3 w-3" />
-                </button>
-                <a href="#" class="hidden md:block">Campaigns</a>
-                <Link
-                    href="/wishlist"
-                    class="hidden hover:text-[#e0f5e5] md:block"
-                >
-                    Wishlist ({{ wishlistCount }})
-                </Link>
             </div>
         </div>
     </div>

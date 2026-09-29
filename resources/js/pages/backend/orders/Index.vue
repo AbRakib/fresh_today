@@ -2,6 +2,7 @@
 import { Head, router, useForm } from '@inertiajs/vue3';
 import {
     Eye,
+    FileText,
     MoreVertical,
     Pencil,
     Plus,
@@ -400,6 +401,17 @@ defineOptions({
                                             ><Eye
                                                 class="size-4"
                                             />View</DropdownMenuItem
+                                        ><DropdownMenuItem :as-child="true">
+                                            <a
+                                                class="flex w-full cursor-pointer items-center gap-2"
+                                                :href="`/orders/${order.id}/pdf`"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                <FileText class="size-4" />
+                                                PDF
+                                            </a>
+                                        </DropdownMenuItem
                                         ><DropdownMenuItem
                                             @click="
                                                 router.visit(

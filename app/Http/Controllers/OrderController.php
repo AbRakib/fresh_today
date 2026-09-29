@@ -11,15 +11,21 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\PurchaseDetail;
+use App\Models\Setting;
 use App\Models\Transaction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Mpdf\Config\FontVariables;
+use Mpdf\Mpdf;
+use Mpdf\Output\Destination;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class OrderController extends Controller
 {
@@ -82,6 +88,48 @@ class OrderController extends Controller
         return Inertia::render('backend/orders/Edit', [
             ...$this->formOptions($order),
             'order' => $this->orderFormData($order),
+        ]);
+    }
+
+    public function pdf(Request $request, Order $order): HttpResponse
+    {
+        abort_if($order->deleted, 404);
+
+        $order->load([
+            'customer:id,name,email,phone,address',
+            'creator:id,name',
+            'details' => fn ($query) => $query
+                ->where('deleted', 0)
+                ->with('product:id,name,sku')
+                ->orderBy('id'),
+        ]);
+
+        $filename = $order->order_number.'.pdf';
+        $fontData = (new FontVariables)->getDefaults()['fontdata'];
+        $tempDirectory = storage_path('framework/cache/mpdf');
+
+        File::ensureDirectoryExists($tempDirectory);
+
+        // FreeSansBold lacks Bengali glyphs, so keep Bengali-capable FreeSans for bold text too.
+        $fontData['freesans']['B'] = 'FreeSans.ttf';
+        $fontData['freesans']['BI'] = 'FreeSansOblique.ttf';
+
+        $pdf = new Mpdf([
+            'format' => 'A4',
+            'tempDir' => $tempDirectory,
+            'fontdata' => $fontData,
+            'default_font' => 'freesans',
+        ]);
+        $pdf->WriteHTML(view('orders.pdf', [
+            'order' => $order,
+            'setting' => Setting::query()->first(['company_name', 'email', 'phone', 'address', 'logo']),
+        ])->render());
+
+        $disposition = $request->boolean('download') ? 'attachment' : 'inline';
+
+        return response($pdf->Output($filename, Destination::STRING_RETURN), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('%s; filename="%s"', $disposition, $filename),
         ]);
     }
 

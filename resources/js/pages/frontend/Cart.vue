@@ -180,13 +180,13 @@ const removeFromCart = (product: CartProduct) => {
                             money(cartTotal)
                         }}</span>
                     </div>
-                    <button
-                        type="button"
+                    <Link
+                        href="/checkout"
                         class="mt-5 flex min-h-11 w-full items-center justify-center gap-2 rounded bg-[#218a37] px-5 text-sm font-bold text-white hover:bg-[#176536]"
                     >
                         <ShoppingBag class="h-4 w-4" />
                         Checkout
-                    </button>
+                    </Link>
                 </aside>
             </div>
 

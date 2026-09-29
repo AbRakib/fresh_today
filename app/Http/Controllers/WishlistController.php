@@ -25,7 +25,11 @@ class WishlistController extends Controller
             ->whereHas('product', fn ($query) => $query
                 ->where('deleted', 0)
                 ->where('status', 1))
-            ->with(['product.category:id,name', 'product.measurementUnit:id,short_name'])
+            ->with([
+                'product.category:id,name',
+                'product.measurementUnit:id,short_name',
+                'product.carts' => fn ($query) => $query->where('customer_id', $customerId),
+            ])
             ->latest()
             ->get()
             ->map(function (Wishlist $wishlist) {
@@ -47,6 +51,7 @@ class WishlistController extends Controller
                     'discount_percentage' => $product->discount_percentage,
                     'badge' => $product->badge,
                     'stock_quantity' => $product->stock_quantity,
+                    'is_in_cart' => $product->carts->isNotEmpty(),
                 ];
             });
 

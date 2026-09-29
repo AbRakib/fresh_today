@@ -46,7 +46,7 @@ class HandleInertiaRequests extends Middleware
                 ->whereKey($request->session()->get('customer_id'))
                 ->where('deleted', 0)
                 ->where('status', 1)
-                ->first(['id', 'name', 'email', 'phone', 'profile_image'])
+                ->first(['id', 'name', 'email', 'phone', 'profile_image', 'address'])
             : null;
         $setting = Setting::query()
             ->where('deleted', 0)
