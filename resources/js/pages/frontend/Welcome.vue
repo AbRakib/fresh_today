@@ -165,10 +165,10 @@ const imageUrl = (text: string, size = '500x360') =>
                                 >
                             </div>
 
-                            <a
-                                href="#deals"
+                            <Link
+                                href="/shop"
                                 class="mt-7 inline-flex w-fit items-center rounded-md bg-lime-500 px-6 py-3 text-sm font-bold text-white shadow hover:bg-lime-600"
-                                >Shop Combo</a
+                                >Shop Combo</Link
                             >
                         </div>
 
@@ -465,10 +465,10 @@ const imageUrl = (text: string, size = '500x360') =>
                                     Hygienic packing • On-time delivery • 100%
                                     satisfaction
                                 </p>
-                                <a
-                                    href="#deals"
+                                <Link
+                                    href="/shop"
                                     class="mt-4 inline-block rounded-md bg-lime-500 px-5 py-2.5 text-xs font-bold text-white hover:bg-lime-600"
-                                    >Shop Now</a
+                                    >Shop Now</Link
                                 >
                             </div>
                         </div>

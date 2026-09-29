@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { Link, router, useForm, usePage } from '@inertiajs/vue3';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 import {
     Fish,
     Heart,
-    LogOut,
     Mail,
     Phone,
     Search,
@@ -18,6 +17,7 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
@@ -38,13 +38,17 @@ type FrontendCustomer = {
     avatar: string | null;
 };
 
+type FrontendUser = {
+    name: string;
+};
+
 const page = usePage<{
     frontend_categories?: FrontendCategory[];
     customer_auth_modal?: 'login' | 'register' | null;
     wishlist_count?: number;
     cart_count?: number;
     auth: {
-        user: unknown | null;
+        user: FrontendUser | null;
         customer: FrontendCustomer | null;
     };
 }>();
@@ -55,6 +59,7 @@ const cartCount = computed(() => page.props.cart_count ?? 0);
 const isHomePage = computed(() => page.url.split('?')[0] === '/');
 const customer = computed(() => page.props.auth.customer);
 const authModalOpen = ref(Boolean(page.props.customer_auth_modal));
+const logoutConfirmationOpen = ref(false);
 const authView = ref<'login' | 'register'>(
     page.props.customer_auth_modal ?? 'login',
 );
@@ -71,6 +76,8 @@ const registerForm = useForm({
     password: '',
     password_confirmation: '',
 });
+
+const logoutForm = useForm({});
 
 const openAccountModal = () => {
     authView.value = 'login';
@@ -117,8 +124,13 @@ const submitRegister = () => {
     });
 };
 
-const logoutCustomer = () => {
-    router.post('/customer/logout', {}, { preserveScroll: true });
+const confirmLogout = () => {
+    logoutForm.post('/customer/logout', {
+        preserveScroll: true,
+        onSuccess: () => {
+            logoutConfirmationOpen.value = false;
+        },
+    });
 };
 
 watch(
@@ -135,7 +147,7 @@ watch(
 <template>
     <div class="bg-[#15512e] text-xs text-white">
         <div
-            class="mx-auto flex h-9 w-[min(1180px,calc(100%-32px))] items-center gap-4"
+            class="mx-auto flex h-9 w-[min(1180px,calc(100%-32px))] items-center justify-between gap-4"
         >
             <div class="flex items-center gap-5">
                 <a
@@ -152,6 +164,35 @@ watch(
                     <Mail class="h-3.5 w-3.5" />
                     <span>support@freshtodaybd.com</span>
                 </a>
+            </div>
+
+            <div class="hidden items-center gap-5 md:flex">
+                <Link href="/wishlist" class="hover:text-[#e0f5e5]">
+                    Wishlist ({{ wishlistCount }})
+                </Link>
+                <Link
+                    v-if="$page.props.auth.user"
+                    :href="dashboard()"
+                    class="max-w-40 truncate font-semibold hover:text-[#e0f5e5]"
+                >
+                    {{ $page.props.auth.user.name }}
+                </Link>
+                <button
+                    v-else-if="customer"
+                    type="button"
+                    class="max-w-40 truncate font-semibold hover:text-[#e0f5e5]"
+                    @click="logoutConfirmationOpen = true"
+                >
+                    {{ customer.name }}
+                </button>
+                <button
+                    v-else
+                    type="button"
+                    class="font-semibold hover:text-[#e0f5e5]"
+                    @click="openAccountModal"
+                >
+                    Sign In / Register
+                </button>
             </div>
         </div>
     </div>
@@ -217,21 +258,13 @@ watch(
                 </Link>
                 <div
                     v-else-if="customer"
-                    class="flex items-center gap-3 text-xs leading-tight text-black"
+                    class="flex items-center gap-1 text-xs leading-tight text-black"
                 >
                     <UserRound class="h-6 w-6 shrink-0 text-[#176536]" />
                     <span>
                         <span class="block font-bold">{{ customer.name }}</span>
                         <span class="block">Customer account</span>
                     </span>
-                    <button
-                        type="button"
-                        class="grid h-8 w-8 place-items-center rounded-full border border-slate-200 text-slate-500 hover:border-[#176536] hover:text-[#176536]"
-                        aria-label="Logout customer"
-                        @click="logoutCustomer"
-                    >
-                        <LogOut class="h-4 w-4" />
-                    </button>
                 </div>
                 <button
                     v-else
@@ -455,6 +488,35 @@ watch(
                     </p>
                 </form>
             </div>
+        </DialogContent>
+    </Dialog>
+
+    <Dialog v-model:open="logoutConfirmationOpen">
+        <DialogContent class="sm:max-w-sm">
+            <DialogHeader>
+                <DialogTitle>Logout</DialogTitle>
+                <DialogDescription>
+                    Are you sure you want to logout?
+                </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+                <Button
+                    type="button"
+                    variant="outline"
+                    :disabled="logoutForm.processing"
+                    @click="logoutConfirmationOpen = false"
+                >
+                    No
+                </Button>
+                <Button
+                    type="button"
+                    variant="destructive"
+                    :disabled="logoutForm.processing"
+                    @click="confirmLogout"
+                >
+                    {{ logoutForm.processing ? 'Logging out...' : 'Yes' }}
+                </Button>
+            </DialogFooter>
         </DialogContent>
     </Dialog>
 </template>
