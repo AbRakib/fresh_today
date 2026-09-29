@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
     ChevronRight,
     Heart,
     Leaf,
     PackageCheck,
     ShieldCheck,
+    ShoppingBag,
     ShoppingCart,
     Truck,
 } from '@lucide/vue';
@@ -16,7 +17,10 @@ import { useCurrency } from '@/composables/useCurrency';
 
 type Product = {
     id: number;
+    category_id: number | null;
     category_name: string | null;
+    subcategory_id: number | null;
+    subcategory_name: string | null;
     name: string;
     slug: string;
     thumbnail_url: string | null;
@@ -30,6 +34,14 @@ type Product = {
     badge: string | null;
     stock_quantity: number;
     is_featured: number;
+    is_wishlisted: boolean;
+    is_in_cart: boolean;
+};
+
+type FrontendCategory = {
+    id: number;
+    name: string;
+    icon_url: string | null;
 };
 
 const { money } = useCurrency();
@@ -65,8 +77,12 @@ const weightOptions = [
     { value: 'above-2000', label: 'Above 2kg', min: 2000, max: Infinity },
 ];
 
-const page = usePage<{ frontend_products?: Product[] }>();
+const page = usePage<{
+    frontend_products?: Product[];
+    frontend_categories?: FrontendCategory[];
+}>();
 const products = computed(() => page.props.frontend_products ?? []);
+const categories = computed(() => page.props.frontend_categories ?? []);
 const selectedCategory = ref('');
 const selectedPrice = ref('');
 const selectedWeights = ref<string[]>([]);
@@ -74,16 +90,36 @@ const currentPage = ref(1);
 const perPage = 8;
 
 const categoryOptions = computed(() => {
-    const counts = new Map<string, number>();
+    const counts = new Map<number, number>();
+    let uncategorizedCount = 0;
 
     products.value.forEach((product) => {
-        const category = product.category_name || 'Uncategorized';
-        counts.set(category, (counts.get(category) ?? 0) + 1);
+        if (product.category_id) {
+            counts.set(
+                product.category_id,
+                (counts.get(product.category_id) ?? 0) + 1,
+            );
+            return;
+        }
+
+        uncategorizedCount++;
     });
 
-    return Array.from(counts, ([name, count]) => ({ name, count })).sort(
-        (a, b) => a.name.localeCompare(b.name),
-    );
+    const categoryItems = categories.value.map((category) => ({
+        id: String(category.id),
+        name: category.name,
+        count: counts.get(category.id) ?? 0,
+    }));
+
+    if (uncategorizedCount > 0) {
+        categoryItems.push({
+            id: 'uncategorized',
+            name: 'Uncategorized',
+            count: uncategorizedCount,
+        });
+    }
+
+    return categoryItems.sort((a, b) => a.name.localeCompare(b.name));
 });
 
 const selectedPriceOption = computed(
@@ -107,6 +143,26 @@ const productWeightInGrams = (product: Product) => {
 };
 
 const productUrl = (product: Product) => `/product/${product.slug}`;
+const toggleWishlist = (product: Product) => {
+    const options = { preserveScroll: true, preserveState: true };
+
+    if (product.is_wishlisted) {
+        router.delete(`/wishlist/${product.id}`, options);
+        return;
+    }
+
+    router.post(`/wishlist/${product.id}`, {}, options);
+};
+const toggleCart = (product: Product) => {
+    const options = { preserveScroll: true, preserveState: true };
+
+    if (product.is_in_cart) {
+        router.visit('/cart');
+        return;
+    }
+
+    router.post(`/cart/${product.id}`, {}, options);
+};
 
 const formatWeightLabel = (
     amount: string | null,
@@ -150,8 +206,9 @@ const filteredProducts = computed(() => {
         const weight = productWeightInGrams(product);
         const matchesCategory =
             !selectedCategory.value ||
-            (product.category_name || 'Uncategorized') ===
-                selectedCategory.value;
+            (selectedCategory.value === 'uncategorized'
+                ? !product.category_id
+                : String(product.category_id) === selectedCategory.value);
         const matchesPrice =
             price >= priceRange.min &&
             (priceRange.max === Infinity ? true : price < priceRange.max);
@@ -287,14 +344,14 @@ const imageUrl = (text: string) =>
                             </label>
                             <label
                                 v-for="category in categoryOptions"
-                                :key="category.name"
+                                :key="category.id"
                                 class="flex cursor-pointer items-center justify-between gap-2"
                             >
                                 <span class="flex items-center gap-2">
                                     <input
                                         v-model="selectedCategory"
                                         type="radio"
-                                        :value="category.name"
+                                        :value="category.id"
                                         class="h-4 w-4 accent-lime-500"
                                     />
                                     {{ category.name }}
@@ -402,8 +459,31 @@ const imageUrl = (text: string) =>
                             </span>
                             <button
                                 class="absolute top-3 right-3 z-10 grid h-7 w-7 place-items-center rounded-full bg-white text-slate-400 shadow"
+                                :class="
+                                    product.is_wishlisted
+                                        ? 'border border-red-200 bg-red-50 text-red-500'
+                                        : 'hover:text-lime-600'
+                                "
+                                :aria-label="
+                                    product.is_wishlisted
+                                        ? 'Already in wishlist'
+                                        : 'Add to wishlist'
+                                "
+                                @click="toggleWishlist(product)"
                             >
-                                <Heart class="h-4 w-4" />
+                                <Heart
+                                    class="h-4 w-4"
+                                    :class="
+                                        product.is_wishlisted
+                                            ? 'fill-red-500 text-red-500'
+                                            : ''
+                                    "
+                                    :fill="
+                                        product.is_wishlisted
+                                            ? 'currentColor'
+                                            : 'none'
+                                    "
+                                />
                             </button>
                             <Link :href="productUrl(product)" class="block">
                                 <img
@@ -446,11 +526,38 @@ const imageUrl = (text: string) =>
                                         }}</span
                                     >
                                 </div>
-                                <button
-                                    class="mt-3 flex w-full items-center justify-center gap-2 rounded border border-lime-500 py-2 text-xs font-bold text-lime-600 hover:bg-lime-500 hover:text-white"
-                                >
-                                    <ShoppingCart class="h-4 w-4" /> Add to cart
-                                </button>
+                                <div class="mt-3 grid grid-cols-2 gap-2">
+                                    <button
+                                        type="button"
+                                        class="flex min-h-9 items-center justify-center gap-1.5 rounded border border-lime-500 px-2 text-[11px] font-bold text-lime-600 transition hover:bg-lime-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                                        :class="
+                                            product.is_in_cart
+                                                ? 'border-[#218a37] bg-[#218a37] text-white hover:bg-[#176536]'
+                                                : ''
+                                        "
+                                        :disabled="
+                                            product.stock_quantity < 1 &&
+                                            !product.is_in_cart
+                                        "
+                                        @click="toggleCart(product)"
+                                    >
+                                        <ShoppingCart class="h-3.5 w-3.5" />
+                                        <span>{{
+                                            product.is_in_cart
+                                                ? 'View'
+                                                : product.stock_quantity > 0
+                                                  ? 'Cart'
+                                                  : 'Out'
+                                        }}</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="flex min-h-9 items-center justify-center gap-1.5 rounded bg-[#218a37] px-2 text-[11px] font-bold text-white transition hover:bg-[#176536]"
+                                    >
+                                        <ShoppingBag class="h-3.5 w-3.5" />
+                                        <span>Buy</span>
+                                    </button>
+                                </div>
                             </div>
                         </article>
                     </div>

@@ -55,6 +55,16 @@ class Product extends Model
         return $this->hasMany(PurchaseDetail::class);
     }
 
+    public function wishlists(): HasMany
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
+    public function carts(): HasMany
+    {
+        return $this->hasMany(Cart::class);
+    }
+
     protected function casts(): array
     {
         return [

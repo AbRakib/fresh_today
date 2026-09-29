@@ -1,16 +1,29 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import {
     ChevronDown,
     Fish,
+    Heart,
+    LogOut,
     Mail,
     Phone,
     Search,
     ShoppingCart,
     UserRound,
 } from '@lucide/vue';
-import { computed } from 'vue';
-import { dashboard, login, register } from '@/routes';
+import { computed, ref, watch } from 'vue';
+import { dashboard } from '@/routes';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type FrontendCategory = {
     id: number;
@@ -18,10 +31,106 @@ type FrontendCategory = {
     icon_url: string | null;
 };
 
-const page = usePage<{ frontend_categories?: FrontendCategory[] }>();
+type FrontendCustomer = {
+    id: number;
+    name: string;
+    email: string;
+    phone: string | null;
+    avatar: string | null;
+};
+
+const page = usePage<{
+    frontend_categories?: FrontendCategory[];
+    customer_auth_modal?: 'login' | 'register' | null;
+    wishlist_count?: number;
+    cart_count?: number;
+    auth: {
+        user: unknown | null;
+        customer: FrontendCustomer | null;
+    };
+}>();
 
 const frontendCategories = computed(() => page.props.frontend_categories ?? []);
+const wishlistCount = computed(() => page.props.wishlist_count ?? 0);
+const cartCount = computed(() => page.props.cart_count ?? 0);
 const isHomePage = computed(() => page.url.split('?')[0] === '/');
+const customer = computed(() => page.props.auth.customer);
+const authModalOpen = ref(Boolean(page.props.customer_auth_modal));
+const authView = ref<'login' | 'register'>(
+    page.props.customer_auth_modal ?? 'login',
+);
+
+const loginForm = useForm({
+    login: '',
+    password: '',
+});
+
+const registerForm = useForm({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    password_confirmation: '',
+});
+
+const openAccountModal = () => {
+    authView.value = 'login';
+    authModalOpen.value = true;
+};
+
+const showLogin = () => {
+    registerForm.clearErrors();
+    authView.value = 'login';
+};
+
+const showRegister = () => {
+    loginForm.clearErrors();
+    authView.value = 'register';
+};
+
+const submitLogin = () => {
+    loginForm.post('/customer/login', {
+        preserveScroll: true,
+        errorBag: 'customerLogin',
+        onSuccess: () => {
+            loginForm.reset('password');
+            authModalOpen.value = false;
+        },
+        onError: () => {
+            authView.value = 'login';
+            authModalOpen.value = true;
+        },
+    });
+};
+
+const submitRegister = () => {
+    registerForm.post('/customer/register', {
+        preserveScroll: true,
+        errorBag: 'customerRegister',
+        onSuccess: () => {
+            registerForm.reset('password', 'password_confirmation');
+            authModalOpen.value = false;
+        },
+        onError: () => {
+            authView.value = 'register';
+            authModalOpen.value = true;
+        },
+    });
+};
+
+const logoutCustomer = () => {
+    router.post('/customer/logout', {}, { preserveScroll: true });
+};
+
+watch(
+    () => page.props.customer_auth_modal,
+    (modal) => {
+        if (modal) {
+            authView.value = modal;
+            authModalOpen.value = true;
+        }
+    },
+);
 </script>
 
 <template>
@@ -54,7 +163,12 @@ const isHomePage = computed(() => page.url.split('?')[0] === '/');
                     BDT <ChevronDown class="h-3 w-3" />
                 </button>
                 <a href="#" class="hidden md:block">Campaigns</a>
-                <a href="#" class="hidden md:block">Wishlist (0)</a>
+                <Link
+                    href="/wishlist"
+                    class="hidden hover:text-[#e0f5e5] md:block"
+                >
+                    Wishlist ({{ wishlistCount }})
+                </Link>
             </div>
         </div>
     </div>
@@ -97,6 +211,17 @@ const isHomePage = computed(() => page.url.split('?')[0] === '/');
 
             <nav class="hidden items-center gap-8 lg:flex">
                 <Link
+                    href="/wishlist"
+                    class="relative text-black hover:text-[#176536]"
+                    aria-label="Wishlist"
+                >
+                    <Heart class="h-7 w-7" />
+                    <span
+                        class="absolute -top-3 left-5 grid h-5 min-w-5 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white"
+                        >{{ wishlistCount }}</span
+                    >
+                </Link>
+                <Link
                     v-if="$page.props.auth.user"
                     :href="dashboard()"
                     class="flex items-center gap-3 text-xs leading-tight text-black hover:text-[#176536]"
@@ -107,34 +232,51 @@ const isHomePage = computed(() => page.url.split('?')[0] === '/');
                         <span class="block">Dashboard</span>
                     </span>
                 </Link>
-                <template v-else>
-                    <Link
-                        :href="login()"
-                        class="flex items-center gap-3 text-xs leading-tight text-black hover:text-[#176536]"
+                <div
+                    v-else-if="customer"
+                    class="flex items-center gap-3 text-xs leading-tight text-black"
+                >
+                    <UserRound class="h-6 w-6 shrink-0 text-[#176536]" />
+                    <span>
+                        <span class="block font-bold">{{ customer.name }}</span>
+                        <span class="block">Customer account</span>
+                    </span>
+                    <button
+                        type="button"
+                        class="grid h-8 w-8 place-items-center rounded-full border border-slate-200 text-slate-500 hover:border-[#176536] hover:text-[#176536]"
+                        aria-label="Logout customer"
+                        @click="logoutCustomer"
                     >
-                        <UserRound class="h-6 w-6 shrink-0" />
-                        <span>
-                            <span class="block font-bold">My Account</span>
-                            <span class="block">Sign in / Register</span>
-                        </span>
-                    </Link>
-                    <Link :href="register()" class="sr-only">Register</Link>
-                </template>
-                <a
-                    href="#"
+                        <LogOut class="h-4 w-4" />
+                    </button>
+                </div>
+                <button
+                    v-else
+                    type="button"
+                    class="flex items-center gap-3 text-left text-xs leading-tight text-black hover:text-[#176536]"
+                    @click="openAccountModal"
+                >
+                    <UserRound class="h-6 w-6 shrink-0" />
+                    <span>
+                        <span class="block font-bold">My Account</span>
+                        <span class="block">Sign in / Register</span>
+                    </span>
+                </button>
+                <Link
+                    href="/cart"
                     class="relative flex items-center gap-2 text-sm font-bold text-black hover:text-[#176536]"
                 >
                     <span class="relative">
                         <ShoppingCart class="h-7 w-7" />
                         <span
                             class="absolute -top-3 left-5 grid h-5 w-5 place-items-center rounded-full bg-lime-500 text-[10px] font-bold text-white"
-                            >0</span
+                            >{{ cartCount }}</span
                         >
                     </span>
                     <span class="text-base leading-none sm:text-sm xl:text-base"
                         >Cart</span
                     >
-                </a>
+                </Link>
             </nav>
         </div>
 
@@ -159,4 +301,177 @@ const isHomePage = computed(() => page.url.split('?')[0] === '/');
             </div>
         </div>
     </header>
+
+    <Dialog v-model:open="authModalOpen">
+        <DialogContent
+            class="max-h-[calc(100vh-2rem)] overflow-y-auto sm:max-w-md"
+        >
+            <DialogHeader>
+                <DialogTitle class="text-2xl font-black text-[#15512e]">
+                    {{ authView === 'login' ? 'Login' : 'Create Account' }}
+                </DialogTitle>
+                <DialogDescription>
+                    {{
+                        authView === 'login'
+                            ? 'Login to your Fresh Today customer account.'
+                            : 'Register for a Fresh Today customer account.'
+                    }}
+                </DialogDescription>
+            </DialogHeader>
+
+            <div>
+                <form
+                    v-if="authView === 'login'"
+                    class="rounded-md border border-slate-200 p-5"
+                    @submit.prevent="submitLogin"
+                >
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <Label for="customer-login-identifier"
+                                >Email or Phone</Label
+                            >
+                            <Input
+                                id="customer-login-identifier"
+                                v-model="loginForm.login"
+                                type="text"
+                                autocomplete="username"
+                                placeholder="Enter email or phone"
+                                required
+                            />
+                            <InputError :message="loginForm.errors.login" />
+                        </div>
+                        <div class="space-y-2">
+                            <Label for="customer-login-password"
+                                >Password</Label
+                            >
+                            <Input
+                                id="customer-login-password"
+                                v-model="loginForm.password"
+                                type="password"
+                                autocomplete="current-password"
+                                required
+                            />
+                            <InputError :message="loginForm.errors.password" />
+                        </div>
+                    </div>
+                    <Button
+                        type="submit"
+                        class="mt-5 w-full bg-[#176536] text-white hover:bg-[#15512e]"
+                        :disabled="loginForm.processing"
+                    >
+                        Login
+                    </Button>
+                    <p class="mt-5 text-center text-sm text-slate-600">
+                        New customer?
+                        <button
+                            type="button"
+                            class="font-semibold text-[#176536] hover:underline"
+                            @click="showRegister"
+                        >
+                            Register
+                        </button>
+                    </p>
+                </form>
+
+                <form
+                    v-else
+                    class="rounded-md border border-slate-200 p-5"
+                    @submit.prevent="submitRegister"
+                >
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <Label for="customer-register-name">Name</Label>
+                            <Input
+                                id="customer-register-name"
+                                v-model="registerForm.name"
+                                type="text"
+                                autocomplete="name"
+                                required
+                            />
+                            <InputError :message="registerForm.errors.name" />
+                        </div>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="space-y-2">
+                                <Label for="customer-register-email"
+                                    >Email</Label
+                                >
+                                <Input
+                                    id="customer-register-email"
+                                    v-model="registerForm.email"
+                                    type="email"
+                                    autocomplete="email"
+                                    required
+                                />
+                                <InputError
+                                    :message="registerForm.errors.email"
+                                />
+                            </div>
+                            <div class="space-y-2">
+                                <Label for="customer-register-phone"
+                                    >Phone</Label
+                                >
+                                <Input
+                                    id="customer-register-phone"
+                                    v-model="registerForm.phone"
+                                    type="tel"
+                                    autocomplete="tel"
+                                    required
+                                />
+                                <InputError
+                                    :message="registerForm.errors.phone"
+                                />
+                            </div>
+                        </div>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="space-y-2">
+                                <Label for="customer-register-password"
+                                    >Password</Label
+                                >
+                                <Input
+                                    id="customer-register-password"
+                                    v-model="registerForm.password"
+                                    type="password"
+                                    autocomplete="new-password"
+                                    required
+                                />
+                                <InputError
+                                    :message="registerForm.errors.password"
+                                />
+                            </div>
+                            <div class="space-y-2">
+                                <Label
+                                    for="customer-register-password-confirmation"
+                                    >Confirm</Label
+                                >
+                                <Input
+                                    id="customer-register-password-confirmation"
+                                    v-model="registerForm.password_confirmation"
+                                    type="password"
+                                    autocomplete="new-password"
+                                    required
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <Button
+                        type="submit"
+                        class="mt-5 w-full bg-lime-500 text-white hover:bg-lime-600"
+                        :disabled="registerForm.processing"
+                    >
+                        Create Account
+                    </Button>
+                    <p class="mt-5 text-center text-sm text-slate-600">
+                        Already have an account?
+                        <button
+                            type="button"
+                            class="font-semibold text-[#176536] hover:underline"
+                            @click="showLogin"
+                        >
+                            Login
+                        </button>
+                    </p>
+                </form>
+            </div>
+        </DialogContent>
+    </Dialog>
 </template>

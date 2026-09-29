@@ -245,7 +245,9 @@ class ProductController extends Controller
     {
         return [
             'id' => $product->id,
+            'category_id' => $product->category_id,
             'category_name' => $product->category?->name,
+            'subcategory_id' => $product->subcategory_id,
             'subcategory_name' => $product->subcategory?->name,
             'name' => $product->name,
             'slug' => $product->slug,
@@ -265,6 +267,34 @@ class ProductController extends Controller
             'stock_quantity' => $product->stock_quantity,
             'minimum_order_quantity' => $product->minimum_order_quantity,
             'is_featured' => $product->is_featured,
+            'is_wishlisted' => $this->isWishlisted($product),
+            'is_in_cart' => $this->isInCart($product),
         ];
+    }
+
+    private function isWishlisted(Product $product): bool
+    {
+        $customerId = request()->session()->get('customer_id');
+
+        if (! $customerId) {
+            return false;
+        }
+
+        return $product->wishlists()
+            ->where('customer_id', $customerId)
+            ->exists();
+    }
+
+    private function isInCart(Product $product): bool
+    {
+        $customerId = request()->session()->get('customer_id');
+
+        if (! $customerId) {
+            return false;
+        }
+
+        return $product->carts()
+            ->where('customer_id', $customerId)
+            ->exists();
     }
 }

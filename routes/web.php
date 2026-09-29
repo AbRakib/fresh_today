@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\BankAccountController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DeliveryChargeController;
+use App\Http\Controllers\FrontendCustomerAuthController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
@@ -12,6 +14,7 @@ use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UnitController;
+use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -22,6 +25,15 @@ Route::get('/', function (ProductController $products) {
 })->name('home');
 Route::get('/shop', [ProductController::class, 'frontendIndex'])->name('shop');
 Route::get('/product/{product:slug}', [ProductController::class, 'frontendShow'])->name('products.show');
+Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+Route::post('/wishlist/{product}', [WishlistController::class, 'store'])->name('wishlist.store');
+Route::delete('/wishlist/{product}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/{product}', [CartController::class, 'store'])->name('cart.store');
+Route::delete('/cart/{product}', [CartController::class, 'destroy'])->name('cart.destroy');
+Route::post('/customer/login', [FrontendCustomerAuthController::class, 'login'])->name('frontend.customer.login');
+Route::post('/customer/register', [FrontendCustomerAuthController::class, 'register'])->name('frontend.customer.register');
+Route::post('/customer/logout', [FrontendCustomerAuthController::class, 'logout'])->name('frontend.customer.logout');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'backend/Dashboard')->name('dashboard');

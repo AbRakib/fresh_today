@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { home } from '@/routes';
 
@@ -7,6 +7,10 @@ defineProps<{
     title?: string;
     description?: string;
 }>();
+
+const page = usePage();
+const settingsLogoUrl = page.props.settings?.logo_url;
+const appName = page.props.settings?.company_name || page.props.name;
 </script>
 
 <template>
@@ -21,9 +25,16 @@ defineProps<{
                         class="flex flex-col items-center gap-2 font-medium"
                     >
                         <div
-                            class="mb-1 flex h-9 w-9 items-center justify-center rounded-md"
+                            class="mb-1 flex h-12 w-12 items-center justify-center rounded-md"
                         >
+                            <img
+                                v-if="settingsLogoUrl"
+                                :src="settingsLogoUrl"
+                                :alt="`${appName} logo`"
+                                class="max-h-12 max-w-12 object-contain"
+                            />
                             <AppLogoIcon
+                                v-else
                                 class="size-9 fill-current text-[var(--foreground)] dark:text-white"
                             />
                         </div>

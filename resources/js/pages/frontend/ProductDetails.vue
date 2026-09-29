@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import {
     ChevronRight,
     Heart,
@@ -31,6 +31,8 @@ type Product = {
     badge: string | null;
     stock_quantity: number;
     minimum_order_quantity: number;
+    is_wishlisted: boolean;
+    is_in_cart: boolean;
 };
 
 const props = defineProps<{
@@ -54,6 +56,25 @@ const productUnit =
     [props.product.weight || props.product.gross_weight, props.product.unit]
         .filter(Boolean)
         .join(' ') || 'Per item';
+
+const toggleWishlist = () => {
+    if (props.product.is_wishlisted) {
+        router.delete(`/wishlist/${props.product.id}`, {
+            preserveScroll: true,
+        });
+        return;
+    }
+
+    router.post(`/wishlist/${props.product.id}`, {}, { preserveScroll: true });
+};
+const toggleCart = () => {
+    if (props.product.is_in_cart) {
+        router.visit('/cart');
+        return;
+    }
+
+    router.post(`/cart/${props.product.id}`, {}, { preserveScroll: true });
+};
 </script>
 
 <template>
@@ -68,9 +89,7 @@ const productUnit =
             <div class="mb-6 flex items-center gap-2 text-xs text-slate-500">
                 <Link href="/" class="hover:text-[#218a37]">Home</Link>
                 <ChevronRight class="h-3 w-3" />
-                <Link href="/shop" class="hover:text-[#218a37]">
-                    Shop
-                </Link>
+                <Link href="/shop" class="hover:text-[#218a37]"> Shop </Link>
                 <ChevronRight class="h-3 w-3" />
                 <span class="text-slate-700">{{ product.name }}</span>
             </div>
@@ -155,16 +174,55 @@ const productUnit =
 
                     <div class="mt-6 flex flex-wrap gap-3">
                         <button
-                            class="flex min-h-11 flex-1 items-center justify-center gap-2 rounded bg-lime-500 px-5 text-sm font-bold text-white hover:bg-lime-600 sm:flex-none"
+                            type="button"
+                            class="flex min-h-11 flex-1 items-center justify-center gap-2 rounded bg-lime-500 px-5 text-sm font-bold text-white hover:bg-lime-600 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+                            :class="
+                                product.is_in_cart
+                                    ? 'bg-[#218a37] hover:bg-[#176536]'
+                                    : ''
+                            "
+                            :disabled="
+                                product.stock_quantity < 1 &&
+                                !product.is_in_cart
+                            "
+                            @click="toggleCart"
                         >
                             <ShoppingCart class="h-4 w-4" />
-                            Add to Cart
+                            {{
+                                product.is_in_cart
+                                    ? 'View Cart'
+                                    : product.stock_quantity > 0
+                                      ? 'Add to Cart'
+                                      : 'Out of Stock'
+                            }}
                         </button>
                         <button
                             class="grid min-h-11 w-12 place-items-center rounded border border-slate-200 text-slate-500 hover:border-lime-500 hover:text-lime-600"
-                            aria-label="Add to wishlist"
+                            :class="
+                                product.is_wishlisted
+                                    ? 'border-red-200 bg-red-50 text-red-500'
+                                    : ''
+                            "
+                            :aria-label="
+                                product.is_wishlisted
+                                    ? 'Already in wishlist'
+                                    : 'Add to wishlist'
+                            "
+                            @click="toggleWishlist"
                         >
-                            <Heart class="h-5 w-5" />
+                            <Heart
+                                class="h-5 w-5"
+                                :class="
+                                    product.is_wishlisted
+                                        ? 'fill-red-500 text-red-500'
+                                        : ''
+                                "
+                                :fill="
+                                    product.is_wishlisted
+                                        ? 'currentColor'
+                                        : 'none'
+                                "
+                            />
                         </button>
                     </div>
 

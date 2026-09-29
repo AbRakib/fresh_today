@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use App\Models\Category;
+use App\Models\Customer;
+use App\Models\Setting;
 use App\Support\Currency;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -39,10 +41,26 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $customer = $request->session()->has('customer_id')
+            ? Customer::query()
+                ->whereKey($request->session()->get('customer_id'))
+                ->where('deleted', 0)
+                ->where('status', 1)
+                ->first(['id', 'name', 'email', 'phone', 'profile_image'])
+            : null;
+        $setting = Setting::query()
+            ->where('deleted', 0)
+            ->first(['company_name', 'logo']);
 
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'settings' => [
+                'company_name' => $setting?->company_name,
+                'logo_url' => $setting?->logo
+                    ? Storage::disk('public')->url($setting->logo)
+                    : null,
+            ],
             'currency' => Currency::current(),
             'frontend_categories' => Category::query()
                 ->where('deleted', 0)
@@ -63,7 +81,16 @@ class HandleInertiaRequests extends Middleware
                         ? Storage::disk('public')->url($user->photo)
                         : null,
                 ] : null,
+                'customer' => $customer ? [
+                    ...$customer->toArray(),
+                    'avatar' => $customer->profile_image
+                        ? Storage::disk('public')->url($customer->profile_image)
+                        : null,
+                ] : null,
             ],
+            'customer_auth_modal' => fn () => $request->session()->get('customer_auth_modal'),
+            'wishlist_count' => $customer?->wishlists()->count() ?? 0,
+            'cart_count' => $customer?->carts()->sum('quantity') ?? 0,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

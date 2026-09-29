@@ -9,6 +9,7 @@ import {
     Leaf,
     PackageCheck,
     ShieldCheck,
+    ShoppingBag,
     ShoppingCart,
     Truck,
 } from '@lucide/vue';
@@ -394,12 +395,22 @@ const imageUrl = (text: string, size = '500x360') =>
                                 >
                             </div>
 
-                            <button
-                                class="mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-lime-500 py-2 text-xs font-bold text-lime-600 transition hover:bg-lime-500 hover:text-white"
-                            >
-                                Add to Cart
-                                <ShoppingCart class="h-3.5 w-3.5" />
-                            </button>
+                            <div class="mt-3 grid grid-cols-2 gap-2">
+                                <button
+                                    type="button"
+                                    class="flex min-h-9 items-center justify-center gap-1.5 rounded-md border border-lime-500 px-2 text-[11px] font-bold text-lime-600 transition hover:bg-lime-500 hover:text-white"
+                                >
+                                    <ShoppingCart class="h-3.5 w-3.5" />
+                                    <span>Cart</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="flex min-h-9 items-center justify-center gap-1.5 rounded-md bg-[#176536] px-2 text-[11px] font-bold text-white transition hover:bg-[#0f4b27]"
+                                >
+                                    <ShoppingBag class="h-3.5 w-3.5" />
+                                    <span>Buy</span>
+                                </button>
+                            </div>
                         </div>
                     </article>
                 </div>
