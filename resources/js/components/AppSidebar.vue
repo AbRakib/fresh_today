@@ -5,6 +5,7 @@ import {
     ChartNoAxesCombined,
     ClipboardList,
     ExternalLink,
+    Images,
     Landmark,
     LayoutGrid,
     Layers3,
@@ -162,6 +163,19 @@ const mainNavGroups: NavGroup[] = [
                 title: 'Profile Settings',
                 href: profileEdit(),
                 icon: UserCog,
+            },
+        ],
+    },
+    {
+        title: 'Website Settings',
+        label: 'Website',
+        icon: Images,
+        collapsible: true,
+        items: [
+            {
+                title: 'Sliders',
+                href: '/sliders',
+                icon: Images,
             },
         ],
     },

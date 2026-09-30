@@ -412,7 +412,6 @@ defineOptions({
                         </div>
                     </div>
 
-
                     <div class="grid gap-1.5">
                         <Label for="supplier_note">Note</Label>
                         <textarea

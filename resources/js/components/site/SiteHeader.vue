@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import {
     Fish,
     Heart,
@@ -11,6 +11,7 @@ import {
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { dashboard } from '@/routes';
+import { useCurrency } from '@/composables/useCurrency';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,6 +29,16 @@ type FrontendCategory = {
     id: number;
     name: string;
     icon_url: string | null;
+};
+
+type SearchProduct = {
+    id: number;
+    category_name: string | null;
+    name: string;
+    slug: string;
+    thumbnail_url: string | null;
+    regular_price: string | null;
+    sale_price: string | null;
 };
 
 type FrontendCustomer = {
@@ -49,9 +60,12 @@ type SharedSettings = {
     logo_url: string | null;
 };
 
+const { money } = useCurrency();
+
 const page = usePage<{
     settings?: SharedSettings;
     frontend_categories?: FrontendCategory[];
+    frontend_search_products?: SearchProduct[];
     customer_auth_modal?: 'login' | 'register' | null;
     wishlist_count?: number;
     cart_count?: number;
@@ -62,6 +76,9 @@ const page = usePage<{
 }>();
 
 const frontendCategories = computed(() => page.props.frontend_categories ?? []);
+const searchProducts = computed(
+    () => page.props.frontend_search_products ?? [],
+);
 const wishlistCount = computed(() => page.props.wishlist_count ?? 0);
 const cartCount = computed(() => page.props.cart_count ?? 0);
 const isHomePage = computed(() => page.url.split('?')[0] === '/');
@@ -81,9 +98,58 @@ const phoneHref = computed(() => {
 });
 const authModalOpen = ref(Boolean(page.props.customer_auth_modal));
 const logoutConfirmationOpen = ref(false);
+const searchQuery = ref('');
+const searchFocused = ref(false);
 const authView = ref<'login' | 'register'>(
     page.props.customer_auth_modal ?? 'login',
 );
+const normalizedSearchQuery = computed(() =>
+    searchQuery.value.trim().toLowerCase(),
+);
+const searchSuggestions = computed(() => {
+    if (!normalizedSearchQuery.value) {
+        return [];
+    }
+
+    return searchProducts.value
+        .filter((product) => {
+            const searchableText = [product.name, product.category_name ?? '']
+                .join(' ')
+                .toLowerCase();
+
+            return searchableText.includes(normalizedSearchQuery.value);
+        })
+        .slice(0, 6);
+});
+const searchSuggestionsOpen = computed(
+    () => searchFocused.value && searchQuery.value.trim().length > 0,
+);
+
+const productUrl = (product: SearchProduct) => `/product/${product.slug}`;
+const productPrice = (product: SearchProduct) => {
+    const price = product.sale_price || product.regular_price;
+
+    return price ? money(price) : '';
+};
+const fallbackProductImage = (name: string) =>
+    `https://placehold.co/96x96/f5f7f4/23833f?text=${encodeURIComponent(name)}`;
+const closeSearchSuggestions = () => {
+    window.setTimeout(() => {
+        searchFocused.value = false;
+    }, 120);
+};
+const submitSearch = () => {
+    const product = searchSuggestions.value[0];
+
+    if (product) {
+        router.visit(productUrl(product));
+        return;
+    }
+
+    if (searchQuery.value.trim()) {
+        router.visit('/shop');
+    }
+};
 
 const loginForm = useForm({
     login: '',
@@ -248,19 +314,73 @@ watch(
                 </div>
             </Link>
 
-            <div class="relative mx-auto max-w-2xl flex-1">
+            <form
+                class="relative mx-auto max-w-2xl flex-1"
+                @submit.prevent="submitSearch"
+            >
                 <input
+                    v-model="searchQuery"
                     type="text"
                     placeholder="Search for fish, meat & more..."
                     class="h-12 w-full rounded-md border border-slate-200 bg-white px-4 pr-14 text-sm transition outline-none focus:border-[#319d57] focus:ring-1 focus:ring-[#e0f5e5]"
+                    autocomplete="off"
+                    @focus="searchFocused = true"
+                    @blur="closeSearchSuggestions"
+                    @keydown.escape="searchFocused = false"
                 />
                 <button
+                    type="submit"
                     class="absolute top-0 right-0 grid h-12 w-12 place-items-center rounded-r-md bg-lime-500 text-white hover:bg-lime-600"
                     aria-label="Search"
                 >
                     <Search class="h-5 w-5" />
                 </button>
-            </div>
+
+                <div
+                    v-if="searchSuggestionsOpen"
+                    class="absolute top-[calc(100%+8px)] right-0 left-0 z-50 overflow-hidden rounded-md border border-slate-200 bg-white shadow-xl"
+                >
+                    <div v-if="searchSuggestions.length" class="py-2">
+                        <Link
+                            v-for="product in searchSuggestions"
+                            :key="product.id"
+                            :href="productUrl(product)"
+                            class="flex items-center gap-3 px-3 py-2.5 hover:bg-[#f1f8f2]"
+                            @mousedown.prevent
+                            @click="searchQuery = product.name"
+                        >
+                            <img
+                                :src="
+                                    product.thumbnail_url ??
+                                    fallbackProductImage(product.name)
+                                "
+                                :alt="product.name"
+                                class="h-12 w-12 rounded object-cover"
+                            />
+                            <span class="min-w-0 flex-1">
+                                <span
+                                    class="block truncate text-sm font-semibold text-slate-800"
+                                    >{{ product.name }}</span
+                                >
+                                <span
+                                    class="block truncate text-xs text-slate-500"
+                                    >{{
+                                        product.category_name || 'Fresh Today'
+                                    }}</span
+                                >
+                            </span>
+                            <span
+                                v-if="productPrice(product)"
+                                class="shrink-0 text-sm font-bold text-[#176536]"
+                                >{{ productPrice(product) }}</span
+                            >
+                        </Link>
+                    </div>
+                    <div v-else class="px-4 py-3 text-sm text-slate-500">
+                        No products found
+                    </div>
+                </div>
+            </form>
 
             <nav class="hidden items-center gap-8 lg:flex">
                 <Link

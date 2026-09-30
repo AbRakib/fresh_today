@@ -5,12 +5,14 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryChargeController;
 use App\Http\Controllers\FrontendCustomerAuthController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SliderController;
 use App\Http\Controllers\SubcategoryController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\TransactionController;
@@ -165,7 +167,7 @@ Route::post('/customer/register', [FrontendCustomerAuthController::class, 'regis
 Route::post('/customer/logout', [FrontendCustomerAuthController::class, 'logout'])->name('frontend.customer.logout');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'backend/Dashboard')->name('dashboard');
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
     Route::post('customers', [CustomerController::class, 'store'])->name('customers.store');
     Route::post('customers/{customer}', [CustomerController::class, 'update'])->name('customers.update');
@@ -236,6 +238,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('delivery-charges', [DeliveryChargeController::class, 'store'])->name('delivery-charges.store');
     Route::post('delivery-charges/{deliveryCharge}', [DeliveryChargeController::class, 'update'])->name('delivery-charges.update');
     Route::delete('delivery-charges/{deliveryCharge}', [DeliveryChargeController::class, 'destroy'])->name('delivery-charges.destroy');
+
+    Route::get('sliders', [SliderController::class, 'index'])->name('sliders.index');
+    Route::get('sliders/create', [SliderController::class, 'create'])->name('sliders.create');
+    Route::post('sliders', [SliderController::class, 'store'])->name('sliders.store');
+    Route::get('sliders/{slider}/edit', [SliderController::class, 'edit'])->name('sliders.edit');
+    Route::post('sliders/{slider}', [SliderController::class, 'update'])->name('sliders.update');
+    Route::delete('sliders/{slider}', [SliderController::class, 'destroy'])->name('sliders.destroy');
 });
 
 require __DIR__.'/settings.php';

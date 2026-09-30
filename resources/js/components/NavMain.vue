@@ -38,11 +38,7 @@ watch(currentUrl, () => {
 </script>
 
 <template>
-    <SidebarGroup
-        v-for="group in groups"
-        :key="group.title"
-        class="px-2 py-0"
-    >
+    <SidebarGroup v-for="group in groups" :key="group.title" class="px-2 py-0">
         <SidebarGroupLabel v-if="!group.collapsible || group.label">
             {{ group.label ?? group.title }}
         </SidebarGroupLabel>
@@ -59,7 +55,11 @@ watch(currentUrl, () => {
                 <SidebarMenuItem>
                     <CollapsibleTrigger as-child>
                         <SidebarMenuButton
-                            :is-active="group.items.some((item) => isCurrentUrl(item.href))"
+                            :is-active="
+                                group.items.some((item) =>
+                                    isCurrentUrl(item.href),
+                                )
+                            "
                             :tooltip="group.title"
                         >
                             <component :is="group.icon" />
@@ -72,7 +72,9 @@ watch(currentUrl, () => {
                     <CollapsibleContent
                         class="submenu-content overflow-hidden group-data-[collapsible=icon]:hidden"
                     >
-                        <ul class="ml-4 border-l border-sidebar-border py-1 pl-2">
+                        <ul
+                            class="ml-4 border-l border-sidebar-border py-1 pl-2"
+                        >
                             <li v-for="item in group.items" :key="item.title">
                                 <SidebarMenuButton
                                     as-child

@@ -226,23 +226,210 @@ defineOptions({
                     aria-label="Search orders"
                 />
             </div>
-            <Button class="shrink-0" @click="router.visit('/orders/create')">
+            <Button
+                class="w-full shrink-0 sm:w-auto"
+                @click="router.visit('/orders/create')"
+            >
                 <Plus class="size-4" />
                 Add order
             </Button>
         </div>
-        <div class="overflow-hidden rounded-md border">
+        <div class="space-y-3 md:hidden">
+            <article
+                v-for="(order, index) in filtered"
+                :key="order.id"
+                class="rounded-md border bg-background p-4 shadow-xs"
+            >
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <div
+                            class="mb-1 text-xs font-medium text-muted-foreground"
+                        >
+                            #{{ index + 1 }}
+                        </div>
+                        <button
+                            type="button"
+                            class="max-w-full truncate text-left font-semibold text-primary underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                            :aria-label="`View details for order ${order.order_number}`"
+                            @click="showDetails(order)"
+                        >
+                            {{ order.order_number }}
+                        </button>
+                        <div class="mt-1 text-xs text-muted-foreground">
+                            {{ formatDate(order.order_date) || 'No date' }}
+                        </div>
+                    </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                title="Order actions"
+                                class="shrink-0"
+                            >
+                                <MoreVertical class="size-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem @click="showDetails(order)">
+                                <Eye class="size-4" />View
+                            </DropdownMenuItem>
+                            <DropdownMenuItem :as-child="true">
+                                <a
+                                    class="flex w-full cursor-pointer items-center gap-2"
+                                    :href="`/orders/${order.id}/pdf`"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <FileText class="size-4" />
+                                    PDF
+                                </a>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                @click="
+                                    router.visit(`/orders/${order.id}/edit`)
+                                "
+                            >
+                                <Pencil class="size-4" />Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                variant="destructive"
+                                @click="showDelete(order)"
+                            >
+                                <Trash2 class="size-4" />Delete
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+
+                <div class="mt-4 flex items-center gap-3">
+                    <img
+                        v-if="order.customer_photo_url"
+                        :src="order.customer_photo_url"
+                        :alt="order.customer_name ?? ''"
+                        class="size-10 shrink-0 rounded-full object-cover"
+                    />
+                    <div
+                        v-else
+                        class="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted"
+                    >
+                        <UserRound class="size-4" />
+                    </div>
+                    <div class="min-w-0">
+                        <div class="truncate font-medium">
+                            {{ order.customer_name || 'Unknown' }}
+                        </div>
+                        <div class="truncate text-xs text-muted-foreground">
+                            {{ order.customer_phone || 'No phone' }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                    <div class="rounded-md bg-muted/30 p-3">
+                        <div class="text-xs text-muted-foreground">Items</div>
+                        <div class="font-medium">
+                            {{ order.total_product }}
+                        </div>
+                    </div>
+                    <div class="rounded-md bg-muted/30 p-3">
+                        <div class="text-xs text-muted-foreground">Total</div>
+                        <div class="font-medium">
+                            {{ money(order.total_amount) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 grid gap-3 text-sm">
+                    <div
+                        class="flex flex-wrap items-center justify-between gap-2"
+                    >
+                        <span class="text-xs text-muted-foreground"
+                            >Payment</span
+                        >
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span
+                                class="rounded-sm px-2 py-1 text-xs font-medium"
+                                :class="
+                                    order.payment_status === 1
+                                        ? 'bg-emerald-100 text-emerald-700'
+                                        : order.payment_status === 2
+                                          ? 'bg-amber-100 text-amber-700'
+                                          : 'bg-red-100 text-red-700'
+                                "
+                            >
+                                {{ paymentLabel(order.payment_status) }}
+                            </span>
+                            <button
+                                v-if="order.payment_status !== 1"
+                                type="button"
+                                class="text-xs font-medium text-blue-600 underline-offset-4 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                                @click="openPayment(order)"
+                            >
+                                Make Payment
+                            </button>
+                        </div>
+                    </div>
+
+                    <div
+                        class="flex flex-wrap items-center justify-between gap-2"
+                    >
+                        <span class="text-xs text-muted-foreground"
+                            >Delivery</span
+                        >
+                        <button
+                            v-if="order.order_status < 2"
+                            type="button"
+                            class="rounded-sm px-2 py-1 text-xs font-medium transition-colors hover:opacity-80 disabled:cursor-wait disabled:opacity-60"
+                            :class="
+                                order.order_status === 0
+                                    ? 'bg-amber-100 text-amber-700'
+                                    : 'bg-sky-100 text-sky-700'
+                            "
+                            :disabled="updatingStatusId !== null"
+                            :title="`Change delivery status to ${statusLabel(order.order_status + 1)}`"
+                            @click="openStatusConfirmation(order)"
+                        >
+                            {{
+                                updatingStatusId === order.id
+                                    ? 'Updating...'
+                                    : statusLabel(order.order_status)
+                            }}
+                        </button>
+                        <span
+                            v-else
+                            class="rounded-sm px-2 py-1 text-xs font-medium"
+                            :class="
+                                order.order_status === 2
+                                    ? 'bg-emerald-100 text-emerald-700'
+                                    : 'bg-red-100 text-red-700'
+                            "
+                        >
+                            {{ statusLabel(order.order_status) }}
+                        </span>
+                    </div>
+                </div>
+            </article>
+
+            <div
+                v-if="!filtered.length"
+                class="rounded-md border px-4 py-10 text-center text-sm text-muted-foreground"
+            >
+                No orders found.
+            </div>
+        </div>
+        <div class="hidden overflow-hidden rounded-md border md:block">
             <div class="overflow-x-auto">
-                <table class="w-full table-fixed text-sm">
+                <table class="w-full min-w-[940px] text-sm">
                     <colgroup>
-                        <col class="w-[5%]" />
-                        <col class="w-[16%]" />
-                        <col class="w-[25%]" />
-                        <col class="w-[8%]" />
-                        <col class="w-[14%]" />
-                        <col class="w-[13%]" />
-                        <col class="w-[14%]" />
-                        <col class="w-[5%]" />
+                        <col class="w-16" />
+                        <col class="w-40" />
+                        <col class="w-[28%]" />
+                        <col class="w-20" />
+                        <col class="w-32" />
+                        <col class="w-36" />
+                        <col class="w-40" />
+                        <col class="w-16" />
                     </colgroup>
                     <thead class="border-b bg-muted/50 text-left">
                         <tr>
@@ -410,8 +597,7 @@ defineOptions({
                                             >
                                                 <FileText class="size-4" />
                                                 PDF
-                                            </a>
-                                        </DropdownMenuItem
+                                            </a> </DropdownMenuItem
                                         ><DropdownMenuItem
                                             @click="
                                                 router.visit(

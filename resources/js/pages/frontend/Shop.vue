@@ -449,7 +449,7 @@ const imageUrl = (text: string) =>
                         <article
                             v-for="product in paginatedProducts"
                             :key="product.id"
-                            class="relative rounded-lg border border-slate-200 bg-white p-2 shadow-sm"
+                            class="relative flex h-full flex-col rounded-lg border border-slate-200 bg-white p-2 shadow-sm"
                         >
                             <span
                                 v-if="discountLabel(product)"
@@ -495,13 +495,19 @@ const imageUrl = (text: string) =>
                                     class="h-44 w-full rounded-md object-cover"
                                 />
                             </Link>
-                            <div class="p-2">
+                            <div class="flex flex-1 flex-col p-2">
                                 <Link
                                     :href="productUrl(product)"
                                     class="block text-sm font-bold text-slate-800 hover:text-[#218a37]"
                                 >
                                     {{ product.name }}
                                 </Link>
+                                <p
+                                    v-if="product.short_description"
+                                    class="mt-1 line-clamp-2 text-xs leading-4 text-slate-500"
+                                >
+                                    {{ product.short_description }}
+                                </p>
                                 <p class="mt-1 text-xs text-slate-500">
                                     {{ productUnit(product) }}
                                 </p>
@@ -526,7 +532,9 @@ const imageUrl = (text: string) =>
                                         }}</span
                                     >
                                 </div>
-                                <div class="mt-3 grid grid-cols-2 gap-2">
+                                <div
+                                    class="mt-auto grid grid-cols-2 gap-2 pt-3"
+                                >
                                     <button
                                         type="button"
                                         class="flex min-h-9 items-center justify-center gap-1.5 rounded border border-lime-500 px-2 text-[11px] font-bold text-lime-600 transition hover:bg-lime-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"

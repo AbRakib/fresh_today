@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Category;
 use App\Models\Customer;
+use App\Models\Product;
 use App\Models\Setting;
 use App\Support\Currency;
 use Illuminate\Http\Request;
@@ -79,6 +80,23 @@ class HandleInertiaRequests extends Middleware
                     'icon_url' => $category->icon
                         ? Storage::disk('public')->url($category->icon)
                         : null,
+                ]),
+            'frontend_search_products' => Product::query()
+                ->with('category:id,name')
+                ->where('deleted', 0)
+                ->where('status', 1)
+                ->latest('id')
+                ->get(['id', 'category_id', 'name', 'slug', 'thumbnail', 'cost_price', 'sale_price'])
+                ->map(fn (Product $product) => [
+                    'id' => $product->id,
+                    'category_name' => $product->category?->name,
+                    'name' => $product->name,
+                    'slug' => $product->slug,
+                    'thumbnail_url' => $product->thumbnail
+                        ? Storage::disk('public')->url($product->thumbnail)
+                        : null,
+                    'regular_price' => $product->cost_price,
+                    'sale_price' => $product->sale_price,
                 ]),
             'auth' => [
                 'user' => $user ? [

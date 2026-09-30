@@ -171,24 +171,24 @@
     }
 
     :where(
-        a[href],
-        button,
-        select,
-        option,
-        summary,
-        label[for],
-        input[type='button'],
-        input[type='checkbox'],
-        input[type='file'],
-        input[type='radio'],
-        input[type='reset'],
-        input[type='submit'],
-        [role='button'],
-        [role='link'],
-        [role='menuitem'],
-        [role='option'],
-        [role='tab']
-    ):not(:disabled):not([aria-disabled='true']) {
+            a[href],
+            button,
+            select,
+            option,
+            summary,
+            label[for],
+            input[type='button'],
+            input[type='checkbox'],
+            input[type='file'],
+            input[type='radio'],
+            input[type='reset'],
+            input[type='submit'],
+            [role='button'],
+            [role='link'],
+            [role='menuitem'],
+            [role='option'],
+            [role='tab']
+        ):not(:disabled):not([aria-disabled='true']) {
         cursor: pointer;
     }
 

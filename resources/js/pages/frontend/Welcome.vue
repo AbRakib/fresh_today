@@ -374,7 +374,9 @@ const imageUrl = (text: string, size = '500x360') =>
                             >
                                 {{ product.name }}
                             </Link>
-                            <p class="mt-1 text-[10px] text-slate-500">
+                            <p
+                                class="mt-1 line-clamp-2 text-[10px] leading-4 text-slate-500"
+                            >
                                 {{
                                     product.short_description ||
                                     product.badge ||
