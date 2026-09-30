@@ -47,6 +47,8 @@ const deleteOpen = ref(false);
 const selectedSupplier = ref<Supplier | null>(null);
 const deleting = ref(false);
 const supplierPhotoPreview = ref<string | null>(null);
+const supplierAddress = ref('');
+const supplierNote = ref('');
 const { money } = useCurrency();
 
 const displayedPhotoUrl = computed(
@@ -79,12 +81,16 @@ const initials = (name: string) =>
 const openCreate = () => {
     selectedSupplier.value = null;
     supplierPhotoPreview.value = null;
+    supplierAddress.value = '';
+    supplierNote.value = '';
     formOpen.value = true;
 };
 
 const openEdit = (supplier: Supplier) => {
     selectedSupplier.value = supplier;
     supplierPhotoPreview.value = null;
+    supplierAddress.value = supplier.address ?? '';
+    supplierNote.value = supplier.note ?? '';
     formOpen.value = true;
 };
 
@@ -322,6 +328,7 @@ defineOptions({
                             <Input
                                 id="supplier_name"
                                 name="name"
+                                placeholder="Enter supplier name"
                                 :default-value="selectedSupplier?.name"
                                 required
                             />
@@ -333,6 +340,7 @@ defineOptions({
                                 id="supplier_email"
                                 type="email"
                                 name="email"
+                                placeholder="Enter email address"
                                 :default-value="selectedSupplier?.email ?? ''"
                             />
                             <InputError :message="errors.email" />
@@ -345,27 +353,22 @@ defineOptions({
                             <Input
                                 id="supplier_phone"
                                 name="phone"
+                                placeholder="Enter phone number"
                                 :default-value="selectedSupplier?.phone ?? ''"
                             />
                             <InputError :message="errors.phone" />
                         </div>
-                        <div class="grid justify-items-center gap-3">
-                            <ImageCropInput
-                                class="w-fit justify-items-center text-center"
-                                id="supplier_photo"
-                                name="photo"
-                                label="Supplier photo"
-                                :current-url="selectedSupplier?.photo_url"
-                                choose-label="Upload"
-                                :aspect-ratio="1"
-                                :output-width="600"
-                                :output-height="600"
-                                preview-class="aspect-square w-28 rounded-full"
-                                :show-header="false"
-                                :show-status="false"
-                                :error="errors.photo"
-                                @cropped="handleSupplierPhotoCropped"
+                        <div class="grid gap-1.5">
+                            <Label for="supplier_address">Address</Label>
+                            <textarea
+                                id="supplier_address"
+                                name="address"
+                                rows="1"
+                                placeholder="Enter address"
+                                v-model="supplierAddress"
+                                class="h-9 w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring"
                             />
+                            <InputError :message="errors.address" />
                         </div>
                     </div>
 
@@ -380,6 +383,7 @@ defineOptions({
                                 name="opening_balance_amount"
                                 min="0"
                                 step="0.01"
+                                placeholder="Enter opening balance amount"
                                 :default-value="
                                     selectedSupplier?.opening_balance_amount ??
                                     '0.00'
@@ -408,17 +412,6 @@ defineOptions({
                         </div>
                     </div>
 
-                    <div class="grid gap-1.5">
-                        <Label for="supplier_address">Address</Label>
-                        <textarea
-                            id="supplier_address"
-                            name="address"
-                            rows="3"
-                            :value="selectedSupplier?.address ?? ''"
-                            class="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring"
-                        />
-                        <InputError :message="errors.address" />
-                    </div>
 
                     <div class="grid gap-1.5">
                         <Label for="supplier_note">Note</Label>
@@ -426,10 +419,30 @@ defineOptions({
                             id="supplier_note"
                             name="note"
                             rows="3"
-                            :value="selectedSupplier?.note ?? ''"
+                            placeholder="Enter note"
+                            v-model="supplierNote"
                             class="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring"
                         />
                         <InputError :message="errors.note" />
+                    </div>
+
+                    <div class="grid justify-items-center gap-3">
+                        <ImageCropInput
+                            class="w-fit justify-items-center text-center"
+                            id="supplier_photo"
+                            name="photo"
+                            label="Supplier photo"
+                            :current-url="selectedSupplier?.photo_url"
+                            choose-label="Upload"
+                            :aspect-ratio="1"
+                            :output-width="600"
+                            :output-height="600"
+                            preview-class="aspect-square w-28 rounded-full"
+                            :show-header="false"
+                            :show-status="false"
+                            :error="errors.photo"
+                            @cropped="handleSupplierPhotoCropped"
+                        />
                     </div>
                 </div>
 
