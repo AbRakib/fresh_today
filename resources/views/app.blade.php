@@ -30,9 +30,24 @@
             }
         </style>
 
-        <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        @php
+            $metaIconSetting = \App\Models\Setting::query()
+                ->where("deleted", 0)
+                ->first(["meta_icon"]);
+            $metaIconUrl = $metaIconSetting?->meta_icon
+                ? \Illuminate\Support\Facades\Storage::disk("public")->url($metaIconSetting->meta_icon)
+                : null;
+        @endphp
+
+        @if ($metaIconUrl)
+            <link rel="icon" href="{{ $metaIconUrl }}" sizes="any">
+            <link rel="apple-touch-icon" href="{{ $metaIconUrl }}">
+        @else
+            <link rel="icon" href="/favicon.ico" sizes="any">
+            <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+            <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        @endif
+
 
         @fonts
 

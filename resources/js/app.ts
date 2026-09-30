@@ -17,6 +17,8 @@ createInertiaApp({
         switch (true) {
             case [
                 'frontend/Welcome',
+                'frontend/About',
+                'frontend/StaticPage',
                 'frontend/Shop',
                 'frontend/ProductDetails',
                 'frontend/Wishlist',

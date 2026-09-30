@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
-import { ImageIcon } from '@lucide/vue';
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
+import ImageCropInput from '@/components/ImageCropInput.vue';
 import InputError from '@/components/InputError.vue';
 import TextEditor from '@/components/TextEditor.vue';
 import { Button } from '@/components/ui/button';
@@ -48,9 +48,7 @@ const props = defineProps<{
     showProductStateFields?: boolean;
 }>();
 
-const categoryId = ref<number | string>(
-    props.product?.category_id ?? '',
-);
+const categoryId = ref<number | string>(props.product?.category_id ?? '');
 const subcategoryId = ref<number | string>(props.product?.subcategory_id ?? '');
 const unitId = ref<number | string>(
     props.product?.unit_id ??
@@ -58,7 +56,9 @@ const unitId = ref<number | string>(
         props.units[0]?.id ??
         '',
 );
-const thumbnailPreviewUrl = ref<string | null>(null);
+const thumbnailPreviewUrl = ref<string | null>(
+    props.product?.thumbnail_url ?? null,
+);
 const submitAttempted = ref(false);
 const shortDescription = ref(props.product?.short_description ?? '');
 const description = ref(props.product?.description ?? '');
@@ -69,9 +69,7 @@ const filteredSubcategories = computed(() =>
             String(subcategory.category_id) === String(categoryId.value),
     ),
 );
-const displayedThumbnailUrl = computed(
-    () => thumbnailPreviewUrl.value ?? props.product?.thumbnail_url ?? null,
-);
+const displayedThumbnailUrl = computed(() => thumbnailPreviewUrl.value);
 const showProductStateFields = computed(
     () => props.showProductStateFields ?? true,
 );
@@ -87,13 +85,8 @@ watch(categoryId, () => {
     }
 });
 
-const handleThumbnailChange = (event: Event) => {
-    if (thumbnailPreviewUrl.value) {
-        URL.revokeObjectURL(thumbnailPreviewUrl.value);
-    }
-
-    const file = (event.target as HTMLInputElement).files?.[0];
-    thumbnailPreviewUrl.value = file ? URL.createObjectURL(file) : null;
+const handleThumbnailCropped = (_file: File, previewUrl: string) => {
+    thumbnailPreviewUrl.value = previewUrl;
 };
 
 const handleFormError = async (errors: Record<string, unknown>) => {
@@ -114,12 +107,6 @@ const handleFormError = async (errors: Record<string, unknown>) => {
     target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     if (firstError !== 'thumbnail') field?.focus({ preventScroll: true });
 };
-
-onBeforeUnmount(() => {
-    if (thumbnailPreviewUrl.value) {
-        URL.revokeObjectURL(thumbnailPreviewUrl.value);
-    }
-});
 </script>
 
 <template>
@@ -292,43 +279,31 @@ onBeforeUnmount(() => {
                 </div>
 
                 <div
-                    class="grid content-start gap-3 rounded-md border p-4 lg:col-span-2"
+                    class="grid content-start rounded-md border p-4 lg:col-span-2"
                     :class="{ 'border-dashed': !showProductStateFields }"
                 >
-                    <Label for="product_thumbnail"
-                        >Image
-                        <span class="text-destructive" aria-hidden="true"
-                            >*</span
-                        ></Label
-                    >
-                    <Label
-                        for="product_thumbnail"
-                        class="flex aspect-square w-full cursor-pointer items-center justify-center overflow-hidden rounded-md border bg-muted/20 text-muted-foreground transition-colors hover:border-primary hover:bg-muted/40"
-                        :class="{
-                            'border-destructive ring-1 ring-destructive/30':
-                                submitAttempted &&
-                                !product &&
-                                !displayedThumbnailUrl,
-                        }"
-                    >
-                        <img
-                            v-if="displayedThumbnailUrl"
-                            :src="displayedThumbnailUrl"
-                            alt="Product thumbnail preview"
-                            class="size-full object-cover"
-                        />
-                        <ImageIcon v-else class="size-10" />
-                    </Label>
-                    <Input
+                    <ImageCropInput
                         id="product_thumbnail"
-                        type="file"
                         name="thumbnail"
-                        accept="image/*"
-                        class="sr-only"
+                        label="Image"
+                        helper="PNG, JPG or WebP, up to 2 MB"
+                        :current-url="product?.thumbnail_url"
+                        current-label="Current product image"
+                        empty-label="No image selected"
+                        choose-label="Choose image"
+                        :aspect-ratio="1"
+                        :output-width="900"
+                        :output-height="900"
+                        preview-class="aspect-square w-full"
                         :required="!product"
-                        @change="handleThumbnailChange"
+                        :invalid="
+                            submitAttempted &&
+                            !product &&
+                            !displayedThumbnailUrl
+                        "
+                        :error="errors.thumbnail"
+                        @cropped="handleThumbnailCropped"
                     />
-                    <InputError :message="errors.thumbnail" />
                 </div>
             </div>
 

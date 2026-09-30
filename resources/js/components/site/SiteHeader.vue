@@ -42,7 +42,15 @@ type FrontendUser = {
     name: string;
 };
 
+type SharedSettings = {
+    company_name: string | null;
+    email: string | null;
+    phone: string | null;
+    logo_url: string | null;
+};
+
 const page = usePage<{
+    settings?: SharedSettings;
     frontend_categories?: FrontendCategory[];
     customer_auth_modal?: 'login' | 'register' | null;
     wishlist_count?: number;
@@ -58,6 +66,19 @@ const wishlistCount = computed(() => page.props.wishlist_count ?? 0);
 const cartCount = computed(() => page.props.cart_count ?? 0);
 const isHomePage = computed(() => page.url.split('?')[0] === '/');
 const customer = computed(() => page.props.auth.customer);
+const settingsPhone = computed(() => page.props.settings?.phone?.trim() || '');
+const settingsEmail = computed(() => page.props.settings?.email?.trim() || '');
+const settingsLogoUrl = computed(() => page.props.settings?.logo_url || '');
+const settingsCompanyName = computed(
+    () => page.props.settings?.company_name?.trim() || 'Fresh Today',
+);
+const settingsLogoAlt = computed(() => settingsCompanyName.value + ' logo');
+const phoneHref = computed(() => {
+    const firstPhone = settingsPhone.value.split(/[,\n]/)[0]?.trim() ?? '';
+    const normalizedPhone = firstPhone.replace(/[^\d+]/g, '');
+
+    return normalizedPhone ? 'tel:' + normalizedPhone : '';
+});
 const authModalOpen = ref(Boolean(page.props.customer_auth_modal));
 const logoutConfirmationOpen = ref(false);
 const authView = ref<'login' | 'register'>(
@@ -151,18 +172,20 @@ watch(
         >
             <div class="flex items-center gap-5">
                 <a
-                    href="tel:09617551122"
+                    v-if="settingsPhone"
+                    :href="phoneHref || undefined"
                     class="flex items-center gap-2 hover:text-[#e0f5e5]"
                 >
                     <Phone class="h-3.5 w-3.5" />
-                    <span>09617 551122</span>
+                    <span>{{ settingsPhone }}</span>
                 </a>
                 <a
-                    href="mailto:support@freshtodaybd.com"
+                    v-if="settingsEmail"
+                    :href="'mailto:' + settingsEmail"
                     class="hidden items-center gap-2 hover:text-[#e0f5e5] sm:flex"
                 >
                     <Mail class="h-3.5 w-3.5" />
-                    <span>support@freshtodaybd.com</span>
+                    <span>{{ settingsEmail }}</span>
                 </a>
             </div>
 
@@ -202,7 +225,13 @@ watch(
             class="mx-auto flex w-[min(1180px,calc(100%-32px))] items-center gap-4 py-4"
         >
             <Link href="/" class="shrink-0">
-                <div class="flex items-center gap-2">
+                <img
+                    v-if="settingsLogoUrl"
+                    :src="settingsLogoUrl"
+                    :alt="settingsLogoAlt"
+                    class="h-14 w-auto max-w-40 object-contain"
+                />
+                <div v-else class="flex items-center gap-2">
                     <div
                         class="grid h-12 w-12 place-items-center rounded-full bg-[#176536] text-2xl font-black text-white"
                     >
@@ -269,7 +298,7 @@ watch(
                 <button
                     v-else
                     type="button"
-                    class="flex items-center gap-3 text-left text-xs leading-tight text-black hover:text-[#176536]"
+                    class="flex items-center gap-1 text-left text-xs leading-tight text-black hover:text-[#176536]"
                     @click="openAccountModal"
                 >
                     <UserRound class="h-6 w-6 shrink-0" />

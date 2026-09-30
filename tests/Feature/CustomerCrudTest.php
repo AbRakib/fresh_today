@@ -4,6 +4,7 @@ use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -80,6 +81,48 @@ test('customers can be updated with a new password', function () {
         ->and($customer->status)->toBe(1)
         ->and($customer->password)->not->toBe('new-password')
         ->and($customer->updated_by)->toBe($user->id);
+});
+
+test('authenticated users can change a customer password', function () {
+    $user = User::factory()->create();
+    $customer = Customer::query()->create([
+        'name' => 'Nadia Rahman',
+        'email' => 'nadia@example.com',
+        'password' => 'password',
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('customers.password.update', $customer), [
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('customers.index'));
+
+    $customer->refresh();
+
+    expect(Hash::check('new-password', $customer->password))->toBeTrue()
+        ->and($customer->updated_by)->toBe($user->id);
+});
+
+test('customer password confirmation must match', function () {
+    $user = User::factory()->create();
+    $customer = Customer::query()->create([
+        'name' => 'Nadia Rahman',
+        'email' => 'nadia@example.com',
+        'password' => 'password',
+    ]);
+
+    $this->actingAs($user)
+        ->from(route('customers.index'))
+        ->patch(route('customers.password.update', $customer), [
+            'password' => 'new-password',
+            'password_confirmation' => 'different-password',
+        ])
+        ->assertSessionHasErrors('password')
+        ->assertRedirect(route('customers.index'));
+
+    expect(Hash::check('password', $customer->fresh()->password))->toBeTrue();
 });
 
 test('customers are soft deleted using the customer audit columns', function () {

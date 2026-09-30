@@ -1,5 +1,21 @@
 <script setup lang="ts">
+import { Link, usePage } from '@inertiajs/vue3';
 import { Mail, Phone } from '@lucide/vue';
+import { computed } from 'vue';
+
+type SharedSettings = {
+    address: string | null;
+    email: string | null;
+    phone: string | null;
+};
+
+const page = usePage<{ settings?: SharedSettings }>();
+
+const settingsAddress = computed(
+    () => page.props.settings?.address?.trim() || '',
+);
+const settingsPhone = computed(() => page.props.settings?.phone?.trim() || '');
+const settingsEmail = computed(() => page.props.settings?.email?.trim() || '');
 </script>
 
 <template>
@@ -40,11 +56,17 @@ import { Mail, Phone } from '@lucide/vue';
             <div>
                 <h4 class="mb-4 text-sm font-bold">Quick Links</h4>
                 <ul class="space-y-3 text-xs text-[#e0f5e5]">
-                    <li><a href="#" class="hover:text-white">About Us</a></li>
+                    <li>
+                        <Link href="/about" class="hover:text-white">
+                            About Us
+                        </Link>
+                    </li>
                     <li><a href="#" class="hover:text-white">Career</a></li>
                     <li><a href="#" class="hover:text-white">Blog</a></li>
                     <li>
-                        <a href="#" class="hover:text-white">Help Center</a>
+                        <Link href="/help-center" class="hover:text-white">
+                            Help Center
+                        </Link>
                     </li>
                 </ul>
             </div>
@@ -52,17 +74,26 @@ import { Mail, Phone } from '@lucide/vue';
             <div>
                 <h4 class="mb-4 text-sm font-bold">Customer Service</h4>
                 <ul class="space-y-3 text-xs text-[#e0f5e5]">
-                    <li><a href="#" class="hover:text-white">FAQ</a></li>
                     <li>
-                        <a href="#" class="hover:text-white">Return Policy</a>
+                        <Link href="/faq" class="hover:text-white">FAQ</Link>
                     </li>
                     <li>
-                        <a href="#" class="hover:text-white">Shipping Policy</a>
+                        <Link href="/return-policy" class="hover:text-white">
+                            Return Policy
+                        </Link>
                     </li>
                     <li>
-                        <a href="#" class="hover:text-white"
-                            >Terms & Conditions</a
+                        <Link href="/shipping-policy" class="hover:text-white">
+                            Shipping Policy
+                        </Link>
+                    </li>
+                    <li>
+                        <Link
+                            href="/terms-and-conditions"
+                            class="hover:text-white"
                         >
+                            Terms & Conditions
+                        </Link>
                     </li>
                 </ul>
             </div>
@@ -70,15 +101,14 @@ import { Mail, Phone } from '@lucide/vue';
             <div>
                 <h4 class="mb-4 text-sm font-bold">Contact Us</h4>
                 <ul class="space-y-3 text-xs leading-5 text-[#e0f5e5]">
-                    <li>
-                        House: 1/A, Road: 17, South Baridhara<br />R/A, Dhaka -
-                        1212, Bangladesh
+                    <li v-if="settingsAddress" class="whitespace-pre-line">
+                        {{ settingsAddress }}
                     </li>
-                    <li class="flex items-center gap-2">
-                        <Phone class="h-3.5 w-3.5" />09617 551122, 01931 000700
+                    <li v-if="settingsPhone" class="flex items-center gap-2">
+                        <Phone class="h-3.5 w-3.5" />{{ settingsPhone }}
                     </li>
-                    <li class="flex items-center gap-2">
-                        <Mail class="h-3.5 w-3.5" />support@freshtodaybd.com
+                    <li v-if="settingsEmail" class="flex items-center gap-2">
+                        <Mail class="h-3.5 w-3.5" />{{ settingsEmail }}
                     </li>
                 </ul>
             </div>

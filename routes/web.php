@@ -24,6 +24,132 @@ Route::get('/', function (ProductController $products) {
         'frontend_products' => $products->frontendProducts(),
     ]);
 })->name('home');
+Route::inertia('/about', 'frontend/About')->name('about');
+Route::inertia('/help-center', 'frontend/StaticPage', [
+    'page' => [
+        'title' => 'Help Center',
+        'eyebrow' => 'Customer Support',
+        'intro' => 'Find quick answers about ordering, payment, delivery, and getting support from Fresh Today.',
+        'sections' => [
+            [
+                'title' => 'How can we help?',
+                'items' => [
+                    'Browse the shop, choose your fresh products, and add them to your cart.',
+                    'Review your cart before checkout to confirm quantity, weight, price, and delivery details.',
+                    'Contact our support team if you need help with an order, payment, delivery address, or product question.',
+                ],
+            ],
+            [
+                'title' => 'Order Support',
+                'items' => [
+                    'Keep your order information ready when contacting support so we can help faster.',
+                    'If an item becomes unavailable, our team may contact you to confirm a suitable replacement or adjustment.',
+                    'For urgent delivery questions, use the phone number shown in the site header or footer.',
+                ],
+            ],
+        ],
+    ],
+])->name('help-center');
+Route::inertia('/faq', 'frontend/StaticPage', [
+    'page' => [
+        'title' => 'FAQ',
+        'eyebrow' => 'Common Questions',
+        'intro' => 'Answers to the questions customers ask most often before and after ordering from Fresh Today.',
+        'sections' => [
+            [
+                'title' => 'Ordering',
+                'items' => [
+                    'You can order directly from the shop by adding products to your cart and completing checkout.',
+                    'Product availability can change based on freshness, supply, and daily stock.',
+                    'Prices, weights, and discounts shown on product pages are updated from the current catalog.',
+                ],
+            ],
+            [
+                'title' => 'Delivery & Payment',
+                'items' => [
+                    'Delivery options and charges are confirmed during checkout.',
+                    'Please provide a reachable phone number so our team can confirm order details if needed.',
+                    'Accepted payment methods may include cash on delivery and the payment options shown on the website.',
+                ],
+            ],
+        ],
+    ],
+])->name('faq');
+Route::inertia('/return-policy', 'frontend/StaticPage', [
+    'page' => [
+        'title' => 'Return Policy',
+        'eyebrow' => 'Freshness Promise',
+        'intro' => 'We want every order to reach you fresh, clean, and as expected. Please review the return guidelines below.',
+        'sections' => [
+            [
+                'title' => 'Eligible Issues',
+                'items' => [
+                    'Contact us as soon as possible if a product arrives damaged, spoiled, missing, or different from your confirmed order.',
+                    'Fresh food items should be checked at delivery because return eligibility may depend on product condition and timing.',
+                    'Photos or order details may be requested so our team can review the issue quickly.',
+                ],
+            ],
+            [
+                'title' => 'Resolution',
+                'items' => [
+                    'Depending on the situation, we may arrange a replacement, adjustment, refund, or store credit.',
+                    'Items that have been used, cooked, stored incorrectly, or reported too late may not qualify for return.',
+                    'Final approval is based on the product condition, delivery record, and order details.',
+                ],
+            ],
+        ],
+    ],
+])->name('return-policy');
+Route::inertia('/shipping-policy', 'frontend/StaticPage', [
+    'page' => [
+        'title' => 'Shipping Policy',
+        'eyebrow' => 'Delivery Information',
+        'intro' => 'Fresh Today prepares and delivers orders with care so your fish, seafood, and meat arrive in good condition.',
+        'sections' => [
+            [
+                'title' => 'Delivery Areas',
+                'items' => [
+                    'Available delivery areas are based on our current service coverage and may change over time.',
+                    'Delivery charges are calculated during checkout based on the available delivery setup.',
+                    'If your address needs clarification, our team may call before dispatching the order.',
+                ],
+            ],
+            [
+                'title' => 'Delivery Timing',
+                'items' => [
+                    'Orders are prepared according to product availability, order volume, and delivery route.',
+                    'Please keep your phone reachable around delivery time to avoid delays.',
+                    'Weather, traffic, supply conditions, or operational issues may affect delivery timing.',
+                ],
+            ],
+        ],
+    ],
+])->name('shipping-policy');
+Route::inertia('/terms-and-conditions', 'frontend/StaticPage', [
+    'page' => [
+        'title' => 'Terms & Conditions',
+        'eyebrow' => 'Website Terms',
+        'intro' => 'By using Fresh Today, you agree to the basic terms for browsing, ordering, payment, and delivery.',
+        'sections' => [
+            [
+                'title' => 'Using the Website',
+                'items' => [
+                    'Please provide accurate account, contact, delivery, and payment information when placing an order.',
+                    'Product images, prices, stock, discounts, and availability may change without prior notice.',
+                    'Fresh Today may refuse or cancel orders that contain incorrect information, unavailable items, or suspected misuse.',
+                ],
+            ],
+            [
+                'title' => 'Orders & Responsibility',
+                'items' => [
+                    'Customers are responsible for reviewing order details before confirming checkout.',
+                    'Fresh food should be received, checked, and stored properly after delivery.',
+                    'Policy pages may be updated when our service, operations, or legal requirements change.',
+                ],
+            ],
+        ],
+    ],
+])->name('terms-and-conditions');
 Route::get('/shop', [ProductController::class, 'frontendIndex'])->name('shop');
 Route::get('/product/{product:slug}', [ProductController::class, 'frontendShow'])->name('products.show');
 Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
@@ -43,6 +169,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
     Route::post('customers', [CustomerController::class, 'store'])->name('customers.store');
     Route::post('customers/{customer}', [CustomerController::class, 'update'])->name('customers.update');
+    Route::patch('customers/{customer}/password', [CustomerController::class, 'updatePassword'])->name('customers.password.update');
     Route::delete('customers/{customer}', [CustomerController::class, 'destroy'])->name('customers.destroy');
 
     Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');

@@ -19,7 +19,11 @@ declare module '@inertiajs/core' {
             name: string;
             settings: {
                 company_name: string | null;
+                email: string | null;
+                phone: string | null;
+                address: string | null;
                 logo_url: string | null;
+                meta_icon_url: string | null;
             };
             auth: Auth;
             sidebarOpen: boolean;

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CustomerPasswordUpdateRequest;
 use App\Http\Requests\CustomerStoreRequest;
 use App\Http\Requests\CustomerUpdateRequest;
 use App\Models\Customer;
@@ -75,6 +76,20 @@ class CustomerController extends Controller
         $customer->update($validated);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Customer updated.')]);
+
+        return to_route('customers.index');
+    }
+
+    public function updatePassword(CustomerPasswordUpdateRequest $request, Customer $customer): RedirectResponse
+    {
+        abort_if($customer->deleted, 404);
+
+        $customer->update([
+            'password' => $request->validated('password'),
+            'updated_by' => $request->user()?->id,
+        ]);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Customer password updated.')]);
 
         return to_route('customers.index');
     }

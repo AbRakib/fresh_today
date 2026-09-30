@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, router } from '@inertiajs/vue3';
 import {
-    Camera,
+    KeyRound,
     MoreVertical,
     Pencil,
     Plus,
@@ -11,7 +11,9 @@ import {
 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
+import ImageCropInput from '@/components/ImageCropInput.vue';
 import InputError from '@/components/InputError.vue';
+import PasswordInput from '@/components/PasswordInput.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -47,8 +49,10 @@ const { customers } = defineProps<{ customers: Customer[] }>();
 
 const search = ref('');
 const formOpen = ref(false);
+const passwordOpen = ref(false);
 const deleteOpen = ref(false);
 const selectedCustomer = ref<Customer | null>(null);
+const customerPhotoPreview = ref<string | null>(null);
 const deleting = ref(false);
 
 const filteredCustomers = computed(() => {
@@ -65,6 +69,13 @@ const filteredCustomers = computed(() => {
     );
 });
 
+const displayedCustomerPhoto = computed(
+    () =>
+        customerPhotoPreview.value ??
+        selectedCustomer.value?.profile_image_url ??
+        null,
+);
+
 const initials = (name: string) =>
     name
         .split(' ')
@@ -75,12 +86,23 @@ const initials = (name: string) =>
 
 const openCreate = () => {
     selectedCustomer.value = null;
+    customerPhotoPreview.value = null;
     formOpen.value = true;
 };
 
 const openEdit = (customer: Customer) => {
     selectedCustomer.value = customer;
+    customerPhotoPreview.value = null;
     formOpen.value = true;
+};
+
+const openChangePassword = (customer: Customer) => {
+    selectedCustomer.value = customer;
+    passwordOpen.value = true;
+};
+
+const handleCustomerPhotoCropped = (_file: File, previewUrl: string) => {
+    customerPhotoPreview.value = previewUrl;
 };
 
 const openDelete = (customer: Customer) => {
@@ -136,8 +158,6 @@ defineOptions({
                 Add customer
             </Button>
         </div>
-
-        
 
         <div class="overflow-hidden rounded-md border">
             <div class="overflow-x-auto">
@@ -232,6 +252,14 @@ defineOptions({
                                             Edit
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
+                                            @click="
+                                                openChangePassword(customer)
+                                            "
+                                        >
+                                            <KeyRound class="size-4" />
+                                            Change password
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
                                             variant="destructive"
                                             @click="openDelete(customer)"
                                         >
@@ -268,9 +296,9 @@ defineOptions({
                 <div class="flex items-center gap-3 pr-8">
                     <Avatar class="size-12 border bg-background">
                         <AvatarImage
-                            v-if="selectedCustomer?.profile_image_url"
-                            :src="selectedCustomer.profile_image_url"
-                            :alt="selectedCustomer.name"
+                            v-if="displayedCustomerPhoto"
+                            :src="displayedCustomerPhoto"
+                            :alt="selectedCustomer?.name ?? 'Customer photo'"
                         />
                         <AvatarFallback class="text-sm font-medium">
                             {{
@@ -314,20 +342,13 @@ defineOptions({
             >
                 <div class="grid gap-5 overflow-y-auto px-5 py-5 sm:px-6">
                     <div class="grid gap-3">
-                        <div>
-                            <h3 class="text-sm font-medium">
-                                Basic information
-                            </h3>
-                            <p class="text-xs text-muted-foreground">
-                                Customer identity and contact details.
-                            </p>
-                        </div>
                         <div class="grid gap-3 sm:grid-cols-2">
                             <div class="grid gap-1.5">
                                 <Label for="customer_name">Name</Label>
                                 <Input
                                     id="customer_name"
                                     name="name"
+                                    placeholder="Enter customer name"
                                     :default-value="selectedCustomer?.name"
                                     required
                                 />
@@ -339,6 +360,7 @@ defineOptions({
                                     id="customer_email"
                                     type="email"
                                     name="email"
+                                    placeholder="Enter email address"
                                     :default-value="selectedCustomer?.email"
                                     required
                                 />
@@ -353,6 +375,7 @@ defineOptions({
                             <Input
                                 id="customer_phone"
                                 name="phone"
+                                placeholder="Enter phone number"
                                 :default-value="selectedCustomer?.phone ?? ''"
                                 required
                             />
@@ -390,48 +413,21 @@ defineOptions({
                             </select>
                             <InputError :message="errors.gender" />
                         </div>
-
                         <div class="grid gap-1.5">
-                            <Label for="customer_image">Profile image</Label>
-                            <div class="relative">
-                                <Camera
-                                    class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-                                />
-                                <Input
-                                    id="customer_image"
-                                    type="file"
-                                    name="profile_image"
-                                    accept="image/*"
-                                    class="pl-9"
-                                />
-                            </div>
-                            <InputError :message="errors.profile_image" />
+                            <Label for="customer_address">Address</Label>
+                            <textarea
+                                id="customer_address"
+                                name="address"
+                                rows="1"
+                                placeholder="Enter address"
+                                :value="selectedCustomer?.address ?? ''"
+                                class="h-9 w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/20"
+                            />
+                            <InputError :message="errors.address" />
                         </div>
                     </div>
 
-                    <div class="grid gap-1.5">
-                        <Label for="customer_address">Address</Label>
-                        <textarea
-                            id="customer_address"
-                            name="address"
-                            rows="3"
-                            :value="selectedCustomer?.address ?? ''"
-                            class="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/20"
-                        />
-                        <InputError :message="errors.address" />
-                    </div>
-
-                    <div class="grid gap-3 border-t pt-5">
-                        <div>
-                            <h3 class="text-sm font-medium">Account access</h3>
-                            <p class="text-xs text-muted-foreground">
-                                {{
-                                    selectedCustomer
-                                        ? 'Leave password fields blank to keep the current password.'
-                                        : 'Set the password this customer will use to sign in.'
-                                }}
-                            </p>
-                        </div>
+                    <div v-if="!selectedCustomer" class="grid gap-3">
                         <div class="grid gap-3 sm:grid-cols-2">
                             <div class="grid gap-1.5">
                                 <Label for="customer_password">Password</Label>
@@ -439,6 +435,7 @@ defineOptions({
                                     id="customer_password"
                                     type="password"
                                     name="password"
+                                    placeholder="Enter password"
                                     :required="!selectedCustomer"
                                     autocomplete="new-password"
                                 />
@@ -452,11 +449,31 @@ defineOptions({
                                     id="customer_password_confirmation"
                                     type="password"
                                     name="password_confirmation"
+                                    placeholder="Confirm password"
                                     :required="!selectedCustomer"
                                     autocomplete="new-password"
                                 />
                             </div>
                         </div>
+                    </div>
+
+                    <div class="grid justify-items-center gap-3">
+                        <ImageCropInput
+                            class="w-fit justify-items-center text-center"
+                            id="customer_image"
+                            name="profile_image"
+                            label="Profile image"
+                            :current-url="selectedCustomer?.profile_image_url"
+                            choose-label="Upload"
+                            :aspect-ratio="1"
+                            :output-width="600"
+                            :output-height="600"
+                            preview-class="aspect-square w-28 rounded-full"
+                            :show-header="false"
+                            :show-status="false"
+                            :error="errors.profile_image"
+                            @cropped="handleCustomerPhotoCropped"
+                        />
                     </div>
                 </div>
 
@@ -480,6 +497,66 @@ defineOptions({
                                   ? 'Save changes'
                                   : 'Create customer'
                         }}
+                    </Button>
+                </DialogFooter>
+            </Form>
+        </DialogContent>
+    </Dialog>
+
+    <Dialog v-model:open="passwordOpen">
+        <DialogContent class="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Change password</DialogTitle>
+                <DialogDescription>
+                    Set a new password for {{ selectedCustomer?.name }}.
+                </DialogDescription>
+            </DialogHeader>
+
+            <Form
+                v-if="selectedCustomer"
+                method="patch"
+                :action="`/customers/${selectedCustomer.id}/password`"
+                reset-on-success
+                class="grid gap-4"
+                v-slot="{ errors, processing }"
+                @success="passwordOpen = false"
+            >
+                <div class="grid gap-1.5">
+                    <Label for="new_customer_password">New password</Label>
+                    <PasswordInput
+                        id="new_customer_password"
+                        name="password"
+                        autocomplete="new-password"
+                        placeholder="Enter new password"
+                        required
+                    />
+                    <InputError :message="errors.password" />
+                </div>
+
+                <div class="grid gap-1.5">
+                    <Label for="new_customer_password_confirmation">
+                        Confirm password
+                    </Label>
+                    <PasswordInput
+                        id="new_customer_password_confirmation"
+                        name="password_confirmation"
+                        autocomplete="new-password"
+                        placeholder="Confirm new password"
+                        required
+                    />
+                    <InputError :message="errors.password_confirmation" />
+                </div>
+
+                <DialogFooter>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        @click="passwordOpen = false"
+                    >
+                        Cancel
+                    </Button>
+                    <Button type="submit" :disabled="processing">
+                        {{ processing ? 'Updating...' : 'Submit' }}
                     </Button>
                 </DialogFooter>
             </Form>

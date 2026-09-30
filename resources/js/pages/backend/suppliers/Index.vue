@@ -1,16 +1,9 @@
 <script setup lang="ts">
 import { Form, Head, router } from '@inertiajs/vue3';
-import {
-    Camera,
-    MoreVertical,
-    Pencil,
-    Plus,
-    Search,
-    Trash2,
-    Truck,
-} from '@lucide/vue';
-import { computed, onBeforeUnmount, ref } from 'vue';
+import { MoreVertical, Pencil, Plus, Search, Trash2, Truck } from '@lucide/vue';
+import { computed, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
+import ImageCropInput from '@/components/ImageCropInput.vue';
 import InputError from '@/components/InputError.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -53,11 +46,12 @@ const formOpen = ref(false);
 const deleteOpen = ref(false);
 const selectedSupplier = ref<Supplier | null>(null);
 const deleting = ref(false);
-const photoPreviewUrl = ref<string | null>(null);
+const supplierPhotoPreview = ref<string | null>(null);
 const { money } = useCurrency();
 
 const displayedPhotoUrl = computed(
-    () => photoPreviewUrl.value ?? selectedSupplier.value?.photo_url ?? null,
+    () =>
+        supplierPhotoPreview.value ?? selectedSupplier.value?.photo_url ?? null,
 );
 
 const filteredSuppliers = computed(() => {
@@ -82,34 +76,20 @@ const initials = (name: string) =>
         .slice(0, 2)
         .toUpperCase();
 
-const resetPhotoPreview = () => {
-    if (photoPreviewUrl.value) {
-        URL.revokeObjectURL(photoPreviewUrl.value);
-    }
-
-    photoPreviewUrl.value = null;
-};
-
-const handlePhotoChange = (event: Event) => {
-    resetPhotoPreview();
-
-    const file = (event.target as HTMLInputElement).files?.[0];
-
-    if (file) {
-        photoPreviewUrl.value = URL.createObjectURL(file);
-    }
-};
-
 const openCreate = () => {
-    resetPhotoPreview();
     selectedSupplier.value = null;
+    supplierPhotoPreview.value = null;
     formOpen.value = true;
 };
 
 const openEdit = (supplier: Supplier) => {
-    resetPhotoPreview();
     selectedSupplier.value = supplier;
+    supplierPhotoPreview.value = null;
     formOpen.value = true;
+};
+
+const handleSupplierPhotoCropped = (_file: File, previewUrl: string) => {
+    supplierPhotoPreview.value = previewUrl;
 };
 
 const openDelete = (supplier: Supplier) => {
@@ -132,8 +112,6 @@ const deleteSupplier = () => {
         onFinish: () => (deleting.value = false),
     });
 };
-
-onBeforeUnmount(resetPhotoPreview);
 
 defineOptions({
     layout: {
@@ -371,22 +349,23 @@ defineOptions({
                             />
                             <InputError :message="errors.phone" />
                         </div>
-                        <div class="grid gap-1.5">
-                            <Label for="supplier_photo">Photo</Label>
-                            <div class="relative">
-                                <Camera
-                                    class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-                                />
-                                <Input
-                                    id="supplier_photo"
-                                    type="file"
-                                    name="photo"
-                                    accept="image/*"
-                                    class="pl-9"
-                                    @change="handlePhotoChange"
-                                />
-                            </div>
-                            <InputError :message="errors.photo" />
+                        <div class="grid justify-items-center gap-3">
+                            <ImageCropInput
+                                class="w-fit justify-items-center text-center"
+                                id="supplier_photo"
+                                name="photo"
+                                label="Supplier photo"
+                                :current-url="selectedSupplier?.photo_url"
+                                choose-label="Upload"
+                                :aspect-ratio="1"
+                                :output-width="600"
+                                :output-height="600"
+                                preview-class="aspect-square w-28 rounded-full"
+                                :show-header="false"
+                                :show-status="false"
+                                :error="errors.photo"
+                                @cropped="handleSupplierPhotoCropped"
+                            />
                         </div>
                     </div>
 

@@ -50,15 +50,21 @@ class HandleInertiaRequests extends Middleware
             : null;
         $setting = Setting::query()
             ->where('deleted', 0)
-            ->first(['company_name', 'logo']);
+            ->first(['company_name', 'email', 'phone', 'address', 'logo', 'meta_icon']);
 
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'settings' => [
                 'company_name' => $setting?->company_name,
+                'email' => $setting?->email,
+                'phone' => $setting?->phone,
+                'address' => $setting?->address,
                 'logo_url' => $setting?->logo
                     ? Storage::disk('public')->url($setting->logo)
+                    : null,
+                'meta_icon_url' => $setting?->meta_icon
+                    ? Storage::disk('public')->url($setting->meta_icon)
                     : null,
             ],
             'currency' => Currency::current(),

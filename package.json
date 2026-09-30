@@ -46,6 +46,7 @@
         "@vueuse/core": "^12.8.2",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
+        "cropperjs": "^1.6.3",
         "laravel-vite-plugin": "^3.0.0",
         "notivue": "^2.4.5",
         "reka-ui": "^2.9.8",
