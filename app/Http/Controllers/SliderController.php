@@ -36,6 +36,25 @@ class SliderController extends Controller
         ]);
     }
 
+    public function frontendSliders()
+    {
+        return Slider::query()
+            ->with('product:id,name,slug')
+            ->where('deleted', 0)
+            ->where('status', 1)
+            ->latest('id')
+            ->get()
+            ->map(fn (Slider $slider) => [
+                'id' => $slider->id,
+                'image_url' => Storage::disk('public')->url($slider->image),
+                'button' => $slider->button,
+                'product' => $slider->product ? [
+                    'name' => $slider->product->name,
+                    'slug' => $slider->product->slug,
+                ] : null,
+            ]);
+    }
+
     public function create(): Response
     {
         return Inertia::render('backend/sliders/Create', [

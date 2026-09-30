@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import {
-    BadgeCheck,
     Bike,
     ChevronLeft,
     ChevronRight,
@@ -13,7 +12,7 @@ import {
     ShoppingCart,
     Truck,
 } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
 import { useCurrency } from '@/composables/useCurrency';
@@ -41,12 +40,36 @@ type FrontendCategory = {
     icon_url: string | null;
 };
 
+type FrontendSlider = {
+    id: number;
+    image_url: string;
+    button: string | null;
+    product: { name: string; slug: string } | null;
+};
+
 const page = usePage<{
     frontend_categories?: FrontendCategory[];
     frontend_products?: Product[];
+    frontend_sliders?: FrontendSlider[];
 }>();
 const categories = computed(() => page.props.frontend_categories ?? []);
 const products = computed(() => page.props.frontend_products ?? []);
+const sliders = computed(() => page.props.frontend_sliders ?? []);
+const activeSlide = ref(0);
+const currentSlide = computed(() => sliders.value[activeSlide.value] ?? null);
+
+const selectSlide = (index: number) => {
+    activeSlide.value = index;
+};
+
+const previousSlide = () => {
+    activeSlide.value =
+        (activeSlide.value - 1 + sliders.value.length) % sliders.value.length;
+};
+
+const nextSlide = () => {
+    activeSlide.value = (activeSlide.value + 1) % sliders.value.length;
+};
 
 const { money } = useCurrency();
 const displayPrice = (value: string | null) => money(value ?? 0);
@@ -69,6 +92,7 @@ const toggleCart = (product: Product) => {
 
     if (product.is_in_cart) {
         router.visit('/cart');
+
         return;
     }
 
@@ -122,156 +146,59 @@ const imageUrl = (text: string, size = '500x360') =>
         <SiteHeader />
 
         <main>
-            <section class="mx-auto w-[min(1180px,calc(100%-32px))] pt-5">
+            <section
+                v-if="currentSlide"
+                class="mx-auto w-[min(1180px,calc(100%-32px))] pt-5"
+            >
                 <div
-                    class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#f5fae8] via-[#fffcef] to-[#f4fbeb] shadow-[0_8px_30px_rgba(0,0,0,.07)]"
+                    class="relative overflow-hidden rounded-2xl bg-slate-50 shadow-[0_8px_30px_rgba(0,0,0,.07)]"
                 >
-                    <div class="grid min-h-[450px] lg:grid-cols-[1fr_1.3fr]">
-                        <div
-                            class="relative z-10 flex flex-col justify-center px-7 py-12 sm:px-12"
-                        >
-                            <span class="mb-3 text-2xl text-[#176536] italic"
-                                >Fresh & Nutritious</span
-                            >
-                            <h1
-                                class="text-4xl leading-none font-black text-wrap text-[#15512e] uppercase sm:text-5xl"
-                            >
-                                Family Fish Protein
-                            </h1>
-                            <div
-                                class="mt-1 text-5xl leading-none font-black text-wrap text-[#176536] italic"
-                            >
-                                Combo 1
-                            </div>
+                    <img
+                        :key="currentSlide.id"
+                        :src="currentSlide.image_url"
+                        :alt="currentSlide.product?.name ?? 'Promotion'"
+                        class="aspect-[16/7] w-full object-cover"
+                    />
 
-                            <div
-                                class="mt-7 flex flex-wrap gap-x-5 gap-y-3 text-xs font-medium text-slate-700"
-                            >
-                                <span class="flex items-center gap-2"
-                                    ><BadgeCheck
-                                        class="h-5 w-5 text-[#207f42]"
-                                    />
-                                    Premium Quality</span
-                                >
-                                <span class="flex items-center gap-2"
-                                    ><PackageCheck
-                                        class="h-5 w-5 text-[#207f42]"
-                                    />
-                                    Hygienically Packed</span
-                                >
-                                <span class="flex items-center gap-2"
-                                    ><Leaf class="h-5 w-5 text-[#207f42]" />
-                                    Direct From Source</span
-                                >
-                            </div>
-
-                            <Link
-                                href="/shop"
-                                class="mt-7 inline-flex w-fit items-center rounded-md bg-lime-500 px-6 py-3 text-sm font-bold text-white shadow hover:bg-lime-600"
-                                >Shop Combo</Link
-                            >
-                        </div>
-
-                        <div class="relative min-h-[300px]">
-                            <div
-                                class="absolute top-8 right-8 z-20 rounded-2xl border-2 border-red-400 bg-white/90 p-3 text-center shadow"
-                            >
-                                <div
-                                    class="rounded-xl bg-red-500 px-3 py-1 text-lg font-black text-white"
-                                >
-                                    GET 6% OFF
-                                </div>
-                                <div
-                                    class="mt-1 text-xs font-semibold text-slate-700"
-                                >
-                                    FINAL PRICE
-                                </div>
-                                <div class="text-2xl font-black text-[#15512e]">
-                                    {{ money(2077) }}
-                                </div>
-                            </div>
-
-                            <img
-                                :src="
-                                    imageUrl(
-                                        'Fresh Fish Combo Presentation',
-                                        '1100x650',
-                                    )
-                                "
-                                alt="Fish combo"
-                                class="h-full w-full object-cover"
-                            />
-
-                            <div
-                                class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-white/95 via-white/40 to-transparent p-5"
-                            >
-                                <div
-                                    class="grid grid-cols-2 gap-2 text-center text-[10px] sm:grid-cols-5 sm:text-xs"
-                                >
-                                    <div>
-                                        <div class="font-semibold">
-                                            Mixed Fish
-                                        </div>
-                                        <div class="font-black text-[#15512e]">
-                                            {{ money(335) }}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold">
-                                            Koi Fish
-                                        </div>
-                                        <div class="font-black text-[#15512e]">
-                                            {{ money(444) }}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold">
-                                            Deshi Shol
-                                        </div>
-                                        <div class="font-black text-[#15512e]">
-                                            {{ money(480) }}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold">
-                                            Small Prawn
-                                        </div>
-                                        <div class="font-black text-[#15512e]">
-                                            {{ money(427) }}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold">
-                                            River Baila
-                                        </div>
-                                        <div class="font-black text-[#15512e]">
-                                            {{ money(524) }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <Link
+                        v-if="currentSlide.product"
+                        :href="`/product/${currentSlide.product.slug}`"
+                        class="absolute bottom-5 left-5 rounded-md bg-lime-500 px-5 py-2.5 text-sm font-bold text-white shadow transition hover:bg-lime-600 sm:bottom-7 sm:left-7"
+                    >
+                        {{ currentSlide.button || currentSlide.product.name }}
+                    </Link>
 
                     <button
-                        class="absolute top-1/2 left-3 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white text-slate-700 shadow"
+                        v-if="sliders.length > 1"
+                        type="button"
+                        class="absolute top-1/2 left-3 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-slate-700 shadow"
                         aria-label="Previous slide"
+                        @click="previousSlide"
                     >
                         <ChevronLeft class="h-5 w-5" />
                     </button>
                     <button
-                        class="absolute top-1/2 right-3 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white text-slate-700 shadow"
+                        v-if="sliders.length > 1"
+                        type="button"
+                        class="absolute top-1/2 right-3 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-slate-700 shadow"
                         aria-label="Next slide"
+                        @click="nextSlide"
                     >
                         <ChevronRight class="h-5 w-5" />
                     </button>
                 </div>
 
-                <div class="mt-3 flex justify-center gap-2">
-                    <span class="h-2 w-2 rounded-full bg-[#207f42]"></span>
-                    <span class="h-2 w-2 rounded-full bg-slate-300"></span>
-                    <span class="h-2 w-2 rounded-full bg-slate-300"></span>
-                    <span class="h-2 w-2 rounded-full bg-slate-300"></span>
+                <div v-if="sliders.length > 1" class="mt-3 flex justify-center gap-2">
+                    <button
+                        v-for="(slider, index) in sliders"
+                        :key="slider.id"
+                        type="button"
+                        class="h-2 w-2 rounded-full transition"
+                        :class="index === activeSlide ? 'bg-[#207f42]' : 'bg-slate-300'"
+                        :aria-label="`Show slide ${index + 1}`"
+                        :aria-current="index === activeSlide ? 'true' : undefined"
+                        @click="selectSlide(index)"
+                    />
                 </div>
             </section>
 

@@ -1,9 +1,4 @@
 <script setup lang="ts">
-import Link from '@tiptap/extension-link';
-import Placeholder from '@tiptap/extension-placeholder';
-import Underline from '@tiptap/extension-underline';
-import StarterKit from '@tiptap/starter-kit';
-import { EditorContent, useEditor } from '@tiptap/vue-3';
 import {
     Bold,
     Heading2,
@@ -19,6 +14,11 @@ import {
     Undo2,
     Unlink,
 } from '@lucide/vue';
+import Link from '@tiptap/extension-link';
+import Placeholder from '@tiptap/extension-placeholder';
+import Underline from '@tiptap/extension-underline';
+import StarterKit from '@tiptap/starter-kit';
+import { EditorContent, useEditor } from '@tiptap/vue-3';
 import { onBeforeUnmount, watch } from 'vue';
 
 const props = withDefaults(
@@ -72,15 +72,21 @@ watch(
 );
 
 const setLink = () => {
-    if (!editor.value) return;
+    if (!editor.value) {
+return;
+}
 
     const previousUrl = editor.value.getAttributes('link').href as
         string | undefined;
     const url = window.prompt('Enter link URL', previousUrl ?? 'https://');
 
-    if (url === null) return;
+    if (url === null) {
+return;
+}
+
     if (!url.trim()) {
         editor.value.chain().focus().extendMarkRange('link').unsetLink().run();
+
         return;
     }
 

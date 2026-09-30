@@ -94,7 +94,10 @@ const handleFormError = async (errors: Record<string, unknown>) => {
     await nextTick();
 
     const firstError = Object.keys(errors)[0];
-    if (!firstError) return;
+
+    if (!firstError) {
+return;
+}
 
     const field = document.querySelector<HTMLElement>(`[name="${firstError}"]`);
     const target =
@@ -105,7 +108,10 @@ const handleFormError = async (errors: Record<string, unknown>) => {
             : field;
 
     target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    if (firstError !== 'thumbnail') field?.focus({ preventScroll: true });
+
+    if (firstError !== 'thumbnail') {
+field?.focus({ preventScroll: true });
+}
 };
 </script>
 

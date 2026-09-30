@@ -16,8 +16,8 @@ import {
     Users,
 } from '@lucide/vue';
 import { computed } from 'vue';
-import { dashboard } from '@/routes';
 import { useCurrency } from '@/composables/useCurrency';
+import { dashboard } from '@/routes';
 
 defineOptions({
     layout: {

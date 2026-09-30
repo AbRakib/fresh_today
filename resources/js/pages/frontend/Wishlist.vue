@@ -62,6 +62,7 @@ const removeFromWishlist = (product: WishlistProduct) => {
 const addToCart = (product: WishlistProduct) => {
     if (product.is_in_cart) {
         router.visit('/cart');
+
         return;
     }
 
@@ -77,6 +78,7 @@ const addToCart = (product: WishlistProduct) => {
 const checkoutProduct = (product: WishlistProduct) => {
     if (product.is_in_cart) {
         router.visit('/checkout');
+
         return;
     }
 

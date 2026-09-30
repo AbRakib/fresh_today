@@ -92,7 +92,9 @@ const downloadPdf = () => {
     const params = new URLSearchParams({ period: period.value });
 
     if (period.value === 'date_range') {
-        if (!startDate.value || !endDate.value) return;
+        if (!startDate.value || !endDate.value) {
+return;
+}
 
         params.set('start_date', startDate.value);
         params.set('end_date', endDate.value);

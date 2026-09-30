@@ -1,10 +1,10 @@
 import { createInertiaApp } from '@inertiajs/vue3';
+import { createNotivue } from 'notivue';
 import { initializeTheme } from '@/composables/useAppearance';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
-import { createNotivue } from 'notivue';
 import 'notivue/notification.css';
 import 'notivue/notification-progress.css';
 import 'notivue/animations.css';

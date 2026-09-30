@@ -10,8 +10,6 @@ import {
     UserRound,
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
-import { dashboard } from '@/routes';
-import { useCurrency } from '@/composables/useCurrency';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +22,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useCurrency } from '@/composables/useCurrency';
+import { dashboard } from '@/routes';
 
 type FrontendCategory = {
     id: number;
@@ -143,6 +143,7 @@ const submitSearch = () => {
 
     if (product) {
         router.visit(productUrl(product));
+
         return;
     }
 

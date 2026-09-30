@@ -21,9 +21,10 @@ use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function (ProductController $products) {
+Route::get('/', function (ProductController $products, SliderController $sliders) {
     return Inertia::render('frontend/Welcome', [
         'frontend_products' => $products->frontendProducts(),
+        'frontend_sliders' => $sliders->frontendSliders(),
     ]);
 })->name('home');
 Route::inertia('/about', 'frontend/About')->name('about');

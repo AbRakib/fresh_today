@@ -99,6 +99,7 @@ const categoryOptions = computed(() => {
                 product.category_id,
                 (counts.get(product.category_id) ?? 0) + 1,
             );
+
             return;
         }
 
@@ -148,6 +149,7 @@ const toggleWishlist = (product: Product) => {
 
     if (product.is_wishlisted) {
         router.delete(`/wishlist/${product.id}`, options);
+
         return;
     }
 
@@ -158,6 +160,7 @@ const toggleCart = (product: Product) => {
 
     if (product.is_in_cart) {
         router.visit('/cart');
+
         return;
     }
 

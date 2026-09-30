@@ -95,7 +95,9 @@ const form = useForm({
 const filteredSuppliers = computed(() => {
     const query = supplierSearch.value.trim().toLowerCase();
 
-    if (!query) return props.suppliers;
+    if (!query) {
+return props.suppliers;
+}
 
     return props.suppliers.filter((supplier) =>
         [supplier.name, supplier.email, supplier.phone, supplier.address]
@@ -119,7 +121,9 @@ const chooseSupplier = (supplierId: number) => {
 const filteredProducts = computed(() => {
     const query = productSearch.value.trim().toLowerCase();
 
-    if (!query) return props.products;
+    if (!query) {
+return props.products;
+}
 
     return props.products.filter((product) =>
         [product.name, product.sku, product.unit]
@@ -159,7 +163,9 @@ const productIsAdded = (productId: number) =>
     form.items.some((item) => String(item.product_id) === String(productId));
 
 const chooseProduct = (product: ProductOption) => {
-    if (productIsAdded(product.id)) return;
+    if (productIsAdded(product.id)) {
+return;
+}
 
     form.items.push(itemFromProduct(product));
     productPickerOpen.value = false;
@@ -171,7 +177,10 @@ const handleError = async (errors: Record<string, unknown>) => {
     await nextTick();
 
     const firstError = Object.keys(errors)[0];
-    if (!firstError) return;
+
+    if (!firstError) {
+return;
+}
 
     document
         .querySelector<HTMLElement>(`[name="${firstError}"]`)

@@ -62,6 +62,7 @@ const toggleWishlist = () => {
         router.delete(`/wishlist/${props.product.id}`, {
             preserveScroll: true,
         });
+
         return;
     }
 
@@ -70,6 +71,7 @@ const toggleWishlist = () => {
 const toggleCart = () => {
     if (props.product.is_in_cart) {
         router.visit('/cart');
+
         return;
     }
 
