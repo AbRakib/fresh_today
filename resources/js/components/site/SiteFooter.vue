@@ -16,6 +16,33 @@ const settingsAddress = computed(
 );
 const settingsPhone = computed(() => page.props.settings?.phone?.trim() || '');
 const settingsEmail = computed(() => page.props.settings?.email?.trim() || '');
+
+const socialLinks = [
+    {
+        name: 'Facebook',
+        href: '#',
+        viewBox: '0 0 24 24',
+        path: 'M14 8.5h2V5.2c-.3 0-1.4-.1-2.7-.1-2.7 0-4.5 1.6-4.5 4.6v2.8H6v3.7h2.8V24h3.7v-7.8h3.1l.5-3.7h-3.6V10c0-1 .3-1.5 1.5-1.5Z',
+    },
+    {
+        name: 'Twitter',
+        href: '#',
+        viewBox: '0 0 24 24',
+        path: 'M21.5 6.1c-.7.3-1.5.5-2.3.6.8-.5 1.5-1.3 1.8-2.2-.8.5-1.7.8-2.6 1A4.05 4.05 0 0 0 11.3 8c0 .3 0 .6.1.9-3.4-.2-6.4-1.8-8.4-4.3-.4.6-.5 1.3-.5 2 0 1.4.7 2.6 1.8 3.3-.7 0-1.3-.2-1.8-.5v.1c0 2 1.4 3.6 3.2 4-.3.1-.7.1-1.1.1-.3 0-.5 0-.8-.1.5 1.6 2 2.8 3.8 2.8A8.1 8.1 0 0 1 2.5 18c-.3 0-.7 0-1-.1A11.4 11.4 0 0 0 7.8 20c7.5 0 11.7-6.2 11.7-11.7v-.5c.8-.5 1.5-1.1 2-1.7Z',
+    },
+    {
+        name: 'YouTube',
+        href: '#',
+        viewBox: '0 0 24 24',
+        path: 'M23.5 7.2s-.2-1.6-.9-2.3c-.9-.9-1.8-.9-2.3-1C17.1 3.7 12 3.7 12 3.7s-5.1 0-8.3.2c-.5.1-1.4.1-2.3 1C.7 5.6.5 7.2.5 7.2S.3 9.1.3 11v1.8c0 1.9.2 3.8.2 3.8s.2 1.6.9 2.3c.9.9 2 .9 2.5 1 1.8.2 8.1.2 8.1.2s5.1 0 8.3-.3c.5 0 1.4-.1 2.3-1 .7-.7.9-2.3.9-2.3s.2-1.9.2-3.8V11c0-1.9-.2-3.8-.2-3.8ZM9.5 15.2V8.6l6.5 3.3-6.5 3.3Z',
+    },
+    {
+        name: 'LinkedIn',
+        href: '#',
+        viewBox: '0 0 24 24',
+        path: 'M5.3 7.9H1.5V24h3.8V7.9ZM3.4 0C2.1 0 1.2.9 1.2 2.1s.9 2.1 2.2 2.1 2.2-.9 2.2-2.1S4.7 0 3.4 0Zm19.4 14.8c0-4.3-2.3-6.3-5.3-6.3-2.4 0-3.5 1.3-4.1 2.3V7.9H9.6V24h3.8v-8c0-.4 0-.9.2-1.2.4-.9 1.2-1.7 2.7-1.7 1.9 0 2.7 1.4 2.7 3.6V24h3.8v-9.2Z',
+    },
+];
 </script>
 
 <template>
@@ -43,12 +70,19 @@ const settingsEmail = computed(() => page.props.settings?.email?.trim() || '');
                 </p>
                 <div class="mt-4 flex gap-3">
                     <a
-                        v-for="social in ['f', 'ig', 'yt', 'in']"
-                        :key="social"
-                        href="#"
-                        class="grid h-7 w-7 place-items-center rounded-full border border-white/20 text-[10px] font-black text-[#e0f5e5] uppercase hover:text-white"
+                        v-for="social in socialLinks"
+                        :key="social.name"
+                        :href="social.href"
+                        :aria-label="social.name"
+                        class="grid h-7 w-7 place-items-center rounded-full border border-white/20 text-[#e0f5e5] transition hover:border-white/40 hover:text-white"
                     >
-                        {{ social }}
+                        <svg
+                            class="h-3.5 w-3.5 fill-current"
+                            aria-hidden="true"
+                            :viewBox="social.viewBox"
+                        >
+                            <path :d="social.path" />
+                        </svg>
                     </a>
                 </div>
             </div>

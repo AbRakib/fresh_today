@@ -3,9 +3,11 @@ import { Link } from '@inertiajs/vue3';
 import {
     Building2,
     ChartNoAxesCombined,
+    CircleHelp,
     ClipboardList,
     ExternalLink,
     Images,
+    FileText,
     Landmark,
     LayoutGrid,
     Layers3,
@@ -176,6 +178,31 @@ const mainNavGroups: NavGroup[] = [
                 title: 'Sliders',
                 href: '/sliders',
                 icon: Images,
+            },
+            {
+                title: 'Help Center',
+                href: '/help-centers',
+                icon: CircleHelp,
+            },
+            {
+                title: 'Terms & Conditions',
+                href: '/term-conditions',
+                icon: FileText,
+            },
+            {
+                title: 'Shipping Policy',
+                href: '/shipping-policies',
+                icon: FileText,
+            },
+            {
+                title: 'Return Policy',
+                href: '/return-policies',
+                icon: FileText,
+            },
+            {
+                title: 'FAQ',
+                href: '/faqs',
+                icon: CircleHelp,
             },
         ],
     },
