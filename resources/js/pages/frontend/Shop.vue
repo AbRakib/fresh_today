@@ -4,6 +4,7 @@ import {
     ChevronRight,
     Heart,
     Leaf,
+    LoaderCircle,
     PackageCheck,
     ShieldCheck,
     ShoppingBag,
@@ -87,6 +88,8 @@ const selectedCategory = ref('');
 const selectedPrice = ref('');
 const selectedWeights = ref<string[]>([]);
 const currentPage = ref(1);
+const pendingCartProductId = ref<number | null>(null);
+const pendingCheckoutProductId = ref<number | null>(null);
 const perPage = 8;
 
 const categoryOptions = computed(() => {
@@ -156,15 +159,47 @@ const toggleWishlist = (product: Product) => {
     router.post(`/wishlist/${product.id}`, {}, options);
 };
 const toggleCart = (product: Product) => {
-    const options = { preserveScroll: true, preserveState: true };
-
     if (product.is_in_cart) {
         router.visit('/cart');
 
         return;
     }
 
-    router.post(`/cart/${product.id}`, {}, options);
+    pendingCartProductId.value = product.id;
+
+    router.post(
+        `/cart/${product.id}`,
+        {},
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onFinish: () => {
+                pendingCartProductId.value = null;
+            },
+        },
+    );
+};
+const checkoutProduct = (product: Product) => {
+    if (product.is_in_cart) {
+        router.visit('/checkout');
+
+        return;
+    }
+
+    pendingCheckoutProductId.value = product.id;
+
+    router.post(
+        `/cart/${product.id}`,
+        {},
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => router.visit('/checkout'),
+            onFinish: () => {
+                pendingCheckoutProductId.value = null;
+            },
+        },
+    );
 };
 
 const formatWeightLabel = (
@@ -547,26 +582,62 @@ const imageUrl = (text: string) =>
                                                 : ''
                                         "
                                         :disabled="
-                                            product.stock_quantity < 1 &&
-                                            !product.is_in_cart
+                                            pendingCartProductId ===
+                                                product.id ||
+                                            (product.stock_quantity < 1 &&
+                                                !product.is_in_cart)
                                         "
                                         @click="toggleCart(product)"
                                     >
-                                        <ShoppingCart class="h-3.5 w-3.5" />
+                                        <LoaderCircle
+                                            v-if="
+                                                pendingCartProductId ===
+                                                product.id
+                                            "
+                                            class="h-3.5 w-3.5 animate-spin"
+                                        />
+                                        <ShoppingCart
+                                            v-else
+                                            class="h-3.5 w-3.5"
+                                        />
                                         <span>{{
-                                            product.is_in_cart
-                                                ? 'View'
-                                                : product.stock_quantity > 0
-                                                  ? 'Cart'
-                                                  : 'Out'
+                                            pendingCartProductId === product.id
+                                                ? 'Adding'
+                                                : product.is_in_cart
+                                                  ? 'View'
+                                                  : product.stock_quantity > 0
+                                                    ? 'Cart'
+                                                    : 'Out'
                                         }}</span>
                                     </button>
                                     <button
                                         type="button"
-                                        class="flex min-h-9 items-center justify-center gap-1.5 rounded bg-[#218a37] px-2 text-[11px] font-bold text-white transition hover:bg-[#176536]"
+                                        class="flex min-h-9 items-center justify-center gap-1.5 rounded bg-[#218a37] px-2 text-[11px] font-bold text-white transition hover:bg-[#176536] disabled:cursor-not-allowed disabled:opacity-50"
+                                        :disabled="
+                                            pendingCheckoutProductId ===
+                                                product.id ||
+                                            (product.stock_quantity < 1 &&
+                                                !product.is_in_cart)
+                                        "
+                                        @click="checkoutProduct(product)"
                                     >
-                                        <ShoppingBag class="h-3.5 w-3.5" />
-                                        <span>Buy</span>
+                                        <LoaderCircle
+                                            v-if="
+                                                pendingCheckoutProductId ===
+                                                product.id
+                                            "
+                                            class="h-3.5 w-3.5 animate-spin"
+                                        />
+                                        <ShoppingBag
+                                            v-else
+                                            class="h-3.5 w-3.5"
+                                        />
+                                        <span>{{
+                                            pendingCheckoutProductId ===
+                                            product.id
+                                                ? 'Buying'
+                                                : 'Buy'
+                                        }}</span>
                                     </button>
                                 </div>
                             </div>

@@ -3,10 +3,12 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import {
     ChevronRight,
     Heart,
+    LoaderCircle,
     ShoppingBag,
     ShoppingCart,
     Trash2,
 } from '@lucide/vue';
+import { ref } from 'vue';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
 import { useCurrency } from '@/composables/useCurrency';
@@ -33,6 +35,7 @@ defineProps<{
 }>();
 
 const { money } = useCurrency();
+const pendingCartProductId = ref<number | null>(null);
 const productUrl = (product: WishlistProduct) => `/product/${product.slug}`;
 const imageUrl = (text: string) =>
     `https://placehold.co/520x420/f5f7f4/23833f?text=${encodeURIComponent(text)}`;
@@ -66,12 +69,17 @@ const addToCart = (product: WishlistProduct) => {
         return;
     }
 
+    pendingCartProductId.value = product.id;
+
     router.post(
         `/cart/${product.id}`,
         {},
         {
             preserveScroll: true,
             preserveState: true,
+            onFinish: () => {
+                pendingCartProductId.value = null;
+            },
         },
     );
 };
@@ -199,18 +207,25 @@ const checkoutProduct = (product: WishlistProduct) => {
                                         : ''
                                 "
                                 :disabled="
-                                    product.stock_quantity < 1 &&
-                                    !product.is_in_cart
+                                    pendingCartProductId === product.id ||
+                                    (product.stock_quantity < 1 &&
+                                        !product.is_in_cart)
                                 "
                                 @click="addToCart(product)"
                             >
-                                <ShoppingCart class="h-4 w-4" />
+                                <LoaderCircle
+                                    v-if="pendingCartProductId === product.id"
+                                    class="h-4 w-4 animate-spin"
+                                />
+                                <ShoppingCart v-else class="h-4 w-4" />
                                 {{
-                                    product.is_in_cart
-                                        ? 'View cart'
-                                        : product.stock_quantity > 0
-                                          ? 'Add to cart'
-                                          : 'Out of stock'
+                                    pendingCartProductId === product.id
+                                        ? 'Adding...'
+                                        : product.is_in_cart
+                                          ? 'View cart'
+                                          : product.stock_quantity > 0
+                                            ? 'Add to cart'
+                                            : 'Out of stock'
                                 }}
                             </button>
                             <button

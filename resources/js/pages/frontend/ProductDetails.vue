@@ -3,11 +3,13 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import {
     ChevronRight,
     Heart,
+    LoaderCircle,
     PackageCheck,
     ShieldCheck,
     ShoppingCart,
     Truck,
 } from '@lucide/vue';
+import { ref } from 'vue';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
 import { useCurrency } from '@/composables/useCurrency';
@@ -40,6 +42,7 @@ const props = defineProps<{
 }>();
 
 const { money } = useCurrency();
+const isAddingToCart = ref(false);
 
 const imageUrl = (text: string) =>
     `https://placehold.co/720x560/f7f8f5/2f7d45?text=${encodeURIComponent(text)}`;
@@ -75,7 +78,18 @@ const toggleCart = () => {
         return;
     }
 
-    router.post(`/cart/${props.product.id}`, {}, { preserveScroll: true });
+    isAddingToCart.value = true;
+
+    router.post(
+        `/cart/${props.product.id}`,
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                isAddingToCart.value = false;
+            },
+        },
+    );
 };
 </script>
 
@@ -184,18 +198,25 @@ const toggleCart = () => {
                                     : ''
                             "
                             :disabled="
-                                product.stock_quantity < 1 &&
-                                !product.is_in_cart
+                                isAddingToCart ||
+                                (product.stock_quantity < 1 &&
+                                    !product.is_in_cart)
                             "
                             @click="toggleCart"
                         >
-                            <ShoppingCart class="h-4 w-4" />
+                            <LoaderCircle
+                                v-if="isAddingToCart"
+                                class="h-4 w-4 animate-spin"
+                            />
+                            <ShoppingCart v-else class="h-4 w-4" />
                             {{
-                                product.is_in_cart
-                                    ? 'View Cart'
-                                    : product.stock_quantity > 0
-                                      ? 'Add to Cart'
-                                      : 'Out of Stock'
+                                isAddingToCart
+                                    ? 'Adding...'
+                                    : product.is_in_cart
+                                      ? 'View Cart'
+                                      : product.stock_quantity > 0
+                                        ? 'Add to Cart'
+                                        : 'Out of Stock'
                             }}
                         </button>
                         <button

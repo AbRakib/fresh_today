@@ -6,6 +6,7 @@ import {
     ChevronRight,
     Fish,
     Leaf,
+    LoaderCircle,
     PackageCheck,
     ShieldCheck,
     ShoppingBag,
@@ -56,6 +57,8 @@ const categories = computed(() => page.props.frontend_categories ?? []);
 const products = computed(() => page.props.frontend_products ?? []);
 const sliders = computed(() => page.props.frontend_sliders ?? []);
 const activeSlide = ref(0);
+const pendingCartProductId = ref<number | null>(null);
+const pendingCheckoutProductId = ref<number | null>(null);
 const currentSlide = computed(() => sliders.value[activeSlide.value] ?? null);
 
 const selectSlide = (index: number) => {
@@ -88,15 +91,47 @@ const discountLabel = (product: Product) => {
 };
 const productUrl = (product: Product) => '/product/' + product.slug;
 const toggleCart = (product: Product) => {
-    const options = { preserveScroll: true, preserveState: true };
-
     if (product.is_in_cart) {
         router.visit('/cart');
 
         return;
     }
 
-    router.post('/cart/' + product.id, {}, options);
+    pendingCartProductId.value = product.id;
+
+    router.post(
+        '/cart/' + product.id,
+        {},
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onFinish: () => {
+                pendingCartProductId.value = null;
+            },
+        },
+    );
+};
+const checkoutProduct = (product: Product) => {
+    if (product.is_in_cart) {
+        router.visit('/checkout');
+
+        return;
+    }
+
+    pendingCheckoutProductId.value = product.id;
+
+    router.post(
+        '/cart/' + product.id,
+        {},
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => router.visit('/checkout'),
+            onFinish: () => {
+                pendingCheckoutProductId.value = null;
+            },
+        },
+    );
 };
 
 const formatWeightLabel = (
@@ -188,15 +223,24 @@ const imageUrl = (text: string, size = '500x360') =>
                     </button>
                 </div>
 
-                <div v-if="sliders.length > 1" class="mt-3 flex justify-center gap-2">
+                <div
+                    v-if="sliders.length > 1"
+                    class="mt-3 flex justify-center gap-2"
+                >
                     <button
                         v-for="(slider, index) in sliders"
                         :key="slider.id"
                         type="button"
                         class="h-2 w-2 rounded-full transition"
-                        :class="index === activeSlide ? 'bg-[#207f42]' : 'bg-slate-300'"
+                        :class="
+                            index === activeSlide
+                                ? 'bg-[#207f42]'
+                                : 'bg-slate-300'
+                        "
                         :aria-label="`Show slide ${index + 1}`"
-                        :aria-current="index === activeSlide ? 'true' : undefined"
+                        :aria-current="
+                            index === activeSlide ? 'true' : undefined
+                        "
                         @click="selectSlide(index)"
                     />
                 </div>
@@ -346,26 +390,53 @@ const imageUrl = (text: string, size = '500x360') =>
                                             : ''
                                     "
                                     :disabled="
-                                        product.stock_quantity < 1 &&
-                                        !product.is_in_cart
+                                        pendingCartProductId === product.id ||
+                                        (product.stock_quantity < 1 &&
+                                            !product.is_in_cart)
                                     "
                                     @click="toggleCart(product)"
                                 >
-                                    <ShoppingCart class="h-3.5 w-3.5" />
+                                    <LoaderCircle
+                                        v-if="
+                                            pendingCartProductId === product.id
+                                        "
+                                        class="h-3.5 w-3.5 animate-spin"
+                                    />
+                                    <ShoppingCart v-else class="h-3.5 w-3.5" />
                                     <span>{{
-                                        product.is_in_cart
-                                            ? 'View'
-                                            : product.stock_quantity > 0
-                                              ? 'Cart'
-                                              : 'Out'
+                                        pendingCartProductId === product.id
+                                            ? 'Adding'
+                                            : product.is_in_cart
+                                              ? 'View'
+                                              : product.stock_quantity > 0
+                                                ? 'Cart'
+                                                : 'Out'
                                     }}</span>
                                 </button>
                                 <button
                                     type="button"
-                                    class="flex min-h-9 items-center justify-center gap-1.5 rounded-md bg-[#176536] px-2 text-[11px] font-bold text-white transition hover:bg-[#0f4b27]"
+                                    class="flex min-h-9 items-center justify-center gap-1.5 rounded-md bg-[#176536] px-2 text-[11px] font-bold text-white transition hover:bg-[#0f4b27] disabled:cursor-not-allowed disabled:opacity-50"
+                                    :disabled="
+                                        pendingCheckoutProductId ===
+                                            product.id ||
+                                        (product.stock_quantity < 1 &&
+                                            !product.is_in_cart)
+                                    "
+                                    @click="checkoutProduct(product)"
                                 >
-                                    <ShoppingBag class="h-3.5 w-3.5" />
-                                    <span>Buy</span>
+                                    <LoaderCircle
+                                        v-if="
+                                            pendingCheckoutProductId ===
+                                            product.id
+                                        "
+                                        class="h-3.5 w-3.5 animate-spin"
+                                    />
+                                    <ShoppingBag v-else class="h-3.5 w-3.5" />
+                                    <span>{{
+                                        pendingCheckoutProductId === product.id
+                                            ? 'Buying'
+                                            : 'Buy'
+                                    }}</span>
                                 </button>
                             </div>
                         </div>

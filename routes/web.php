@@ -4,6 +4,7 @@ use App\Http\Controllers\BankAccountController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\CustomerDashboardController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryChargeController;
@@ -52,6 +53,7 @@ Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.s
 Route::post('/customer/login', [FrontendCustomerAuthController::class, 'login'])->name('frontend.customer.login');
 Route::post('/customer/register', [FrontendCustomerAuthController::class, 'register'])->name('frontend.customer.register');
 Route::post('/customer/logout', [FrontendCustomerAuthController::class, 'logout'])->name('frontend.customer.logout');
+Route::get('/customer/dashboard', CustomerDashboardController::class)->name('frontend.customer.dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');

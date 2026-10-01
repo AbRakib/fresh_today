@@ -11,6 +11,7 @@ import {
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
+import NotivueToaster from '@/components/NotivueToaster.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -233,6 +234,8 @@ watch(
 </script>
 
 <template>
+    <NotivueToaster />
+
     <div class="bg-[#15512e] text-xs text-white">
         <div
             class="mx-auto flex h-9 w-[min(1180px,calc(100%-32px))] items-center justify-between gap-4"
@@ -406,8 +409,9 @@ watch(
                         <span class="block">Dashboard</span>
                     </span>
                 </Link>
-                <div
+                <Link
                     v-else-if="customer"
+                    href="/customer/dashboard"
                     class="flex items-center gap-1 text-xs leading-tight text-black"
                 >
                     <UserRound class="h-6 w-6 shrink-0 text-[#176536]" />
@@ -415,7 +419,7 @@ watch(
                         <span class="block font-bold">{{ customer.name }}</span>
                         <span class="block">Customer account</span>
                     </span>
-                </div>
+                </Link>
                 <button
                     v-else
                     type="button"
