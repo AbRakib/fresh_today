@@ -170,7 +170,6 @@ const mainNavGroups: NavGroup[] = [
     },
     {
         title: 'Website Settings',
-        label: 'Website',
         icon: Images,
         collapsible: true,
         items: [

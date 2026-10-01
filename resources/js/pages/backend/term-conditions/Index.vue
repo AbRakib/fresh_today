@@ -263,7 +263,7 @@ defineOptions({
 
     <Dialog v-model:open="formOpen">
         <DialogContent
-            class="max-h-[calc(100vh-2rem)] gap-5 overflow-x-hidden overflow-y-auto p-6"
+            class="max-h-[calc(100vh-2rem)] gap-4 overflow-x-hidden overflow-y-auto p-6"
             style="width: min(640px, calc(100vw - 2rem)); max-width: 640px"
         >
             <DialogHeader class="gap-1.5 pr-6">
@@ -274,10 +274,6 @@ defineOptions({
                             : 'Add terms and conditions item'
                     }}
                 </DialogTitle>
-                <DialogDescription>
-                    Add one terms point per line. Active items appear on the
-                    public Terms & Conditions page.
-                </DialogDescription>
             </DialogHeader>
 
             <Form
@@ -288,7 +284,7 @@ defineOptions({
                         ? `/term-conditions/${selectedTermCondition.id}`
                         : '/term-conditions'
                 "
-                class="grid min-w-0 gap-5 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-ring/20"
+                class="grid min-w-0 gap-3 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-ring/20"
                 :reset-on-success="!selectedTermCondition"
                 v-slot="{ errors, processing }"
                 @success="formOpen = false"
@@ -322,7 +318,12 @@ defineOptions({
                     </div>
                 </div>
 
-                <div class="grid gap-4 sm:grid-cols-2">
+                <div class="grid gap-2">
+                    <input
+                        type="hidden"
+                        name="status"
+                        :value="selectedTermCondition?.status ?? 1"
+                    />
                     <div class="grid gap-2">
                         <Label for="term_condition_sort_order"
                             >Sort order</Label
@@ -339,21 +340,6 @@ defineOptions({
                         />
                         <div class="min-h-5">
                             <InputError :message="errors.sort_order" />
-                        </div>
-                    </div>
-                    <div class="grid gap-2">
-                        <Label for="term_condition_status">Status</Label>
-                        <select
-                            id="term_condition_status"
-                            name="status"
-                            :value="selectedTermCondition?.status ?? 1"
-                            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/20"
-                        >
-                            <option value="1">Active</option>
-                            <option value="0">Inactive</option>
-                        </select>
-                        <div class="min-h-5">
-                            <InputError :message="errors.status" />
                         </div>
                     </div>
                 </div>

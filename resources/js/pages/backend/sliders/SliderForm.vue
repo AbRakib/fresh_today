@@ -1,5 +1,17 @@
 <script setup lang="ts">
 import { Form, router } from '@inertiajs/vue3';
+import { ChevronsUpDown } from '@lucide/vue';
+import {
+    ComboboxAnchor,
+    ComboboxContent,
+    ComboboxEmpty,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxPortal,
+    ComboboxRoot,
+    ComboboxTrigger,
+    ComboboxViewport,
+} from 'reka-ui';
 import { nextTick, ref } from 'vue';
 import ImageCropInput from '@/components/ImageCropInput.vue';
 import InputError from '@/components/InputError.vue';
@@ -40,8 +52,8 @@ const handleFormError = async (errors: Record<string, unknown>) => {
     const firstError = Object.keys(errors)[0];
 
     if (!firstError) {
-return;
-}
+        return;
+    }
 
     const field = document.querySelector<HTMLElement>(`[name="${firstError}"]`);
     const target =
@@ -52,8 +64,8 @@ return;
     target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     if (firstError !== 'image') {
-field?.focus({ preventScroll: true });
-}
+        field?.focus({ preventScroll: true });
+    }
 };
 </script>
 
@@ -77,7 +89,77 @@ field?.focus({ preventScroll: true });
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div class="grid gap-1.5 sm:col-span-2">
                             <Label for="slider_product">Product</Label>
+                            <ComboboxRoot
+                                v-if="!slider"
+                                v-model="productId"
+                                class="relative min-w-0"
+                                :open-on-focus="true"
+                            >
+                                <input
+                                    type="hidden"
+                                    name="product_id"
+                                    :value="productId"
+                                />
+                                <ComboboxAnchor
+                                    class="flex h-9 items-center rounded-md border border-input bg-background"
+                                >
+                                    <ComboboxInput
+                                        id="slider_product"
+                                        :display-value="
+                                            (value) =>
+                                                products.find(
+                                                    (product) =>
+                                                        product.id === value,
+                                                )?.name ?? ''
+                                        "
+                                        placeholder="Search products..."
+                                        aria-label="Product"
+                                        class="h-full min-w-0 flex-1 rounded-md bg-transparent px-3 text-sm outline-none"
+                                    />
+                                    <ComboboxTrigger
+                                        type="button"
+                                        aria-label="Show products"
+                                        class="flex h-9 w-9 shrink-0 items-center justify-center"
+                                    >
+                                        <ChevronsUpDown
+                                            class="size-4 text-muted-foreground"
+                                        />
+                                    </ComboboxTrigger>
+                                </ComboboxAnchor>
+                                <ComboboxPortal>
+                                    <ComboboxContent
+                                        position="popper"
+                                        :side-offset="4"
+                                        class="z-50 w-[var(--reka-combobox-trigger-width)] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md"
+                                    >
+                                        <ComboboxViewport
+                                            class="max-h-60 overflow-y-auto p-1"
+                                        >
+                                            <ComboboxEmpty
+                                                class="px-3 py-2 text-sm text-muted-foreground"
+                                                >No products
+                                                found.</ComboboxEmpty
+                                            >
+                                            <ComboboxItem
+                                                value=""
+                                                class="cursor-pointer rounded-sm px-3 py-2 text-sm data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
+                                                >No linked product</ComboboxItem
+                                            >
+                                            <ComboboxItem
+                                                v-for="product in products"
+                                                :key="product.id"
+                                                :value="product.id"
+                                                :text-value="product.name"
+                                                class="cursor-pointer rounded-sm px-3 py-2 text-sm break-words data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground"
+                                            >
+                                                {{ product.name }}
+                                            </ComboboxItem>
+                                        </ComboboxViewport>
+                                    </ComboboxContent>
+                                </ComboboxPortal>
+                            </ComboboxRoot>
                             <select
+                                v-else
                                 id="slider_product"
                                 v-model="productId"
                                 name="product_id"
@@ -95,7 +177,10 @@ field?.focus({ preventScroll: true });
                             <InputError :message="errors.product_id" />
                         </div>
 
-                        <div class="grid gap-1.5">
+                        <div
+                            class="grid gap-1.5"
+                            :class="{ 'sm:col-span-2': !slider }"
+                        >
                             <Label for="slider_button">Button</Label>
                             <Input
                                 id="slider_button"
@@ -106,7 +191,7 @@ field?.focus({ preventScroll: true });
                             <InputError :message="errors.button" />
                         </div>
 
-                        <div class="grid gap-1.5">
+                        <div v-if="slider" class="grid gap-1.5">
                             <Label for="slider_status">Status</Label>
                             <select
                                 id="slider_status"
@@ -119,6 +204,7 @@ field?.focus({ preventScroll: true });
                             </select>
                             <InputError :message="errors.status" />
                         </div>
+                        <input v-else type="hidden" name="status" value="1" />
                     </div>
                 </div>
 
@@ -129,10 +215,9 @@ field?.focus({ preventScroll: true });
                         id="slider_image"
                         name="image"
                         label="Slider image"
-                        helper="PNG, JPG or WebP, up to 2 MB"
                         :current-url="slider?.image_url"
                         current-label="Current slider image"
-                        empty-label="No image selected"
+                        empty-label=""
                         choose-label="Choose image"
                         :aspect-ratio="16 / 7"
                         :output-width="1600"

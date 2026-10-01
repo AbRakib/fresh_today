@@ -254,24 +254,20 @@ defineOptions({
 
     <Dialog v-model:open="formOpen">
         <DialogContent
-            class="max-h-[calc(100vh-2rem)] gap-5 overflow-x-hidden overflow-y-auto p-6"
+            class="max-h-[calc(100vh-2rem)] gap-4 overflow-x-hidden overflow-y-auto p-6"
             style="width: min(640px, calc(100vw - 2rem)); max-width: 640px"
         >
             <DialogHeader class="gap-1.5 pr-6">
                 <DialogTitle>
                     {{ selectedFaq ? 'Edit FAQ item' : 'Add FAQ item' }}
                 </DialogTitle>
-                <DialogDescription>
-                    Add one answer per line. Active items appear on the public
-                    FAQ page.
-                </DialogDescription>
             </DialogHeader>
 
             <Form
                 :key="selectedFaq?.id ?? 'create'"
                 method="post"
                 :action="selectedFaq ? `/faqs/${selectedFaq.id}` : '/faqs'"
-                class="grid min-w-0 gap-5 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-ring/20"
+                class="grid min-w-0 gap-3 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-ring/20"
                 :reset-on-success="!selectedFaq"
                 v-slot="{ errors, processing }"
                 @success="formOpen = false"
@@ -285,9 +281,7 @@ defineOptions({
                         placeholder="e.g. Ordering Questions"
                         required
                     />
-                    <div class="min-h-5">
-                        <InputError :message="errors.title" />
-                    </div>
+                    <InputError :message="errors.title" />
                 </div>
 
                 <div class="grid gap-2">
@@ -300,41 +294,20 @@ defineOptions({
                         class="flex min-h-36 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50"
                         required
                     />
-                    <div class="min-h-5">
-                        <InputError :message="errors.items" />
-                    </div>
+                    <InputError :message="errors.items" />
                 </div>
 
-                <div class="grid gap-4 sm:grid-cols-2">
-                    <div class="grid gap-2">
-                        <Label for="faq_sort_order">Sort order</Label>
-                        <Input
-                            id="faq_sort_order"
-                            type="number"
-                            name="sort_order"
-                            min="0"
-                            step="1"
-                            :default-value="selectedFaq?.sort_order ?? 0"
-                        />
-                        <div class="min-h-5">
-                            <InputError :message="errors.sort_order" />
-                        </div>
-                    </div>
-                    <div class="grid gap-2">
-                        <Label for="faq_status">Status</Label>
-                        <select
-                            id="faq_status"
-                            name="status"
-                            :value="selectedFaq?.status ?? 1"
-                            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/20"
-                        >
-                            <option value="1">Active</option>
-                            <option value="0">Inactive</option>
-                        </select>
-                        <div class="min-h-5">
-                            <InputError :message="errors.status" />
-                        </div>
-                    </div>
+                <div class="grid gap-2">
+                    <Label for="faq_sort_order">Sort order</Label>
+                    <Input
+                        id="faq_sort_order"
+                        type="number"
+                        name="sort_order"
+                        min="0"
+                        step="1"
+                        :default-value="selectedFaq?.sort_order ?? 0"
+                    />
+                    <InputError :message="errors.sort_order" />
                 </div>
 
                 <DialogFooter class="border-t pt-4">

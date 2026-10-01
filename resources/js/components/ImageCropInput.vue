@@ -236,17 +236,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="grid gap-3">
-        <div class="min-w-0 space-y-3">
-            <div v-if="showHeader">
-                <Label :for="id">{{ label }}</Label>
-                <p v-if="helper" class="mt-1 text-xs text-muted-foreground">
-                    {{ helper }}
-                </p>
-            </div>
-            <p v-if="showStatus" class="truncate text-sm font-medium">
-                {{ displayedLabel }}
-            </p>
+    <div class="grid">
+        <div class="min-w-0">
             <input
                 :id="id"
                 ref="fileInput"

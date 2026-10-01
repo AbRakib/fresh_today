@@ -14,7 +14,6 @@ import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -269,10 +268,6 @@ defineOptions({
                             : 'Add help center item'
                     }}
                 </DialogTitle>
-                <DialogDescription>
-                    Add one support point per line. Active items appear on the
-                    public Help Center page.
-                </DialogDescription>
             </DialogHeader>
 
             <Form
@@ -283,7 +278,7 @@ defineOptions({
                         ? `/help-centers/${selectedHelpCenter.id}`
                         : '/help-centers'
                 "
-                class="grid min-w-0 gap-5 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-ring/20"
+                class="grid min-w-0 gap-3 [&_input]:focus-visible:ring-1 [&_input]:focus-visible:ring-ring/20"
                 :reset-on-success="!selectedHelpCenter"
                 v-slot="{ errors, processing }"
                 @success="formOpen = false"
@@ -297,9 +292,7 @@ defineOptions({
                         placeholder="e.g. Order Support"
                         required
                     />
-                    <div class="min-h-5">
-                        <InputError :message="errors.title" />
-                    </div>
+                    <InputError :message="errors.title" />
                 </div>
 
                 <div class="grid gap-2">
@@ -312,42 +305,26 @@ defineOptions({
                         class="flex min-h-36 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50"
                         required
                     />
-                    <div class="min-h-5">
-                        <InputError :message="errors.items" />
-                    </div>
+                    <InputError :message="errors.items" />
                 </div>
 
-                <div class="grid gap-4 sm:grid-cols-2">
-                    <div class="grid gap-2">
-                        <Label for="help_center_sort_order">Sort order</Label>
-                        <Input
-                            id="help_center_sort_order"
-                            type="number"
-                            name="sort_order"
-                            min="0"
-                            step="1"
-                            :default-value="selectedHelpCenter?.sort_order ?? 0"
-                        />
-                        <div class="min-h-5">
-                            <InputError :message="errors.sort_order" />
-                        </div>
-                    </div>
-                    <div class="grid gap-2">
-                        <Label for="help_center_status">Status</Label>
-                        <select
-                            id="help_center_status"
-                            name="status"
-                            :value="selectedHelpCenter?.status ?? 1"
-                            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/20"
-                        >
-                            <option value="1">Active</option>
-                            <option value="0">Inactive</option>
-                        </select>
-                        <div class="min-h-5">
-                            <InputError :message="errors.status" />
-                        </div>
-                    </div>
+                <div class="grid gap-2">
+                    <Label for="help_center_sort_order">Sort order</Label>
+                    <Input
+                        id="help_center_sort_order"
+                        type="number"
+                        name="sort_order"
+                        min="0"
+                        step="1"
+                        :default-value="selectedHelpCenter?.sort_order ?? 0"
+                    />
+                    <InputError :message="errors.sort_order" />
                 </div>
+                <input
+                    type="hidden"
+                    name="status"
+                    :value="selectedHelpCenter?.status ?? 1"
+                />
 
                 <DialogFooter class="border-t pt-4">
                     <Button
