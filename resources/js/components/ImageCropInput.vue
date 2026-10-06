@@ -258,7 +258,7 @@ onBeforeUnmount(() => {
                 previewClass,
                 invalid ? 'border-destructive ring-1 ring-destructive/30' : '',
             ]"
-        >
+        >c
             <img
                 v-if="previewUrl"
                 :src="previewUrl"

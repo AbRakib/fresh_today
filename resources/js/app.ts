@@ -1,6 +1,8 @@
 import { createInertiaApp } from '@inertiajs/vue3';
 import { createNotivue } from 'notivue';
+import { createApp, h } from 'vue';
 import { initializeTheme } from '@/composables/useAppearance';
+import AppPreloader from '@/components/AppPreloader.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
@@ -37,9 +39,14 @@ createInertiaApp({
         }
     },
     progress: {
-        color: '#4B5563',
+        color: '#22c55e',
     },
-    withApp: (app) => {
+    setup({ el, App, props, plugin }) {
+        const app = createApp({
+            render: () => h('div', [h(App, props), h(AppPreloader)]),
+        });
+
+        app.use(plugin);
         app.use(
             createNotivue({
                 pauseOnHover: false,
@@ -52,6 +59,8 @@ createInertiaApp({
                 },
             }),
         );
+
+        app.mount(el!);
     },
 });
 

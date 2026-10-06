@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { onMounted, onUnmounted, ref } from 'vue';
-import { Spinner } from '@/components/ui/spinner';
 
 const isLoading = ref(false);
 let showTimer: ReturnType<typeof setTimeout> | undefined;
@@ -45,16 +44,52 @@ onUnmounted(() => {
     >
         <div
             v-if="isLoading"
-            class="fixed inset-0 z-50 grid place-items-center bg-background/70 backdrop-blur-[2px]"
+            class="fixed inset-0 z-50 grid place-items-center bg-white/85"
             aria-live="polite"
             aria-busy="true"
+            aria-label="Loading"
         >
-            <div
-                class="flex items-center gap-3 rounded-md border border-border bg-card px-4 py-3 text-sm font-medium text-card-foreground shadow-lg"
-            >
-                <Spinner class="size-5 text-primary" />
-                <span>Loading data...</span>
+            <div class="page-preloader" role="status">
+                <span
+                    v-for="dot in 8"
+                    :key="dot"
+                    class="page-preloader__dot"
+                    :style="{ '--dot-index': dot - 1 }"
+                />
             </div>
         </div>
     </Transition>
 </template>
+
+<style scoped>
+.page-preloader {
+    position: relative;
+    width: 46px;
+    height: 46px;
+}
+
+.page-preloader__dot {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    margin: -3.5px 0 0 -3.5px;
+    border-radius: 9999px;
+    background: #22c55e;
+    opacity: 0;
+    transform: rotate(calc(var(--dot-index) * 45deg)) translateY(-16px);
+    animation: page-preloader-fade 0.8s linear infinite;
+    animation-delay: calc(var(--dot-index) * 0.1s);
+}
+
+@keyframes page-preloader-fade {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.15;
+    }
+}
+</style>
