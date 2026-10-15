@@ -13,7 +13,8 @@ import {
     ShoppingCart,
     Truck,
 } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { useIntervalFn, usePreferredReducedMotion } from '@vueuse/core';
+import { computed, ref, watch } from 'vue';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
 import { useCurrency } from '@/composables/useCurrency';
@@ -55,8 +56,46 @@ const page = usePage<{
 }>();
 const categories = computed(() => page.props.frontend_categories ?? []);
 const products = computed(() => page.props.frontend_products ?? []);
-const sliders = computed(() => page.props.frontend_sliders ?? []);
+const defaultSlides = [
+    {
+        id: -1,
+        image_url: '',
+        button: 'Shop now',
+        product: null,
+        title: 'Fresh choices for every day',
+        description:
+            'Discover fresh fish, meat, and everyday essentials for your kitchen.',
+    },
+    {
+        id: -2,
+        image_url: '',
+        button: 'Explore our products',
+        product: null,
+        title: 'Good food starts with fresh ingredients',
+        description:
+            'Find your favourites and make your next meal something special.',
+    },
+];
+const sliders = computed(() =>
+    page.props.frontend_sliders?.length
+        ? page.props.frontend_sliders.map((slide) => ({
+              ...slide,
+              title: '',
+              description: '',
+          }))
+        : defaultSlides,
+);
 const activeSlide = ref(0);
+const sliderHovered = ref(false);
+const sliderFocused = ref(false);
+const sliderPaused = ref(false);
+const reducedMotion = usePreferredReducedMotion();
+const handleSliderFocusOut = (event: FocusEvent) => {
+    sliderFocused.value =
+        event.currentTarget instanceof HTMLElement &&
+        event.relatedTarget instanceof Node &&
+        event.currentTarget.contains(event.relatedTarget);
+};
 const pendingCartProductId = ref<number | null>(null);
 const pendingCheckoutProductId = ref<number | null>(null);
 const currentSlide = computed(() => sliders.value[activeSlide.value] ?? null);
@@ -74,12 +113,26 @@ const nextSlide = () => {
     activeSlide.value = (activeSlide.value + 1) % sliders.value.length;
 };
 
+watch(sliders, () => {
+    activeSlide.value = 0;
+});
+
+useIntervalFn(() => {
+    if (
+        sliders.value.length > 1 &&
+        !sliderHovered.value &&
+        !sliderFocused.value &&
+        !sliderPaused.value &&
+        reducedMotion.value !== 'reduce'
+    ) {
+        nextSlide();
+    }
+}, 5000);
+
 const { money } = useCurrency();
 const displayPrice = (value: string | null) => money(value ?? 0);
 const dealPrice = (product: Product) =>
     product.sale_price || product.regular_price;
-const showRegularPrice = (product: Product) =>
-    Boolean(product.sale_price) && product.sale_price !== product.regular_price;
 const discountLabel = (product: Product) => {
     const discount = Number(product.discount_percentage ?? 0);
 
@@ -87,7 +140,7 @@ const discountLabel = (product: Product) => {
         return `${Number.isInteger(discount) ? discount : discount.toFixed(1)}% OFF`;
     }
 
-    return product.badge || 'Fresh';
+    return '';
 };
 const productUrl = (product: Product) => '/product/' + product.slug;
 const toggleCart = (product: Product) => {
@@ -184,16 +237,57 @@ const imageUrl = (text: string, size = '500x360') =>
             <section
                 v-if="currentSlide"
                 class="mx-auto w-[min(1180px,calc(100%-32px))] pt-5"
+                aria-label="Featured promotions"
+                aria-roledescription="carousel"
+                @mouseenter="sliderHovered = true"
+                @mouseleave="sliderHovered = false"
+                @focusin="sliderFocused = true"
+                @focusout="handleSliderFocusOut"
+                @keydown.left.prevent="previousSlide"
+                @keydown.right.prevent="nextSlide"
             >
                 <div
                     class="relative overflow-hidden rounded-2xl bg-slate-50 shadow-[0_8px_30px_rgba(0,0,0,.07)]"
                 >
                     <img
+                        v-if="currentSlide.image_url"
                         :key="currentSlide.id"
                         :src="currentSlide.image_url"
                         :alt="currentSlide.product?.name ?? 'Promotion'"
                         class="aspect-[16/7] w-full object-cover"
                     />
+
+                    <div
+                        v-else
+                        class="relative flex min-h-72 items-center overflow-hidden bg-[#eaf5e6] px-14 py-12 sm:aspect-[16/7] sm:px-20"
+                    >
+                        <Leaf
+                            class="pointer-events-none absolute -right-8 -bottom-8 h-64 w-64 -rotate-12 text-[#207f42]/10 sm:h-96 sm:w-96"
+                            aria-hidden="true"
+                        />
+                        <div class="relative max-w-xl">
+                            <p
+                                class="mb-3 text-xs font-bold tracking-widest text-[#207f42] uppercase"
+                            >
+                                Welcome to Fresh Today
+                            </p>
+                            <h1
+                                class="text-3xl font-black text-[#124327] sm:text-5xl"
+                            >
+                                {{ currentSlide.title }}
+                            </h1>
+                            <p
+                                class="mt-4 max-w-md text-sm leading-relaxed text-slate-600 sm:text-base"
+                            >
+                                {{ currentSlide.description }}
+                            </p>
+                            <Link
+                                href="/shop"
+                                class="mt-6 inline-flex rounded-md bg-[#207f42] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#124327]"
+                                >{{ currentSlide.button }}</Link
+                            >
+                        </div>
+                    </div>
 
                     <Link
                         v-if="currentSlide.product"
@@ -225,7 +319,7 @@ const imageUrl = (text: string, size = '500x360') =>
 
                 <div
                     v-if="sliders.length > 1"
-                    class="mt-3 flex justify-center gap-2"
+                    class="mt-3 flex items-center justify-center gap-2"
                 >
                     <button
                         v-for="(slider, index) in sliders"
@@ -318,6 +412,7 @@ const imageUrl = (text: string, size = '500x360') =>
                         class="group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-[0_4px_16px_rgba(0,0,0,.08)]"
                     >
                         <span
+                            v-if="discountLabel(product)"
                             class="absolute top-2 left-2 z-10 rounded-md bg-red-500 px-2 py-1 text-[10px] leading-tight font-black whitespace-pre-line text-white"
                             >{{
                                 discountLabel(product).replace(' ', '\n')
@@ -362,13 +457,6 @@ const imageUrl = (text: string, size = '500x360') =>
                             </p>
 
                             <div class="mt-3 flex flex-wrap items-end gap-2">
-                                <span
-                                    v-if="showRegularPrice(product)"
-                                    class="text-xs text-red-600 line-through"
-                                    >{{
-                                        displayPrice(product.regular_price)
-                                    }}</span
-                                >
                                 <span
                                     class="text-base font-black text-[#176536]"
                                     >{{

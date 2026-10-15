@@ -222,6 +222,7 @@ const handleFormError = async (errors: Record<string, unknown>) => {
                         :aspect-ratio="16 / 7"
                         :output-width="1600"
                         :output-height="700"
+                        :max-size="2 * 1024 * 1024"
                         preview-class="aspect-[16/7] w-full"
                         :required="!slider"
                         :invalid="

@@ -91,7 +91,7 @@ class CheckoutController extends Controller
 
             $items = $cartItems->map(function (Cart $cart) {
                 $product = $cart->product;
-                $salePrice = $product->sale_price ?? $product->cost_price;
+                $salePrice = $product->discounted_price;
 
                 return [
                     'product_id' => $product->id,
@@ -155,7 +155,7 @@ class CheckoutController extends Controller
     private function cartProductData(Cart $cart): array
     {
         $product = $cart->product;
-        $price = $product->sale_price ?? $product->cost_price;
+        $price = $product->discounted_price;
 
         return [
             'id' => $product->id,
@@ -168,8 +168,8 @@ class CheckoutController extends Controller
             'unit' => $product->measurementUnit?->short_name,
             'gross_weight' => $product->gross_weight,
             'weight' => $product->weight,
-            'regular_price' => $product->cost_price,
-            'sale_price' => $product->sale_price,
+            'regular_price' => $product->sale_price,
+            'sale_price' => $product->discounted_price,
             'quantity' => $cart->quantity,
             'line_total' => number_format((float) $price * $cart->quantity, 2, '.', ''),
         ];

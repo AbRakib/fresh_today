@@ -86,7 +86,7 @@ class HandleInertiaRequests extends Middleware
                 ->where('deleted', 0)
                 ->where('status', 1)
                 ->latest('id')
-                ->get(['id', 'category_id', 'name', 'slug', 'thumbnail', 'cost_price', 'sale_price'])
+                ->get(['id', 'category_id', 'name', 'slug', 'thumbnail', 'sale_price', 'discount_percentage'])
                 ->map(fn (Product $product) => [
                     'id' => $product->id,
                     'category_name' => $product->category?->name,
@@ -95,8 +95,8 @@ class HandleInertiaRequests extends Middleware
                     'thumbnail_url' => $product->thumbnail
                         ? Storage::disk('public')->url($product->thumbnail)
                         : null,
-                    'regular_price' => $product->cost_price,
-                    'sale_price' => $product->sale_price,
+                    'regular_price' => $product->sale_price,
+                    'sale_price' => $product->discounted_price,
                 ]),
             'auth' => [
                 'user' => $user ? [

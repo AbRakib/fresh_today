@@ -101,8 +101,10 @@ const toggleCart = () => {
     <div class="min-h-screen bg-[#f7faf7] text-[#213228]">
         <SiteHeader />
 
-        <main class="mx-auto w-[min(1180px,calc(100%-32px))] py-8">
-            <div class="mb-6 flex items-center gap-2 text-xs text-slate-500">
+        <main class="mx-auto w-[min(1180px,calc(100%-32px))] pt-3 pb-8">
+            <div
+                class="mb-3 hidden items-center gap-2 text-xs text-slate-500 md:flex"
+            >
                 <Link href="/" class="hover:text-[#218a37]">Home</Link>
                 <ChevronRight class="h-3 w-3" />
                 <Link href="/shop" class="hover:text-[#218a37]"> Shop </Link>

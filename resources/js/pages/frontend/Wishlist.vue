@@ -41,8 +41,6 @@ const imageUrl = (text: string) =>
     `https://placehold.co/520x420/f5f7f4/23833f?text=${encodeURIComponent(text)}`;
 const dealPrice = (product: WishlistProduct) =>
     product.sale_price || product.regular_price;
-const hasSalePrice = (product: WishlistProduct) =>
-    Boolean(product.sale_price) && product.sale_price !== product.regular_price;
 const productUnit = (product: WishlistProduct) =>
     [product.weight || product.gross_weight, product.unit]
         .filter(Boolean)
@@ -54,7 +52,7 @@ const discountLabel = (product: WishlistProduct) => {
         return `${Number.isInteger(discount) ? discount : discount.toFixed(1)}% OFF`;
     }
 
-    return product.badge;
+    return '';
 };
 const removeFromWishlist = (product: WishlistProduct) => {
     router.delete(`/wishlist/${product.id}`, {
@@ -189,12 +187,6 @@ const checkoutProduct = (product: WishlistProduct) => {
                         <div class="mt-3 flex flex-wrap items-end gap-2">
                             <span class="text-lg font-black text-[#218a37]">
                                 {{ money(dealPrice(product)) }}
-                            </span>
-                            <span
-                                v-if="hasSalePrice(product)"
-                                class="text-xs text-red-600 line-through"
-                            >
-                                {{ money(product.regular_price) }}
                             </span>
                         </div>
                         <div class="mt-3 grid gap-2">

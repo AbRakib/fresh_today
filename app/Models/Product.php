@@ -65,6 +65,14 @@ class Product extends Model
         return $this->hasMany(Cart::class);
     }
 
+    public function getDiscountedPriceAttribute(): string
+    {
+        $price = (float) $this->sale_price;
+        $discount = min(100, max(0, (float) $this->discount_percentage));
+
+        return number_format(round($price * (1 - $discount / 100), 2), 2, '.', '');
+    }
+
     protected function casts(): array
     {
         return [

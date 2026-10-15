@@ -231,8 +231,6 @@ const netWeightLabel = (product: Product) =>
     formatWeightLabel(product.weight, product.unit);
 const dealPrice = (product: Product) =>
     product.sale_price || product.regular_price;
-const showRegularPrice = (product: Product) =>
-    Boolean(product.sale_price) && product.sale_price !== product.regular_price;
 
 const filteredProducts = computed(() => {
     const priceRange = selectedPriceOption.value;
@@ -293,7 +291,7 @@ const discountLabel = (product: Product) => {
         return `${Number.isInteger(discount) ? discount : discount.toFixed(1)}% OFF`;
     }
 
-    return product.badge;
+    return '';
 };
 const productUnit = (product: Product) =>
     formatWeightLabel(product.weight || product.gross_weight, product.unit) ||
@@ -556,13 +554,6 @@ const imageUrl = (text: string) =>
                                     Net weight: {{ netWeightLabel(product) }}
                                 </p>
                                 <div class="mt-2 flex items-end gap-2">
-                                    <span
-                                        v-if="showRegularPrice(product)"
-                                        class="text-xs text-red-600 line-through"
-                                        >{{
-                                            displayPrice(product.regular_price)
-                                        }}</span
-                                    >
                                     <span
                                         class="text-lg font-black text-[#218a37]"
                                         >{{

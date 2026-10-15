@@ -391,7 +391,7 @@ field?.focus({ preventScroll: true });
                     </div>
                     <div class="grid gap-1.5">
                         <Label for="product_weight"
-                            >Weight
+                            >Net weight
                             <span class="text-destructive" aria-hidden="true"
                                 >*</span
                             ></Label

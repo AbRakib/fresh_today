@@ -4,12 +4,19 @@ import { Mail, Phone } from '@lucide/vue';
 import { computed } from 'vue';
 
 type SharedSettings = {
+    company_name: string | null;
+    logo_url: string | null;
     address: string | null;
     email: string | null;
     phone: string | null;
 };
 
 const page = usePage<{ settings?: SharedSettings }>();
+
+const settingsLogoUrl = computed(() => page.props.settings?.logo_url || '');
+const settingsCompanyName = computed(
+    () => page.props.settings?.company_name?.trim() || 'Fresh Today',
+);
 
 const settingsAddress = computed(
     () => page.props.settings?.address?.trim() || '',
@@ -51,19 +58,27 @@ const socialLinks = [
             class="mx-auto grid w-[min(1180px,calc(100%-32px))] gap-9 py-10 sm:grid-cols-2 lg:grid-cols-5"
         >
             <div>
-                <div class="flex items-center gap-2">
-                    <div
-                        class="grid h-12 w-12 place-items-center rounded-full bg-white text-2xl font-black text-[#15512e]"
-                    >
-                        F
-                    </div>
-                    <div class="leading-tight">
-                        <div class="text-xl font-black">fresh</div>
-                        <div class="-mt-1 text-lg font-bold text-red-400">
-                            Today
+                <Link href="/" class="inline-block">
+                    <img
+                        v-if="settingsLogoUrl"
+                        :src="settingsLogoUrl"
+                        :alt="settingsCompanyName + ' logo'"
+                        class="h-14 w-auto max-w-40 object-contain"
+                    />
+                    <div v-else class="flex items-center gap-2">
+                        <div
+                            class="grid h-12 w-12 place-items-center rounded-full bg-white text-2xl font-black text-[#15512e]"
+                        >
+                            F
+                        </div>
+                        <div class="leading-tight">
+                            <div class="text-xl font-black">fresh</div>
+                            <div class="-mt-1 text-lg font-bold text-red-400">
+                                Today
+                            </div>
                         </div>
                     </div>
-                </div>
+                </Link>
                 <p class="mt-4 text-xs leading-6 text-[#e0f5e5]">
                     Your trusted online destination for fresh fish, seafood &
                     meat. Quality you can taste, service you can trust.

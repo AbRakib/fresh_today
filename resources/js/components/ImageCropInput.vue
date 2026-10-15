@@ -9,7 +9,7 @@ import {
 } from '@lucide/vue';
 import Cropper from 'cropperjs';
 import 'cropperjs/dist/cropper.css';
-import { computed, nextTick, onBeforeUnmount, ref } from 'vue';
+import { onBeforeUnmount, ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -37,6 +37,7 @@ const props = withDefaults(
         aspectRatio?: number | null;
         outputWidth?: number;
         outputHeight?: number;
+        maxSize?: number;
         required?: boolean;
         previewFit?: PreviewFit;
         previewClass?: string;
@@ -76,14 +77,10 @@ const sourceUrl = ref<string | null>(null);
 const previewUrl = ref<string | null>(props.currentUrl);
 const selectedFile = ref<File | null>(null);
 const acceptedFile = ref<File | null>(null);
-const acceptedFileName = ref('');
+const cropReady = ref(false);
+const cropping = ref(false);
+const cropError = ref('');
 let cropper: Cropper | null = null;
-
-const displayedLabel = computed(
-    () =>
-        acceptedFileName.value ||
-        (props.currentUrl ? props.currentLabel : props.emptyLabel),
-);
 
 const revoke = (url: string | null) => {
     if (url?.startsWith('blob:')) {
@@ -92,6 +89,7 @@ const revoke = (url: string | null) => {
 };
 
 const destroyCropper = () => {
+    cropReady.value = false;
     cropper?.destroy();
     cropper = null;
 };
@@ -110,6 +108,7 @@ const setInputFile = (file: File | null) => {
     const files = new DataTransfer();
     files.items.add(file);
     fileInput.value.files = files.files;
+    fileInput.value.dispatchEvent(new Event('input', { bubbles: true }));
 };
 
 const closeCrop = () => {
@@ -121,7 +120,7 @@ const closeCrop = () => {
     sourceUrl.value = null;
 };
 
-const handleFileChange = async (event: Event) => {
+const handleFileChange = (event: Event) => {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
 
@@ -129,12 +128,18 @@ const handleFileChange = async (event: Event) => {
         return;
     }
 
+    cropError.value = '';
+    cropReady.value = false;
     revoke(sourceUrl.value);
     sourceUrl.value = URL.createObjectURL(file);
     selectedFile.value = file;
     cropOpen.value = true;
+};
 
-    await nextTick();
+const handleImageError = () => {
+    cropError.value =
+        'This image could not be opened. Please choose a JPG, PNG, or WebP image.';
+    closeCrop();
 };
 
 const initializeCropper = () => {
@@ -158,74 +163,115 @@ const initializeCropper = () => {
         zoomable: true,
         zoomOnTouch: true,
         zoomOnWheel: true,
+        ready: () => {
+            cropReady.value = true;
+        },
     });
 };
 
 const cropImage = async () => {
-    if (!selectedFile.value || !cropper || !fileInput.value) {
-        closeCrop();
-
+    if (
+        !selectedFile.value ||
+        !cropper ||
+        !fileInput.value ||
+        !cropReady.value ||
+        cropping.value
+    ) {
         return;
     }
 
-    const canvas =
-        props.aspectRatio === null
-            ? cropper.getCroppedCanvas({
-                  maxWidth: props.outputWidth,
-                  maxHeight: props.outputHeight,
-                  imageSmoothingEnabled: true,
-                  imageSmoothingQuality: 'high',
-              })
-            : cropper.getCroppedCanvas({
-                  width: props.outputWidth,
-                  height: props.outputHeight,
-                  imageSmoothingEnabled: true,
-                  imageSmoothingQuality: 'high',
-              });
+    cropping.value = true;
+    cropError.value = '';
+    try {
+        const canvas =
+            props.aspectRatio === null
+                ? cropper.getCroppedCanvas({
+                      maxWidth: props.outputWidth,
+                      maxHeight: props.outputHeight,
+                      imageSmoothingEnabled: true,
+                      imageSmoothingQuality: 'high',
+                  })
+                : cropper.getCroppedCanvas({
+                      width: props.outputWidth,
+                      height: props.outputHeight,
+                      imageSmoothingEnabled: true,
+                      imageSmoothingQuality: 'high',
+                  });
 
-    if (!canvas) {
+        if (!canvas) {
+            throw new Error('Crop canvas unavailable');
+        }
+
+        const selectedImage = selectedFile.value;
+        let outputType = ['image/jpeg', 'image/png', 'image/webp'].includes(
+            selectedImage.type,
+        )
+            ? selectedImage.type
+            : 'image/jpeg';
+        let blob = await new Promise<Blob | null>((resolve) =>
+            canvas.toBlob(resolve, outputType, 0.92),
+        );
+
+        if (blob && props.maxSize && blob.size > props.maxSize) {
+            // Detailed PNG banners can exceed the server limit even after cropping.
+            const compressedCanvas = document.createElement('canvas');
+            compressedCanvas.width = canvas.width;
+            compressedCanvas.height = canvas.height;
+            const context = compressedCanvas.getContext('2d');
+            if (!context) {
+                throw new Error('Compression canvas unavailable');
+            }
+            context.fillStyle = '#fff';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(canvas, 0, 0);
+            outputType = 'image/jpeg';
+            for (const quality of [0.9, 0.8, 0.7, 0.6]) {
+                blob = await new Promise<Blob | null>((resolve) =>
+                    compressedCanvas.toBlob(resolve, outputType, quality),
+                );
+                if (blob && blob.size <= props.maxSize) {
+                    break;
+                }
+            }
+        }
+
+        if (!blob) {
+            throw new Error('Image encoding failed');
+        }
+
+        if (props.maxSize && blob.size > props.maxSize) {
+            cropError.value =
+                'The cropped image is too large. Please choose a smaller image.';
+            return;
+        }
+
+        const extension =
+            outputType === 'image/png'
+                ? 'png'
+                : outputType === 'image/webp'
+                  ? 'webp'
+                  : 'jpg';
+        const file = new File(
+            [blob],
+            selectedImage.name.replace(/\.[^.]+$/, '') +
+                '-cropped.' +
+                extension,
+            { type: blob.type },
+        );
+        acceptedFile.value = file;
+        setInputFile(file);
+
+        revoke(previewUrl.value);
+        const nextPreviewUrl = URL.createObjectURL(file);
+        previewUrl.value = nextPreviewUrl;
         closeCrop();
-
-        return;
+        emit('cropped', file, nextPreviewUrl);
+    } catch {
+        cropError.value =
+            'The image could not be cropped. Please try again or choose another image.';
+    } finally {
+        cropping.value = false;
     }
-
-    const selectedImage = selectedFile.value;
-    const outputType = ['image/jpeg', 'image/png', 'image/webp'].includes(
-        selectedImage.type,
-    )
-        ? selectedImage.type
-        : 'image/jpeg';
-    const blob = await new Promise<Blob | null>((resolve) =>
-        canvas.toBlob(resolve, outputType, 0.92),
-    );
-
-    if (!blob) {
-        closeCrop();
-
-        return;
-    }
-
-    const extension =
-        outputType === 'image/png'
-            ? 'png'
-            : outputType === 'image/webp'
-              ? 'webp'
-              : 'jpg';
-    const file = new File(
-        [blob],
-        selectedImage.name.replace(/\.[^.]+$/, '') + '-cropped.' + extension,
-        { type: blob.type },
-    );
-    setInputFile(file);
-    acceptedFile.value = file;
-
-    revoke(previewUrl.value);
-    const nextPreviewUrl = URL.createObjectURL(file);
-    previewUrl.value = nextPreviewUrl;
-    acceptedFileName.value = file.name;
-    selectedFile.value = null;
-    cropOpen.value = false;
-    emit('cropped', file, nextPreviewUrl);
 };
 
 onBeforeUnmount(() => {
@@ -248,7 +294,7 @@ onBeforeUnmount(() => {
                 class="sr-only"
                 @change="handleFileChange"
             />
-            <InputError :message="error" />
+            <InputError :message="error || cropError" />
         </div>
 
         <Label
@@ -258,7 +304,7 @@ onBeforeUnmount(() => {
                 previewClass,
                 invalid ? 'border-destructive ring-1 ring-destructive/30' : '',
             ]"
-        >c
+        >
             <img
                 v-if="previewUrl"
                 :src="previewUrl"
@@ -289,7 +335,12 @@ onBeforeUnmount(() => {
         v-model:open="cropOpen"
         @update:open="(open) => !open && closeCrop()"
     >
-        <DialogContent class="sm:max-w-xl">
+        <DialogContent
+            class="sm:max-w-xl"
+            @escape-key-down="(event) => cropping && event.preventDefault()"
+            @interact-outside="(event) => cropping && event.preventDefault()"
+            :show-close-button="!cropping"
+        >
             <DialogHeader>
                 <DialogTitle>Crop {{ label.toLowerCase() }}</DialogTitle>
             </DialogHeader>
@@ -305,6 +356,7 @@ onBeforeUnmount(() => {
                         class="block max-w-full"
                         draggable="false"
                         @load="initializeCropper"
+                        @error="handleImageError"
                     />
                 </div>
                 <div class="flex flex-wrap items-center justify-center gap-2">
@@ -355,10 +407,22 @@ onBeforeUnmount(() => {
                 </div>
             </div>
             <DialogFooter>
-                <Button type="button" variant="outline" @click="closeCrop">
+                <InputError :message="cropError" />
+                <Button
+                    type="button"
+                    variant="outline"
+                    :disabled="cropping"
+                    @click="closeCrop"
+                >
                     Cancel
                 </Button>
-                <Button type="button" @click="cropImage">Crop image</Button>
+                <Button
+                    type="button"
+                    :disabled="!cropReady || cropping"
+                    @click="cropImage"
+                >
+                    {{ cropping ? 'Cropping...' : 'Crop image' }}
+                </Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>

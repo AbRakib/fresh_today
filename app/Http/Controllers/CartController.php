@@ -30,7 +30,7 @@ class CartController extends Controller
             ->get()
             ->map(function (Cart $cart) {
                 $product = $cart->product;
-                $price = $product->sale_price ?? $product->cost_price;
+                $price = $product->discounted_price;
 
                 return [
                     'id' => $product->id,
@@ -43,8 +43,8 @@ class CartController extends Controller
                     'unit' => $product->measurementUnit?->short_name,
                     'gross_weight' => $product->gross_weight,
                     'weight' => $product->weight,
-                    'regular_price' => $product->cost_price,
-                    'sale_price' => $product->sale_price,
+                    'regular_price' => $product->sale_price,
+                    'sale_price' => $product->discounted_price,
                     'discount_percentage' => $product->discount_percentage,
                     'badge' => $product->badge,
                     'stock_quantity' => $product->stock_quantity,
