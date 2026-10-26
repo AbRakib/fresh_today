@@ -24,6 +24,15 @@ const settingsAddress = computed(
 const settingsPhone = computed(() => page.props.settings?.phone?.trim() || '');
 const settingsEmail = computed(() => page.props.settings?.email?.trim() || '');
 
+const paymentMethods = [
+    { name: 'Visa', icon: 'visa.svg' },
+    { name: 'Mastercard', icon: 'mastercard.svg' },
+    { name: 'American Express', icon: 'amex.svg' },
+    { name: 'bKash', icon: 'bkash.svg' },
+    { name: 'Nagad', icon: 'nagad.png' },
+    { name: 'Rocket', icon: 'rocket.png' },
+];
+
 const socialLinks = [
     {
         name: 'Facebook',
@@ -166,18 +175,17 @@ const socialLinks = [
                 <h4 class="mb-4 text-sm font-bold">We Accept</h4>
                 <div class="grid grid-cols-3 gap-2">
                     <span
-                        v-for="method in [
-                            'VISA',
-                            'MC',
-                            'AMEX',
-                            'bKash',
-                            'Nagad',
-                            'Rocket',
-                        ]"
-                        :key="method"
-                        class="rounded bg-white px-2 py-2 text-center text-xs font-black text-[#15512e]"
+                        v-for="method in paymentMethods"
+                        :key="method.name"
+                        class="flex h-10 items-center justify-center rounded bg-white px-2 py-1"
                     >
-                        {{ method }}
+                        <img
+                            :src="`/images/payments/${method.icon}`"
+                            :alt="method.name"
+                            :title="method.name"
+                            class="h-full w-full object-contain"
+                            loading="lazy"
+                        />
                     </span>
                 </div>
             </div>

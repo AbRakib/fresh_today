@@ -249,58 +249,70 @@ const imageUrl = (text: string, size = '500x360') =>
                 <div
                     class="relative overflow-hidden rounded-2xl bg-slate-50 shadow-[0_8px_30px_rgba(0,0,0,.07)]"
                 >
-                    <img
-                        v-if="currentSlide.image_url"
-                        :key="currentSlide.id"
-                        :src="currentSlide.image_url"
-                        :alt="currentSlide.product?.name ?? 'Promotion'"
-                        class="aspect-[16/7] w-full object-cover"
-                    />
+                    <div class="grid">
+                        <div
+                            v-for="(slide, index) in sliders"
+                            :key="slide.id"
+                            class="promotion-slide relative col-start-1 row-start-1 min-w-0"
+                            :class="{
+                                'promotion-slide-active': index === activeSlide,
+                            }"
+                            :aria-hidden="index !== activeSlide"
+                            :inert="index !== activeSlide"
+                        >
+                            <img
+                                v-if="slide.image_url"
+                                :src="slide.image_url"
+                                :alt="slide.product?.name ?? 'Promotion'"
+                                class="aspect-[16/7] w-full object-cover"
+                            />
 
-                    <div
-                        v-else
-                        class="relative flex min-h-72 items-center overflow-hidden bg-[#eaf5e6] px-14 py-12 sm:aspect-[16/7] sm:px-20"
-                    >
-                        <Leaf
-                            class="pointer-events-none absolute -right-8 -bottom-8 h-64 w-64 -rotate-12 text-[#207f42]/10 sm:h-96 sm:w-96"
-                            aria-hidden="true"
-                        />
-                        <div class="relative max-w-xl">
-                            <p
-                                class="mb-3 text-xs font-bold tracking-widest text-[#207f42] uppercase"
+                            <div
+                                v-else
+                                class="relative flex min-h-72 items-center overflow-hidden bg-[#eaf5e6] px-14 py-12 sm:aspect-[16/7] sm:px-20"
                             >
-                                Welcome to Fresh Today
-                            </p>
-                            <h1
-                                class="text-3xl font-black text-[#124327] sm:text-5xl"
-                            >
-                                {{ currentSlide.title }}
-                            </h1>
-                            <p
-                                class="mt-4 max-w-md text-sm leading-relaxed text-slate-600 sm:text-base"
-                            >
-                                {{ currentSlide.description }}
-                            </p>
+                                <Leaf
+                                    class="pointer-events-none absolute -right-8 -bottom-8 h-64 w-64 -rotate-12 text-[#207f42]/10 sm:h-96 sm:w-96"
+                                    aria-hidden="true"
+                                />
+                                <div class="relative max-w-xl">
+                                    <p
+                                        class="mb-3 text-xs font-bold tracking-widest text-[#207f42] uppercase"
+                                    >
+                                        Welcome to Fresh Today
+                                    </p>
+                                    <h1
+                                        class="text-3xl font-black text-[#124327] sm:text-5xl"
+                                    >
+                                        {{ slide.title }}
+                                    </h1>
+                                    <p
+                                        class="mt-4 max-w-md text-sm leading-relaxed text-slate-600 sm:text-base"
+                                    >
+                                        {{ slide.description }}
+                                    </p>
+                                    <Link
+                                        href="/shop"
+                                        class="mt-6 inline-flex rounded-md bg-[#207f42] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#124327]"
+                                        >{{ slide.button }}</Link
+                                    >
+                                </div>
+                            </div>
+
                             <Link
-                                href="/shop"
-                                class="mt-6 inline-flex rounded-md bg-[#207f42] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#124327]"
-                                >{{ currentSlide.button }}</Link
+                                v-if="slide.product"
+                                :href="`/product/${slide.product.slug}`"
+                                class="absolute bottom-5 left-5 rounded-md bg-lime-500 px-5 py-2.5 text-sm font-bold text-white shadow transition hover:bg-lime-600 sm:bottom-7 sm:left-7"
                             >
+                                {{ slide.button || slide.product.name }}
+                            </Link>
                         </div>
                     </div>
-
-                    <Link
-                        v-if="currentSlide.product"
-                        :href="`/product/${currentSlide.product.slug}`"
-                        class="absolute bottom-5 left-5 rounded-md bg-lime-500 px-5 py-2.5 text-sm font-bold text-white shadow transition hover:bg-lime-600 sm:bottom-7 sm:left-7"
-                    >
-                        {{ currentSlide.button || currentSlide.product.name }}
-                    </Link>
 
                     <button
                         v-if="sliders.length > 1"
                         type="button"
-                        class="absolute top-1/2 left-3 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-slate-700 shadow"
+                        class="absolute top-1/2 left-3 z-10 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-slate-700 shadow"
                         aria-label="Previous slide"
                         @click="previousSlide"
                     >
@@ -309,7 +321,7 @@ const imageUrl = (text: string, size = '500x360') =>
                     <button
                         v-if="sliders.length > 1"
                         type="button"
-                        class="absolute top-1/2 right-3 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-slate-700 shadow"
+                        class="absolute top-1/2 right-3 z-10 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-slate-700 shadow"
                         aria-label="Next slide"
                         @click="nextSlide"
                     >
@@ -599,3 +611,23 @@ const imageUrl = (text: string, size = '500x360') =>
         <SiteFooter />
     </div>
 </template>
+
+<style scoped>
+.promotion-slide {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 600ms ease-in-out;
+}
+
+.promotion-slide-active {
+    z-index: 1;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .promotion-slide {
+        transition: none;
+    }
+}
+</style>
